@@ -1,0 +1,33 @@
+# Windows:
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Python:
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# data,log and tools(python/hadoop)
+tools
+log
+output
+data
+
+#ignore idea project files
+.idea
+
+#vim .swp
+*.swp
+
+
+#log
+*.class
+*.log
+*nohup.out
+
+#config
+conf/conf.py
