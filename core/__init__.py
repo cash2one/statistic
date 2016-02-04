@@ -9,7 +9,10 @@ def get_version(version=None):
     assert len(version) == 5
     assert version[3] in ('alpha', 'beta', 'rc', 'final')
 
-    parts = 2 if version[2] == 0 else 3
+    if version[2] == 0:
+        parts = 2
+    else:
+        parts = 3
     main = '.'.join(str(x) for x in version[:parts])
 
     sub = ''

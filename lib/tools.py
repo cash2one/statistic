@@ -17,6 +17,7 @@ def log(msg):
     except:
         pass
 
+
 def ex():
     u"""
     打印错误日志

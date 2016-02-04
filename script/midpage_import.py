@@ -61,7 +61,7 @@ def import_data(side, date, path, source, product_id):
         tools.wget(source, path)
     except:
         tools.log(u"下载失败！")
-        raise
+        return
     stat_map = {}
     position_list = []
     url_list = []
@@ -106,6 +106,9 @@ def import_data(side, date, path, source, product_id):
 
 def main(product_id, date):
     path = os.path.join(conf.DATA_DIR, date)
+    if not os.path.exists(path):
+        os.mkdir(path)
+
     path = os.path.join(path, "midpage.%s" % product_id)
 
     stat_db = db.DataBase()
@@ -117,7 +120,7 @@ def main(product_id, date):
     side = product["side"]
     source = product["source"]
     source = source.replace("${DATE}", date)
-    tools.log(u"产品%s(%s)开始导入" % (name, product_id))
+    tools.log(u"产品%s(%s)开始导入:%s" % (name, product_id, date))
     try:
         import_data(side, date, path, source, product_id)
     except:

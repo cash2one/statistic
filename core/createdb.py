@@ -44,13 +44,13 @@ def get_init_sql():
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\
         `name` varchar(255) NOT NULL,\
         `srcids` text NOT NULL,\
-        `side` tinyint(1) unsigned NOT NULL,\
+        `side` varchar(16) NOT NULL DEFAULT '',\
         PRIMARY KEY (`id`),\
         INDEX `name_index` (`name`)\
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8"
     spo_srcid_stat = "CREATE TABLE IF NOT EXISTS `spo_srcid_stat`(\
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\
-        `side` tinyint(1) unsigned NOT NULL,\
+        `side` varchar(16) NOT NULL DEFAULT '',\
         `srcid` varchar(32) NOT NULL,\
         `stat` varchar(255) NOT NULL,\
         `value` double(32, 10) NOT NULL,\
@@ -62,7 +62,7 @@ def get_init_sql():
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8"
     spo_query_stat = "CREATE TABLE IF NOT EXISTS `spo_query_stat`(\
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\
-        `side` tinyint(1) unsigned NOT NULL,\
+        `side` varchar(16) NOT NULL DEFAULT '',\
         `srcid` varchar(32) NOT NULL,\
         `query` varchar(4096) NOT NULL,\
         `pv` bigint(20) NOT NULL,\
@@ -75,7 +75,7 @@ def get_init_sql():
     midpage_product = "CREATE TABLE IF NOT EXISTS `midpage_product`(\
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\
         `name` varchar(255) NOT NULL,\
-        `side` tinyint(1) unsigned NOT NULL,\
+        `side` varchar(16) NOT NULL DEFAULT '',\
         `source` varchar(255) NOT NULL,\
         PRIMARY KEY (`id`),\
         INDEX `name_index` (`name`)\
@@ -83,7 +83,7 @@ def get_init_sql():
     midpage_stat = "CREATE TABLE IF NOT EXISTS `midpage_stat` (\
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\
         `product_id` int(11) unsigned NOT NULL,\
-        `side` tinyint(1) unsigned NOT NULL,\
+        `side` varchar(16) NOT NULL DEFAULT '',\
         `stat` varchar(255) NOT NULL,\
         `value` double(32, 10) NOT NULL,\
         `date` date NOT NULL,\
@@ -95,7 +95,7 @@ def get_init_sql():
     midpage_position_stat = "CREATE TABLE IF NOT EXISTS `midpage_position_stat` (\
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\
         `product_id` int(11) unsigned NOT NULL,\
-        `side` tinyint(1) unsigned NOT NULL,\
+        `side` varchar(16) NOT NULL DEFAULT '',\
         `position` int(11) NOT NULL,\
         `click_num` bigint(20) NOT NULL,\
         `show_num` bigint(20) NOT NULL,\
@@ -115,7 +115,7 @@ def get_month_sql(date):
     midpage_url_stat = "CREATE TABLE IF NOT EXISTS `midpage_url_stat_%s`(\
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\
         `product_id` int(11) unsigned NOT NULL,\
-        `side` tinyint(1) unsigned NOT NULL,\
+        `side` varchar(16) NOT NULL DEFAULT '',\
         `url` varchar(255) NOT NULL,\
         `click_num` bigint(20) NOT NULL,\
         `show_num` bigint(20) NOT NULL,\

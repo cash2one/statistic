@@ -75,9 +75,9 @@ def main(side, date):
         return
     tools.log(u"开始导入%s端%s问答指标" % (side, date))
     path = os.path.join(conf.DATA_DIR, date)
+    if not os.path.exists(path):
+        os.mkdir(path)
     if side == "pc":
-        if not os.path.exists(path):
-            os.mkdir(path)
         try:
             import_data(date, source_config.PC_SIDE, path)
         except:

@@ -20,7 +20,7 @@ class DataBase(object):
         self.conn.close()
 
     def get_midpage_product(self, id):
-        sql = "select `name`,`side`,`source` from midpage_product where `id`=%s" % id
+        sql = "select `name`,`side`,`source` from midpage_category where `id`=%s" % id
         self.cur.execute(sql)
         product = self.cur.fetchone()
         if product is not None:
@@ -31,6 +31,21 @@ class DataBase(object):
             }
         return product
 
+class SelectDataBase(DataBase):
+
+    def get_spo_product(self):
+        sql = "select * from spo_product"
+        self.cur.execute(sql)
+
+        return self.cur.fetchall()
+
+    def get_spo_srcid_stat(self, index, side, date, srcids = None):
+        sql = "select sum(value) as total from spo_srcid_stat where stat='%s' and side='%s' and date='%s'" % (index, side, date)
+        if srcids:
+            sql += " and srcid in (%s) " % (",".join(srcids))
+        self.cur.execute(sql)
+
+        return self.cur.fetchall()
 
 class SaveDataBase(DataBase):
     def __init__(self, date, side=0):
@@ -45,7 +60,37 @@ class SaveDataBase(DataBase):
         return utf_8_string.decode("utf-8")
 
     def clear_spo_srcid_stat(self):
-        sql = "delete from spo_srcid_stat where `side`=%s and `date`=%s" %(self.side, self.date)
+        sql = "delete from spo_srcid_stat where `side`='%s' and `date`=%s" %(self.side, self.date)
+        self.cur.execute(sql)
+        self.conn.commit()
+    
+    def clear_spo_daily_summary(self, date, index):
+        sql = "delete from spo_daily_summary where `date`='%s'" %(date)
+        if len(index) > 0:
+            index_str = []
+            for key in index:
+                index_str.append('"'+ key +'"')
+            sql += ' and `index` in (' + ','.join(index_str) + ')'
+        self.cur.execute(sql)
+        self.conn.commit()
+
+    def save_spo_index_info(self, rows):
+        u"""
+        [
+            (side, ...)
+        ]
+        """
+        sql = "insert into spo_daily_summary (`side`,`product`, `pid`,`index`, `value`, `last_modify_date`, `date`) \
+            values %s"
+
+        values = []
+        for value in rows:
+            s = "('%s','%s', '%s','%s','%s','%s','%s')" % (value['side'], value['product'], value['pid'],\
+                 value['index'], value['value'], value['last_modify_date'], value['date'])
+            values.append(s)
+        
+        values = ",".join(values)
+        sql = sql % (values, )
         self.cur.execute(sql)
         self.conn.commit()
 
@@ -70,7 +115,7 @@ class SaveDataBase(DataBase):
             self.conn.commit()
 
     def clear_spo_query_stat(self):
-        sql = "delete from spo_query_stat where `side`=%s and `date`=%s" %(self.side, self.date)
+        sql = "delete from spo_query_stat where `side`='%s' and `date`=%s" %(self.side, self.date)
         self.cur.execute(sql)
         self.conn.commit()
 
@@ -118,7 +163,7 @@ class SaveDataBase(DataBase):
             sql = sql % (values, )
             self.cur.execute(sql)
             self.conn.commit()
-
+    
     def clear_midpage_position_stat(self, product_id):
         sql = "delete from midpage_position_stat where `product_id`=%s and `side`=%s and `date`=%s" %\
             (product_id, self.side, self.date)

@@ -21,7 +21,8 @@ class Command(BaseCommand):
         assert date_format
 
     def handle(self, product_id, date, *args):
-        u"""params:
+        u"""该命令用于将RD统计好的数据存入mysql，与新版中间页统计无关
+params:
     product_id  数据库中的产品id
     date  %Y%m%d格式日期
         """    
