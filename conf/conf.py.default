@@ -1,0 +1,17 @@
+# coding=utf-8
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+
+DB_HOST = "cp01-testing-ps7164.cp01.baidu.com"
+DB_PORT = 3306
+DB_USER = "root"
+DB_PASSWORD = "521aladdin"
+DB_NAME = "mvs_platform"
+
+
+MONGO_HOST = "cq01-testing-ps7163.cq01.baidu.com"
+MONGO_PORT = 27017
+MONGO_DB = "kgdcdb"
