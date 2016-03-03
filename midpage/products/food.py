@@ -56,6 +56,7 @@ class Product(base.MidpageProduct):
             commandList.append({'$group':obj})
         ret = collection.aggregate(commandList);
         return ret
+
     #指标计算
     def indexCount(self, collection, dataset):
         ret = self.template()
@@ -94,21 +95,27 @@ class Product(base.MidpageProduct):
         match.update(dataset)
         ret[u'评论点击率'] = float(collection.find(match).count())/ret['pv']
         #团购信息点击率
+        
+        match = {
+                    'query.cat':'dumi_meishi',
+                    'query.act':'a_click_groupon_item',
+                }
+        match.update(dataset)
+        total_click = collection.find(match).count()
         match = {
                     'query.cat':'dumi_meishi',
                     'query.act':'a_click_groupon_item',
                     '$or':[
-                        {'query.xpath':'div-div2-div3-section6-div2-a1-div-h4(link)'},
-                        {'query.xpath':'div-div2-div3-section6-div2-a2-div-h4(link)'}
+                        {'query.xpath':'div-div2-div3-section5-div2-a-div-div(link)'},
+                        {'query.xpath':'div-div2-div3-section5-div-a-div-div(link)'}
                     ]
                 }
-        total = collection.find(match).count()
         match.update(dataset)
-        click = collection.find(match).count()
-        btn = total - click
-        ret[u'团购信息点击率'] = float(click)/ret['pv']
+        tuangou_click = collection.find(match).count()
+        other_click = total_click - tuangou_click
+        ret[u'团购信息点击率'] = float(tuangou_click)/ret['pv']
         #其他团购按钮点击率
-        ret[u'其他团购按钮点击率'] = float(btn)/ret['pv']
+        ret[u'其他团购按钮点击率'] = float(other_click)/ret['pv']
         #图片展现数
         match = {'query.cat':'dumi_meishi','query.act':'pv'}
         match.update(dataset)
@@ -130,6 +137,7 @@ class Product(base.MidpageProduct):
         match.update(dataset)
         ret[u'展现地址次数'] = float(collection.find(match).count())
         return ret
+
     #主函数 数据统计
     def statist(self):
         u"""
@@ -152,6 +160,7 @@ class Product(base.MidpageProduct):
         ret['MB']['android'] = self.indexCount(food, {'client':'MB','os':'android'})
         
         return ret
+
     def save_result(self, result):
         u"""
         result为statist返回的结果，用于存储结果，可以存储到本地也可以存储如数据库

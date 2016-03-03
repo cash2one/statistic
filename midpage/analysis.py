@@ -59,8 +59,11 @@ def parse_query(query):
     try:
         query = {k.decode('utf-8'):v[0].decode('utf-8') for k, v in query.items() if "." not in k}
     except:
-        tools.log("[ERROR QUERY]%s" % query)
-        return {}
+        try:
+            query = {k.decode('cp936'):v[0].decode('cp936') for k, v in query.items() if "." not in k}
+        except:
+            tools.log("[ERROR QUERY]%s" % query)
+            return {}
     return query
 
 
