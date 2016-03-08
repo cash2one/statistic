@@ -18,7 +18,6 @@ class Product(base.MidpageProduct):
             u'地址点击率':0,
             u'评论点击率':0,
             u'团购信息点击率':0,
-            u'团购信息点击率':0,
             u'其他团购按钮点击率':0,
             u'图片展现数':0,
             u'评论展现量':0,
@@ -160,24 +159,24 @@ class Product(base.MidpageProduct):
         tag_click = collection.find(match).count()
         ret[u'相关评价tag整体点击率'] = float(tag_click)/ret['pv'] if ret['pv'] else 0
         #榜单H5页的PV
-        match = {'query.cat':'dumi_meishi_toplist','act':'pv'}
+        match = {'query.cat':'dumi_meishi_toplist','query.act':'pv'}
         match.update(dataset)
         ret[u'榜单H5页的PV'] = collection.find(match).count()
         #榜单H5页的UV
-        match = {'query.cat':'dumi_meishi_toplist','act':'pv'}
+        match = {'query.cat':'dumi_meishi_toplist','query.act':'pv'}
         match.update(dataset)
         ret[u'榜单H5页的UV'] = len(collection.find(match).distinct('baiduid'))
         #榜单H5页的餐厅点击率
-        match = {'query.cat':'dumi_meishi_toplist','act':'a_click_rank_item'}
+        match = {'query.cat':'dumi_meishi_toplist','query.act':'a_click_rank_item'}
         match.update(dataset)
         rank_item_click = collection.find(match).count()
         ret[u'榜单H5页的餐厅点击率'] = float(rank_item_click)/ret[u'榜单H5页的PV'] if ret[u'榜单H5页的PV']  else 0
         #菜品推荐H5页的PV
-        match = {'query.cat':'dumi_meishi_recommend_food','act':'pv'}
+        match = {'query.cat':'dumi_meishi_recommend_food','query.act':'pv'}
         match.update(dataset)
         ret[u'菜品推荐H5页的PV'] = collection.find(match).count()
         #菜品推荐H5页的UV
-        match = {'query.cat':'dumi_meishi_recommend_food','act':'pv'}
+        match = {'query.cat':'dumi_meishi_recommend_food','query.act':'pv'}
         match.update(dataset)
         ret[u'菜品推荐H5页的UV'] = len(collection.find(match).distinct('baiduid'))
         return ret
