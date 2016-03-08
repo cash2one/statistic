@@ -213,11 +213,16 @@ class Product(base.MidpageProduct):
         midpage_output = os.path.join(output, "midpage/food/%s" % self.date)
         if not os.path.exists(midpage_output):
             os.makedirs(midpage_output)
+        operate_systems = ('total','android','ios')
+        titles = ('pv','uv','upv',u'图片点击率',u'图片滑动率', u'电话点击率',u'地址点击率',u'评论点击率',u'团购信息点击率',
+            u'其他团购按钮点击率',u'图片展现数',u'评论展现量',u'团购信息展现数',u'展现电话次数',u'展现地址次数',u'榜单模块点击率',
+            u'菜品推荐模块点击率',u'相关评价tag整体点击率', u'榜单H5页的PV', u'榜单H5页的UV',u'榜单H5页的餐厅点击率',
+            u'菜品推荐H5页的PV', u'菜品推荐H5页的UV')
         file_other = os.path.join(midpage_output, 'total.txt')
         with open(file_other, 'w') as f:
             count = 100
-            for operate_system in result['total']:
-                for title in result['total'][operate_system]:
+            for operate_system in operate_systems:
+                for title in titles:
                     out = u'%s\t%s\t%s\t%s\r\n' % (count, operate_system, title, result['total'][operate_system][title])
                     f.write(out.encode('utf-8'))
                     count = count + 1
@@ -225,8 +230,8 @@ class Product(base.MidpageProduct):
         file_na = os.path.join(midpage_output, 'NA.txt')
         with open(file_na, 'w') as f:
             count = 100
-            for operate_system in result['NA']:
-                for title in result['NA'][operate_system]:
+            for operate_system in operate_systems:
+                for title in titles:
                     out = u'%s\t%s\t%s\t%s\r\n' % (count, operate_system, title, result['NA'][operate_system][title])
                     f.write(out.encode('utf-8'))
                     count = count + 1
@@ -234,8 +239,8 @@ class Product(base.MidpageProduct):
         file_mb = os.path.join(midpage_output, 'MB.txt')
         with open(file_mb, 'w') as f:
             count = 100
-            for operate_system in result['MB']:
-                for title in result['MB'][operate_system]:
+            for operate_system in operate_systems:
+                for title in titles:
                     out = u'%s\t%s\t%s\t%s\r\n' % (count, operate_system, title, result['MB'][operate_system][title])
                     f.write(out.encode('utf-8'))
                     count = count + 1
