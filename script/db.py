@@ -31,6 +31,7 @@ class DataBase(object):
             }
         return product
 
+
 class SelectDataBase(DataBase):
 
     def get_spo_product(self):
@@ -46,6 +47,7 @@ class SelectDataBase(DataBase):
         self.cur.execute(sql)
 
         return self.cur.fetchall()
+        
 
 class SaveDataBase(DataBase):
     def __init__(self, date, side=0):
