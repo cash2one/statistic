@@ -35,7 +35,7 @@ def clear_db():
 
 def get_data(date):
     files = []
-    midpage_dir = os.path.join(conf.DATA_DIR, "%s/midpage" % date)
+    midpage_dir = os.path.join(conf.DATA_DIR, "midpage/%s" % date)
     if not os.path.exists(midpage_dir):
         os.makedirs(midpage_dir)
     for file_name, log_ftp in LOG_DATAS.items():
