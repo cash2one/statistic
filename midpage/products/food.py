@@ -31,7 +31,8 @@ class Product(base.MidpageProduct):
             u'榜单H5页的UV':0,
             u'榜单H5页的餐厅点击率':0,
             u'菜品推荐H5页的PV':0,
-            u'菜品推荐H5页的UV':0
+            u'菜品推荐H5页的UV':0,
+            u'页面停留平均时间':0
         }
         return ret
 
@@ -179,6 +180,15 @@ class Product(base.MidpageProduct):
         match = {'query.cat':'dumi_meishi_recommend_food','query.act':'pv'}
         match.update(dataset)
         ret[u'菜品推荐H5页的UV'] = len(collection.find(match).distinct('baiduid'))
+        #页面停留平均时间
+        match = {'query.cat':'dumi_meishi','query.act':'stay_time'}
+        match.update(dataset)
+        cursor = collection.find(match,['query.duration'])
+        total_time = 0
+        for obj in cursor:
+            total_time += float(obj['query']['duration'])
+        ret[u'页面停留平均时间'] = total_time/cursor.count() if cursor.count() else 0
+        cursor.close()
         return ret
 
     #主函数 数据统计
@@ -217,7 +227,7 @@ class Product(base.MidpageProduct):
         titles = ('pv','uv','upv',u'图片点击率',u'图片滑动率', u'电话点击率',u'地址点击率',u'评论点击率',u'团购信息点击率',
             u'其他团购按钮点击率',u'图片展现数',u'评论展现量',u'团购信息展现数',u'展现电话次数',u'展现地址次数',u'榜单模块点击率',
             u'菜品推荐模块点击率',u'相关评价tag整体点击率', u'榜单H5页的PV', u'榜单H5页的UV',u'榜单H5页的餐厅点击率',
-            u'菜品推荐H5页的PV', u'菜品推荐H5页的UV')
+            u'菜品推荐H5页的PV', u'菜品推荐H5页的UV',u'页面停留平均时间')
         file_other = os.path.join(midpage_output, 'total.txt')
         with open(file_other, 'w') as f:
             count = 100
