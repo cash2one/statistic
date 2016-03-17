@@ -184,11 +184,11 @@ class Product(base.MidpageProduct):
         match = {'query.cat':'dumi_meishi','query.act':'stay_time'}
         match.update(dataset)
         cursor = collection.find(match,['query.duration'])
+        total_num = collection.find(match).count()
         total_time = 0
         for obj in cursor:
             total_time += float(obj['query']['duration'])
-        ret[u'页面停留平均时间'] = total_time/cursor.count() if cursor.count() else 0
-        cursor.close()
+        ret[u'页面停留平均时间'] = total_time/total_num if total_num else 0
         return ret
 
     #主函数 数据统计
