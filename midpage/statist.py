@@ -33,6 +33,7 @@ def main(date, products=None):
         products = get_proudcts()
 
     for product in products:
+        tools.log('[INFO]product %s statis start' % product)
         try:
             module = get_product_module(product)
         except:
@@ -43,3 +44,4 @@ def main(date, products=None):
         except:
             tools.log(u"run product module error:%s" % product)
             tools.ex()
+        tools.log('[INFO]product %s statis end' % product)

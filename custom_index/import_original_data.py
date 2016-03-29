@@ -82,12 +82,18 @@ def run_summary_cmd(date_list, task_id):
         tools.run_main_cmd("custom_summary_import", [task_id, date], "log/custom_summary_import.log")
 
 
-def main(task_id, date):
+def main(task_id, date, replace_ftp=None):
     tools.log("[BEGIN]task id:%s, date:%s" % (task_id, date))
     task_id = int(task_id)
     task = task_db.CustomIndexTask(task_id)
+    if task.task_type != "index":
+        tools.log('[ERROR]task type is %s' % task.task_type)
+        exit(-1)
     #获取数据
-    ftp = task.path
+    if replace_ftp:
+        ftp = replace_ftp
+    else:
+        ftp = task.path
     path = get_index(task_id, date, ftp)
     #解析入库
     save_index(path, task, date)
@@ -95,4 +101,6 @@ def main(task_id, date):
     date_list = get_summary_date(task_id, date)
     tools.log("[INFO]summary date list:%s" % date_list)
     run_summary_cmd(date_list, task_id)
+    tools.log("[INFO]build output!")
+    tools.run_main_cmd("custom_original_output", [task_id, date], "log/custom_original_output.log")
     tools.log("[END]task id:%s, date:%s" % (task_id, date))

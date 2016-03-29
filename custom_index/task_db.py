@@ -12,7 +12,7 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
 
     def _get_task_info(self, task_id):
         sql = "select `id`,`name`,`owner`,`topic`,`routine`,`path`,\
-            `time_delta`,`hour`,`period`,`last_run_date` from custom_index_task where id=%s" % task_id
+            `time_delta`,`hour`,`period`,`last_run_date`, `task_type` from custom_index_task where id=%s" % task_id
         self.cur.execute(sql)
         line = self.cur.fetchone()
         if line is None:
@@ -27,6 +27,7 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
         self.hour = line[7]
         self.period = line[8]
         self.last_run_date = line[9]
+        self.task_type = line[10]
 
         if not self.period:
             self.period = {"type":"daily"}
@@ -62,7 +63,7 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
     @classmethod
     def get_unroutine_tasks(cls):
         conn, cur = cls._get_connect()
-        sql = "select `id` from custom_index_task where routine=0"
+        sql = "select `id` from custom_index_task where routine=0 and `task_type`='index'"
         cur.execute(sql)
         lines = cur.fetchall()
         lines = [line[0] for line in lines]

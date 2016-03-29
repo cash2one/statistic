@@ -2,7 +2,7 @@
 import time
 
 from core.management.base import BaseCommand
-from custom_index import import_original_data
+from custom_index import output_original_data
 
 class Command(BaseCommand):
 
@@ -21,11 +21,10 @@ class Command(BaseCommand):
             date_format = False
         assert date_format
 
-    def handle(self, task_id, date, ftp=None, *args):
+    def handle(self, task_id, date, *args):
         u"""params:
     task_id 导入任务id
     date  %Y%m%d格式日期
-    ftp 下载数据的地址，可选
         """
-        import_original_data.main(task_id, date, ftp)
+        output_original_data.main(task_id, date)
 
