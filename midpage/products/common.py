@@ -239,7 +239,6 @@ class Product(base.MidpageProduct):
         result为statist返回的结果，用于存储结果，可以存储到本地也可以存储如数据库
         """
         midpage = self.get_midpage_product()
-        print midpage
         stat_db = db.SaveDataBase()
         index_key = self.initDict().keys()
         stat_db.clear_midpage_daily_summary(self.date, index_key)
@@ -260,5 +259,4 @@ class Product(base.MidpageProduct):
                         temp['value'] = result[side][product][index]
                         temp['last_modify_date'] = self.date
                         data.append(temp)
-        print json.dumps(data)
         stat_db.save_spo_index_info(data) 
