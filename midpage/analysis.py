@@ -4,16 +4,25 @@ import re
 import time
 import urlparse
 
+import error
 from lib import tools
 from conf import conf
 import midpagedb
 import statist
 
 LOG_DATAS = {
-    'st01-kgb-haiou1.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/st01-kgb-haiou1.st01/access_%s.log',
-    'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/access_%s.log',
-    'nj02-kgb-haiou1.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou1.nj02/access_%s.log',
-    'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/access_%s.log',
+    'qianxun': {
+        'st01-kgb-haiou1.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/st01-kgb-haiou1.st01/access_%s.log',
+        'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/access_%s.log',
+        'nj02-kgb-haiou1.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou1.nj02/access_%s.log',
+        'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/access_%s.log',
+    },
+    'mingxing': {
+        'nj02-kgb-haiou1.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou1.nj02/star_tongji_%s.log',
+        'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/star_tongji_%s.log',
+        'st01-kgb-haiou1.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou1.st01/star_tongji_%s.log',
+        'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/star_tongji_%s.log',
+    },
 }
 
 
@@ -21,36 +30,56 @@ BASE_REG = re.compile(r"^([0-9\.]+) (.*) (.*) (?P<time>\[.+\]) " + \
     r"\"(?P<request>.*)\" (?P<status_code>[0-9]{3}) (\d+) " + \
     r"\"(?P<referr>.*)\" \"(?P<cookie>.*)\" \"(?P<user_agent>.*)\" " +\
     r"(?P<cost_time>[0-9\.]+) ([0-9]+) ([0-9\.]+) ([0-9\.]+) (.+) (.*) " +\
-    r"\"(.*)\" (\w*) (\w*) (\d+) ([0-9\.]+)$")
+    r"\"(.*)\" (\w*) (\w*) (\d+) (?P<timestamp>[0-9\.]+)$")
+
+MINGXING_REG = re.compile(r"^(?P<ip>[0-9\.]+) (.*) (.*) (?P<time>\[.+\]) " + \
+    r"\"(?P<request>.*)\" (?P<status_code>[0-9]{3}) (\d+) " + \
+    r"\"(?P<referr>.*)\" \"(?P<user_agent>.*)\"$")
+
+REG_MAP = {
+    'qianxun': BASE_REG,
+    'mingxing': MINGXING_REG,
+}
+
 BAIDUID_REG = re.compile(r"BAIDUID=(?P<id>.+?);")
 IOS_REG = re.compile(r"(?i)Mac OS X")
 ANDROID_REG = re.compile(r"(?i)android")
 NA_REG = re.compile(r"(xiaodurobot|dueriosapp|duerandroidapp)")
 MB_REG = re.compile(r"baiduboxapp")
 
-def clear_db():
+
+def clear_db(sources):
     db = midpagedb.DateLogDb()
-    db.clear()
+    db.clear(sources)
 
 
-def get_data(date):
+def get_data(date, sources=None):
     files = []
     midpage_dir = os.path.join(conf.DATA_DIR, "midpage/%s" % date)
-    if not os.path.exists(midpage_dir):
-        os.makedirs(midpage_dir)
-    for file_name, log_ftp in LOG_DATAS.items():
-        file_name = os.path.join(midpage_dir, file_name)
-        log_ftp = log_ftp % date
-        tools.wget(log_ftp, file_name)
-        files.append(file_name)
+    for source, log_dict in LOG_DATAS.items():
+        if sources and source not in sources:
+            continue
+        log_dir = os.path.join(midpage_dir, source)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        for file_name, log_ftp in log_dict.items():
+            file_name = os.path.join(log_dir, file_name)
+            log_ftp = log_ftp % date
+            tools.wget(log_ftp, file_name, False)
+            files.append({
+                "source": source,
+                "file_name": file_name,
+            })
     return files
 
 
 def iter_file(files):
-    for file_name in files:
+    for obj in files:
+        source = obj["source"]
+        file_name = obj["file_name"]
         for line in open(file_name):
             line = line.rstrip("\r\n").decode("utf-8")
-            yield line
+            yield source, line
 
 
 def parse_query(query):
@@ -67,44 +96,18 @@ def parse_query(query):
     return query
 
 
-def analysis_line(line):
-    match = BASE_REG.match(line)
-    if match is None:
-        tools.log("[NOT MATCH LOG]%s" % line)
-        return
-    ret = {}
-    request = match.group("request")
+def parse_request(request, ret):
     request = request.split()
     if len(request) == 3:
         request = request[1]
     else:
-        tools.log("[ERROR LOG]%s" % line)
-        return
+        raise error.ParseLineError('parse_request error')
     request = urlparse.urlparse(request)
     ret["url"] = request.path
     ret["query"] = parse_query(request.query)
-    number_keys = ["review_num","image_num","tuangou_num"]
-    for number_key in number_keys:
-        if number_key in ret["query"]:
-            try:
-                ret["query"][number_key] = int(ret["query"][number_key])
-            except:
-                pass
-    user_agent = match.group("user_agent")
-    ret["user_agent"] = user_agent
-    ret["status_code"] = match.group("status_code")
-    ret["cost_time"] = match.group("cost_time")
-    cookie = match.group("cookie")
-    bdid = BAIDUID_REG.search(cookie)
-    ret["cookie"] = cookie
-    if bdid:
-        ret["baiduid"] = bdid.group("id")
-    else:
-        ret["baiduid"] = ""
-    referr = match.group("referr")
-    referr = urlparse.urlparse(referr)
-    ret["referr"] = referr.path
-    ret["referr_query"] = parse_query(referr.query)
+
+
+def parse_user_agent(user_agent, ret):
     if IOS_REG.search(user_agent):
         ret["os"] = "ios"
     elif ANDROID_REG.search(user_agent):
@@ -117,6 +120,80 @@ def analysis_line(line):
         ret["client"] = "MB"
     else:
         ret["client"] = "other"
+
+
+def parse_cookie(cookie, ret):
+    bdid = BAIDUID_REG.search(cookie)
+    if bdid:
+        ret["baiduid"] = bdid.group("id")
+    else:
+        ret["baiduid"] = ""
+
+
+def analysis_qianxun(match, ret):
+    request = match.group("request")
+    parse_request(request, ret)
+    number_keys = ["review_num", "image_num", "tuangou_num"]
+    for number_key in number_keys:
+        if number_key in ret["query"]:
+            try:
+                ret["query"][number_key] = int(ret["query"][number_key])
+            except:
+                pass
+    user_agent = match.group("user_agent")
+    ret["user_agent"] = user_agent
+    parse_user_agent(user_agent, ret)
+    ret["status_code"] = match.group("status_code")
+    ret["cost_time"] = match.group("cost_time")
+    cookie = match.group("cookie")
+    ret["cookie"] = cookie
+    parse_cookie(cookie, ret)
+
+    referr = match.group("referr")
+    referr = urlparse.urlparse(referr)
+    ret["referr"] = referr.path
+    ret["referr_query"] = parse_query(referr.query)
+    timestamp = match.group("timestamp")
+    ret["timestamp"] = float(timestamp)
+    
+
+def analysis_mingxing(match, ret):
+    request = match.group("request")
+    parse_request(request, ret)
+    user_agent = match.group("user_agent")
+    ret["user_agent"] = user_agent
+    parse_user_agent(user_agent, ret)
+    ret["status_code"] = match.group("status_code")
+    ip = match.group("ip")
+    ret["baiduid"] = ip
+    
+    referr = match.group("referr")
+    referr = urlparse.urlparse(referr)
+    ret["referr"] = referr.path
+    ret["referr_query"] = parse_query(referr.query)
+    timestamp = match.group("time")
+    timestamp = timestamp[1:-1]
+    timestamp = timestamp.split()[0]
+    ret["timestamp"] = float(time.mktime(time.strptime(timestamp, "%d/%b/%Y:%H:%M:%S")))
+
+
+def analysis_line(line, source):
+    reg = REG_MAP.get(source)
+    if reg is None:
+        reg = BASE_REG
+    match = reg.match(line)
+    if match is None:
+        tools.log("[NOT MATCH LOG]%s" % line)
+        return
+    ret = {'source': source}
+    try:
+        if source == 'qianxun':
+            analysis_qianxun(match, ret)
+        elif source == 'mingxing':
+            analysis_mingxing(match, ret)
+    except error.ParseLineError:
+        tools.log("[ERROR LOG][%s]%s" % (source, line))
+        return
     return ret
 
 
@@ -125,8 +202,8 @@ def save_log(files):
     db = midpagedb.DateLogDb()
     error_num = 0
     log_num = 0
-    for line in iter_file(files):
-        log_line = analysis_line(line)
+    for source, line in iter_file(files):
+        log_line = analysis_line(line, source)
         if log_line:
             logs.append(log_line)
             log_num += 1
@@ -141,12 +218,16 @@ def save_log(files):
     tools.log("error log num:%s" % error_num)
 
 
-def main(date):
+def main(date, sources=None):
+    if sources:
+        sources = sources.split(',')
+    else:
+        sources = None
     midpagedb.DateLogDb.set_date(date)
-    clear_db()
-    files = get_data(date)
+    clear_db(sources)
+    files = get_data(date, sources)
     #files = ['/home/work/kgdc-statist/kgdc-statist/data/20160111/midpage/nj02-kgb-haiou1.nj02']
     tools.log("开始解析日志....")
     save_log(files)
     #开启全量统计
-    statist.main(date)
+    statist.main(date, sources=sources)

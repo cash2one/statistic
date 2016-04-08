@@ -36,8 +36,18 @@ class DateLogDb(object):
         else:
             self.collection.insert_one(logs)
 
-    def clear(self):
-        self.collection.remove()
+    def create(self):
+        self.collection.ensure_index('source')
+        self.collection.ensure_index('url')
+        self.collection.ensure_index('query.cat')
+
+    def clear(self, sources=None):
+        if sources:
+            for source in sources:
+                self.collection.remove({'source':source})
+        else:
+            self.collection.drop()
+            self.create()
 
     def distinct_count(self, field, cons):
         count = 0

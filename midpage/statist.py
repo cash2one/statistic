@@ -10,6 +10,7 @@ import midpagedb
 def get_proudcts():
     products_dir = os.path.join(conf.BASE_DIR, "midpage/products")
     products = os.listdir(products_dir)
+    products = [product for product in products if product.endswith('.py')]
     products = [product.split(".")[0] for product in products if not product.startswith("_")]
     return products
 
@@ -24,7 +25,7 @@ def run_product_module(date, module):
     product.run()
 
 
-def main(date, products=None):
+def main(date, products=None, sources=None):
     midpagedb.DateLogDb.set_date(date)
     if products:
         if type(products) != list:
@@ -39,6 +40,12 @@ def main(date, products=None):
         except:
             tools.log(u"get product module error:%s" % product)
             tools.ex()
+
+        if not hasattr(module, 'source'):
+            module.source = "qianxun"
+        if sources and module.source not in sources:
+            tools.log('[INFO]product %s source not match' % product)
+            continue
         try:
             run_product_module(date, module)
         except:
