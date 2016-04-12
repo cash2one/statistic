@@ -13,7 +13,7 @@ class BaseMongoLogDb(object):
 
     @staticmethod
     def _get_connect():
-        conn = pymongo.MongoClient(conf.MONGO_HOST, conf.MONGO_PORT)
+        conn = pymongo.MongoClient(conf.MONGO_HOST, conf.MONGO_PORT, connect=False)
         return conn
 
     def close(self):

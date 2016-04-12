@@ -156,7 +156,7 @@ class Product(base.CRMMidpageProduct):
                 'query.act':'stay_time'
             },
             'field': 'query.duration',
-            'type': 'avg'
+            'type': 'avg',
         },
         u'整体PV': {
             'index': [u'列表页PV', u'收藏页PV'],

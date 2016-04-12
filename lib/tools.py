@@ -4,6 +4,7 @@ import sys
 import time
 import traceback
 
+import tools
 from conf import conf
 import error
 
@@ -32,7 +33,7 @@ def send_email(addr, title, text, html=False, host="system", cc=""):
     cmd = "%s -u '%s' -t '%s' -m '%s' -s 'hotswap-in.baidu.com' -f '%s' -o message-charset=utf-8 %s" % (_send_email_bin, title, addr, text, host, opt)
     cmd = cmd.replace("\n", "\\n")
     cmd = cmd.encode("utf-8")
-    klib.log("Run Cmd: " + cmd)
+    tools.log("Run Cmd: " + cmd)
     os.popen(cmd)
 
 

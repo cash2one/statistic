@@ -7,6 +7,7 @@ import types
 from bson.code import Code
 
 from conf import conf
+from lib import tools
 from midpage import midpagedb
 
 class MidpageProduct(object):
@@ -87,6 +88,16 @@ class CRMMidpageProduct(object):
         },
     }
 
+    groups = [{
+        'attribute': 'file_group',
+        'type': 'file',
+        'key': 'client',
+    }, {
+        'attribute': 'index_group',
+        'type': 'index',
+        'key': 'os',
+    }]
+
     index_group = [{
         'name': 'total',
         'query': {},
@@ -104,7 +115,7 @@ class CRMMidpageProduct(object):
     }, {
         'name': 'NA',
         'query': {'client':'NA'},
-    },{
+    }, {
         'name': 'MB',
         'query': {'client':'MB'},
     }]
@@ -216,40 +227,68 @@ class CRMMidpageProduct(object):
                         query[key] = query[key][1:-1]
                         query[key] = re.compile(query[key])
 
-    def statist_group(self, match):
+    def statist_group(self, match, keys=None):
         index_map = copy.deepcopy(self.index_map)
         defaul_query = copy.deepcopy(self.defaul_query)
         self.make_regex(index_map)
         self.make_regex(defaul_query)
+        if keys is None:
+            keys = index_map.keys()
+        else:
+            try:
+                index_map = {key:index_map[key] for key in keys}
+            except KeyError as e:
+                tools.log('[ERROR]index not exists:%s' % e.message)
         #补充分组条件
-        for key, value in index_map.items():
+        for key in keys:
+            value = index_map[key]
             if 'query' in value:
                 value['query'].update(match)
                 value['query'].update(defaul_query)
 
         value_map = {}
         #开始计算指标
-        for key, value in index_map.items():
+        for key in keys:
+            value = index_map[key]
             self._statist(key, value_map, index_map)
         return value_map
 
+    def _iter_groups(self, layer=0):
+        total_layer = len(self.groups) - 1
+        group_info = self.groups[layer]
+        group_queries = getattr(self, group_info['attribute'])
+        if len(group_queries) == 0:
+            raise Exception("[ERROR]group can't be empty:%s" % group_info['attribute'])
+        for g in group_queries:
+            ret = [copy.deepcopy(g)]
+            if layer == total_layer:
+                yield ret
+            else:
+                for ext in self._iter_groups(layer + 1):
+                    tmp = copy.deepcopy(ret)
+                    yield tmp + ext
+
     def statist(self):
         ret = {}
-        if len(self.file_group) == 0:
-            raise Exception(u"file group is empty!")
-        if len(self.index_group) == 0:
-            self.index_group = [{
-                'name': 'total',
-                'query': {}
-            }]
-
-        for fg in self.file_group:
-            ret[fg['name']] = {}
-            for ig in self.index_group:
-                match = {}
-                match.update(fg['query'])
-                match.update(ig['query'])
-                ret[fg['name']][ig['name']] = self.statist_group(match)
+        for group in self._iter_groups():
+            match = {}
+            keys = None
+            for g in group:
+                match.update(g['query'])
+                if g.get('index') is not None:
+                    if keys is None:
+                        keys = g['index']
+                    else:
+                        keys = list(set(keys) & set(g['index']))
+            tmp_ret = ret
+            group_len = len(group) - 1
+            for i, g in enumerate(group):
+                if i == group_len:
+                    tmp_ret[g['name']] = self.statist_group(match, keys)
+                    break
+                elif tmp_ret.get(g['name']) is None:
+                    tmp_ret[g['name']] = {}
+                tmp_ret = tmp_ret[g['name']]
         return ret
 
     def _get_path(self):
@@ -271,18 +310,47 @@ class CRMMidpageProduct(object):
                 fp.write(row.encode('utf-8'))
                 fp.write('\n')
 
+    def get_rows(self, result, group, filename):
+        rows = []
+        group_name = []
+        index_result = result
+        for g in group:
+            group_name.append(g['name'])
+            index_result = index_result[g['name']]
+        for index in self.index_order:
+            if index in index_result:
+                group_name = copy.deepcopy(group_name)
+                row = group_name + [index]
+                row.append(index_result[index])
+                rows.append(row)
+            else:
+                group_sign = [g['name'] for g in group]
+                group_sign = ','.join(group_sign)
+                tools.log('[NOTICE]index not exist, index:%s, group:%s, file:%s' %\
+                    (index, group_sign, filename))
+        return rows
+
     def save_result(self, result):
         path = self._get_path()
-        for fg in self.file_group:
-            filename = os.path.join(path, "%s.txt" % fg['name'])
-            file_result = result[fg['name']]
-            rows = []
-            for ig in self.index_group:
-                index_result = file_result[ig['name']]
-                for index in self.index_order:
-                    row = [ig['name'], index]
-                    row.append(index_result[index])
-                    rows.append(row)
+        file_sign = self.groups[0]['type'] == 'file'
+        file_index = {}
+        for group in self._iter_groups():
+            if not file_sign:
+                filename = "total"
+                _group = group
+                _result = result
+            else:
+                filename = group[0]['name']
+                _group = group[1:]
+                _result = result[filename]
+            rows = self.get_rows(_result, _group, filename)
+            if file_index.get(filename) is None:
+                file_index[filename] = rows
+            else:
+                file_index[filename].extend(rows)
+
+        for filename, rows in file_index.items():
+            filename = os.path.join(path, '%s.txt' % filename)
             self.write_result(filename, rows)
 
     def run(self):

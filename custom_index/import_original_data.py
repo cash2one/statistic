@@ -5,6 +5,7 @@ import datetime
 
 from conf import conf
 from lib import tools
+from lib import error
 import task_db
 import data_db
 
@@ -82,7 +83,7 @@ def run_summary_cmd(date_list, task_id):
         tools.run_main_cmd("custom_summary_import", [task_id, date], "log/custom_summary_import.log")
 
 
-def main(task_id, date, replace_ftp=None):
+def run(task_id, date, replace_ftp=None):
     tools.log("[BEGIN]task id:%s, date:%s" % (task_id, date))
     task_id = int(task_id)
     task = task_db.CustomIndexTask(task_id)
@@ -94,7 +95,19 @@ def main(task_id, date, replace_ftp=None):
         ftp = replace_ftp
     else:
         ftp = task.path
-    path = get_index(task_id, date, ftp)
+    try:
+        path = get_index(task_id, date, ftp)
+    except error.DownloadError:
+        if "%s" in ftp:
+            ftp = ftp % date
+        addr = '%s@baidu.com' % task.owner
+        cc = 'kgdc-dev@baidu.com'
+        title = u'%s 指标入库失败' % task.name
+        text = u'%s 指标入库失败\n日期:%s\nftp地址:%s' %\
+            (task.name, date, ftp)
+        tools.log('[ERROR]wget error')
+        tools.send_email(addr, title, text, cc=cc)
+        exit(-1)
     #解析入库
     save_index(path, task, date)
     #获取待summary待更新日期
@@ -104,3 +117,15 @@ def main(task_id, date, replace_ftp=None):
     tools.log("[INFO]build output!")
     tools.run_main_cmd("custom_original_output", [task_id, date], "log/custom_original_output.log")
     tools.log("[END]task id:%s, date:%s" % (task_id, date))
+
+
+def main(task_id, date, replace_ftp=None):
+    try:
+        run(task_id, date, replace_ftp)
+    except:
+        tools.ex()
+        addr = 'kgdc-dev@baidu.com'
+        title = u'指标入库任务【%s】失败' % task_id
+        text = u'指标入库任务【%s】失败\n日期:%s' %\
+            (task_id, date)
+        tools.send_email(addr, title, text)
