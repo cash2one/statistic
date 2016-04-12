@@ -33,17 +33,22 @@ def group_values_time(values):
     ret = []
     start_time = None
     end_time = None
+    i = 1
     for value in values:
         if start_time is None:
+            #print "group%s:%s" % (i, value)
             start_time = value
-        elif (value - start_time) > 180:
+        elif (value - start_time) > 1800:
             if end_time is not None:
                 ret.append(end_time - start_time)
             else:
                 ret.append(0)
             start_time = value
             end_time = None
+            i += 1
+            #print "group%s:%s" % (i, value)
         else:
+            #print "group%s:%s" % (i, value)
             end_time = value
     if start_time and end_time:
         ret.append(end_time - start_time)
@@ -62,7 +67,7 @@ def group_values_rounds(values):
         count += 1
         if start_time is None:
             start_time = value
-        elif (value - start_time) > 180:
+        elif (value - start_time) > 1800:
             ret.append(count - 1)
             count = 1
             start_time = value
@@ -76,6 +81,7 @@ def group_values_rounds(values):
 def average_interaction_time(results):
     results = map_results(results)
     for key, values in results.items():
+        #print "key:%s" % key
         results[key] = group_values_time(values)
     return average(results)
 

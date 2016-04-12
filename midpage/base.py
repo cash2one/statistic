@@ -50,19 +50,23 @@ class CRMMidpageProduct(object):
             'denominator': u'pv',
             'type': 'percent',
         },
+        u'多个指标相加': {
+            'index': ['pv', '图片点击数'],
+            'type': 'add',
+        },
         u'uv': {
             'query': {},
             'distinct_key': 'baiduid',
             'type': 'distinct_count',
         },
-        u'session平均交互轮数': {
+        u'map reduce计算': {
             'query': {},
             'map': 'function () {}',
             'reduce': 'function (key, values) {}',
             'local': '<python function>',
             'type': 'map_reduce',
         },
-        u'session平均交互轮数2': {
+        u'本地计算': {
             'query': {},
             'fields': {
                 'timestamp': 1,
@@ -70,6 +74,16 @@ class CRMMidpageProduct(object):
             },
             'local': '<python function>',
             'type': 'output',
+        },
+        u'求和': {
+            'query': {},
+            'field': 'query.extend.card_num',
+            'type': 'sum',
+        },
+        u'求平均值': {
+            'query': {},
+            'field': 'query.extend.card_num',
+            'type': 'avg',
         },
     }
 
@@ -104,22 +118,25 @@ class CRMMidpageProduct(object):
         self.log_collection = self.log_db.get_collection()
 
     def _percent_statist(self, key, value_map, index_map):
-        if value_map.get(key) is not None:
-            return
         self._statist(index_map[key]['numerator'], value_map, index_map)
         self._statist(index_map[key]['denominator'], value_map, index_map)
         numerator = value_map[index_map[key]['numerator']]
         denominator = value_map[index_map[key]['denominator']]
         value_map[key] = float(numerator)/denominator if denominator else 0
 
+    def _add_statist(self, key, value_map, index_map):
+        if type(index_map[key]['index']) == types.StringType:
+            index_map[key]['index'] = [index_map[key]['index']]
+        add_result = 0
+        for add_index in index_map[key]['index']:
+            self._statist(add_index, value_map, index_map)
+            add_result += value_map[add_index]
+        value_map[key] = add_result
+
     def _count_statist(self, key, value_map, index_map):
-        if value_map.get(key) is not None:
-            return
         value_map[key] = self.log_collection.find(index_map[key]['query']).count()
 
     def _distinct_count_statist(self, key, value_map, index_map):
-        if value_map.get(key) is not None:
-            return
         if type(index_map[key]['distinct_key']) == types.StringType:
             value_map[key] = len(self.log_collection.find(index_map[key]['query'])\
                 .distinct(index_map[key]['distinct_key']))
@@ -136,20 +153,38 @@ class CRMMidpageProduct(object):
             else:
                 value_map[key] = 0
 
+    def _sum_statist(self, key, value_map, index_map):
+        value = list(self.log_collection.aggregate([
+            {'$match': index_map[key]['query']},
+            {'$group': {'_id': '', 'sum': {'$sum': '$' + index_map[key]['field']}}},
+        ]))
+        if value:
+            value_map[key] = value[0]['sum']
+        else:
+            value_map[key] = 0
+
+    def _avg_statist(self, key, value_map, index_map):
+        value = list(self.log_collection.aggregate([
+            {'$match': index_map[key]['query']},
+            {'$group': {'_id': '', 'avg': {'$avg': '$' + index_map[key]['field']}}},
+        ]))
+        if value:
+            value_map[key] = value[0]['avg']
+        else:
+            value_map[key] = 0
+
     def _map_reduce_statist(self, key, value_map, index_map):
-        if value_map.get(key) is not None:
-            return
         results = self.log_collection.map_reduce(Code(index_map[key]['map']),\
             Code(index_map[key]['reduce']), "results", query=index_map[key]['query'])
         value_map[key] = index_map[key]['local'](results.find())
 
     def _output_statist(self, key, value_map, index_map):
-        if value_map.get(key) is not None:
-            return
         results = self.log_collection.find(index_map[key]['query'], index_map[key].get('fields'))
         value_map[key] = index_map[key]['local'](results)
 
     def _statist(self, key, value_map, index_map):
+        if value_map.get(key) is not None:
+            return
         if index_map[key]['type'] == '':
             raise Exception(u"未指定指标类型")
         try:
@@ -204,7 +239,7 @@ class CRMMidpageProduct(object):
             raise Exception(u"file group is empty!")
         if len(self.index_group) == 0:
             self.index_group = [{
-                'name': '',
+                'name': 'total',
                 'query': {}
             }]
 

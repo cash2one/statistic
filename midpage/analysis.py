@@ -38,7 +38,8 @@ MINGXING_REG = re.compile(r"^(?P<ip>[0-9\.]+) (.*) (.*) (?P<time>\[.+\]) " + \
 
 REG_MAP = {
     'qianxun': BASE_REG,
-    'mingxing': MINGXING_REG,
+    'mingxing': BASE_REG,
+    #'mingxing': MINGXING_REG,
 }
 
 BAIDUID_REG = re.compile(r"BAIDUID=(?P<id>.+?);")
@@ -65,7 +66,7 @@ def get_data(date, sources=None):
         for file_name, log_ftp in log_dict.items():
             file_name = os.path.join(log_dir, file_name)
             log_ftp = log_ftp % date
-            tools.wget(log_ftp, file_name, False)
+            tools.wget(log_ftp, file_name, True)
             files.append({
                 "source": source,
                 "file_name": file_name,
@@ -103,8 +104,24 @@ def parse_request(request, ret):
     else:
         raise error.ParseLineError('parse_request error')
     request = urlparse.urlparse(request)
-    ret["url"] = request.path
-    ret["query"] = parse_query(request.query)
+    ret['url'] = request.path
+    ret['query'] = parse_query(request.query)
+    if 'duration' in ret['query']:
+        try:
+            ret['query']['duration'] = float(ret['query']['duration'])
+        except:
+            raise error.ParseLineError('duration float error')
+    if 'extend' in ret['query']:
+        try:
+            ret['query']['extend'] = json.loads(ret['query']['extend'])
+        except:
+            raise error.ParseLineError('extend json.loads error')
+        for key in ret['query']['extend']:
+            if key.endswith('_num'):
+                try:
+                    ret['query']['extend'][key] = float(ret['query']['extend'][key])
+                except:
+                    raise error.ParseLineError('[%s]extend float error' % key)
 
 
 def parse_user_agent(user_agent, ret):
@@ -187,11 +204,13 @@ def analysis_line(line, source):
         return
     ret = {'source': source}
     try:
-        if source == 'qianxun':
-            analysis_qianxun(match, ret)
-        elif source == 'mingxing':
-            analysis_mingxing(match, ret)
-    except error.ParseLineError:
+        analysis_qianxun(match, ret)
+        # if source == 'qianxun':
+        #     analysis_qianxun(match, ret)
+        # elif source == 'mingxing':
+        #     analysis_mingxing(match, ret)
+    except error.ParseLineError as e:
+        tools.log("[ParseLineError]%s" % e.message)
         tools.log("[ERROR LOG][%s]%s" % (source, line))
         return
     return ret
