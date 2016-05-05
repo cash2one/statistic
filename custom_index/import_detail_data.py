@@ -38,7 +38,11 @@ def save_index(path, task, date):
     detail_data.remove(system_key)
     fp = open(path)
     for line in fp:
-        line = line.rstrip("\r\n").decode("utf-8")
+        try:
+            line = line.rstrip("\r\n").decode("utf-8")
+        except:
+            tools.log("error line:%s" % line)
+            continue
         try:
             json_line = json.loads(line)
         except:

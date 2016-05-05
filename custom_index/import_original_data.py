@@ -122,6 +122,8 @@ def run(task_id, date, replace_ftp=None):
 def main(task_id, date, replace_ftp=None):
     try:
         run(task_id, date, replace_ftp)
+    except SystemExit:
+        pass
     except:
         tools.ex()
         addr = 'kgdc-dev@baidu.com'

@@ -77,7 +77,7 @@ class Product(base.MidpageProduct):
         #upv
         upvCol = collection.aggregate([
             {'$match':match},
-            {'$group':{'_id':{'cookie':"$cookie",'meishi_id':"$query.meishi_id"},'count':{'$sum':1}}},
+            {'$group':{'_id':{'baiduid':"$baiduid",'meishi_id':"$query.meishi_id"},'count':{'$sum':1}}},
             {'$group':{'_id':'','count':{'$sum':1}}}
         ]);
         for obj in upvCol:

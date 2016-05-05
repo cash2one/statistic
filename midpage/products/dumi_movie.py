@@ -8,6 +8,7 @@ source = 'qianxun'
 class Product(base.CRMMidpageProduct):
     defaul_query = {
         'source': 'qianxun',
+        'query.cat': 'dumi_movie',
     }
 
     index_map = {
@@ -62,18 +63,6 @@ class Product(base.CRMMidpageProduct):
             'field': 'query.duration',
             'type': 'avg',
         },
-        u'对话导流点击': {
-            'query': {
-                'query.act':'a_click_dialog_enter'
-            },
-            'type': 'count'
-        },
-        u'浮层导流点击': {
-            'query': {
-                'query.act':'a_click_hover_enter'
-            },
-            'type': 'count'
-        },
         u'影评点击': {
             'query': {
                 'query.act':'a_click_comment'
@@ -106,57 +95,6 @@ class Product(base.CRMMidpageProduct):
         },
     }
 
-    groups = [{
-        'attribute': 'file_group',
-        'type': 'file',
-        'key': 'client',
-    }, {
-        'attribute': 'type_group',
-        'type': 'index',
-        'key': 'type',
-    }, {
-        'attribute': 'index_group',
-        'type': 'index',
-        'key': 'os',
-    }]
-
-    type_group = [{
-        'name': 'sam_wise_kg_normal',
-        'query': {
-            'query.cat': 'dumi_movie_test_sam_wise_kg_normal'
-        },
-        'index': [
-            u'pv',
-            u'uv',
-            u'播放点击',
-            u'预告片点击',
-            u'更多短评点击',
-            u'更多影评点击',
-            u'切换播放源点击',
-            u'停留时长',
-            u'对话导流点击',
-            u'浮层导流点击',
-            u'影评点击',
-            u'影人点击',
-            u'下拉来源点击',
-            u'展开简介点击',
-            u'剧照点击',
-        ],
-    }, {
-        'name': 'sam_wise_kg_normal_score',
-        'query': {
-            'query.cat': 'dumi_movie_test_sam_wise_kg_normal_score'
-        },
-        'index': [
-            u'对话导流点击',
-            u'浮层导流点击',
-            u'影评点击',
-            u'影人点击',
-            u'下拉来源点击',
-            u'展开简介点击',
-            u'剧照点击',
-        ],
-    }]
 
     index_group = [{
         'name': 'total',
@@ -189,8 +127,6 @@ class Product(base.CRMMidpageProduct):
         u'更多影评点击',
         u'切换播放源点击',
         u'停留时长',
-        u'对话导流点击',
-        u'浮层导流点击',
         u'影评点击',
         u'影人点击',
         u'下拉来源点击',

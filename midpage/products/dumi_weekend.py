@@ -82,7 +82,8 @@ class Product(base.CRMMidpageProduct):
         u'列表页平均停留时间': {
             'query': {
                 'query.cat': 'dumi_weekend',
-                'query.act':'stay_time'
+                'query.act':'stay_time',
+                'query.duration': {'$lt': 1800},
             },
             'field': 'query.duration',
             'type': 'avg'
@@ -153,7 +154,8 @@ class Product(base.CRMMidpageProduct):
         u'收藏页平均停留时间': {
             'query': {
                 'query.cat': 'dumi_weekend_collect',
-                'query.act':'stay_time'
+                'query.act':'stay_time',
+                'query.duration': {'$lt': 1800},
             },
             'field': 'query.duration',
             'type': 'avg',

@@ -1,6 +1,7 @@
 # coding=utf-8
 import os
 import re
+import json
 import time
 import urlparse
 
@@ -22,6 +23,9 @@ LOG_DATAS = {
         'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/star_tongji_%s.log',
         'st01-kgb-haiou1.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou1.st01/star_tongji_%s.log',
         'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/star_tongji_%s.log',
+    },
+    'qianxun_test': {
+        #'access_log': 'ftp://cp01-rdqa04-dev111.cp01.baidu.com/home/users/wangyuntian/work/dumi-data/temp.log.%s',
     },
 }
 
@@ -65,8 +69,9 @@ def get_data(date, sources=None):
             os.makedirs(log_dir)
         for file_name, log_ftp in log_dict.items():
             file_name = os.path.join(log_dir, file_name)
-            log_ftp = log_ftp % date
-            tools.wget(log_ftp, file_name, True)
+            if '%s' in log_ftp:
+                log_ftp = log_ftp % date
+            tools.wget(log_ftp, file_name, False)
             files.append({
                 "source": source,
                 "file_name": file_name,
@@ -105,23 +110,34 @@ def parse_request(request, ret):
         raise error.ParseLineError('parse_request error')
     request = urlparse.urlparse(request)
     ret['url'] = request.path
+    if len(ret['url']) > 1024:
+        raise error.ParseLineError('url too long:%s' % ret['url'])
     ret['query'] = parse_query(request.query)
+    int_fields = ['image_num', 'review_num', 'tuangou_num']
+    for field in int_fields:
+        if field in ret['query']:
+            try:
+                ret['query'][field] = int(ret['query'][field])
+            except:
+                pass
     if 'duration' in ret['query']:
         try:
             ret['query']['duration'] = float(ret['query']['duration'])
         except:
-            raise error.ParseLineError('duration float error')
+            raise error.ParseLineError('duration float error:%s' % ret['query']['duration'])
     if 'extend' in ret['query']:
         try:
             ret['query']['extend'] = json.loads(ret['query']['extend'])
         except:
-            raise error.ParseLineError('extend json.loads error')
+            tools.ex()
+            raise error.ParseLineError('extend json.loads error:%s' % ret['query']['extend'])
         for key in ret['query']['extend']:
             if key.endswith('_num'):
                 try:
                     ret['query']['extend'][key] = float(ret['query']['extend'][key])
                 except:
-                    raise error.ParseLineError('[%s]extend float error' % key)
+                    raise error.ParseLineError('[%s]extend float error:%s' % (key,\
+                        ret['query']['extend'][key]))
 
 
 def parse_user_agent(user_agent, ret):
@@ -228,7 +244,7 @@ def save_log(files):
             log_num += 1
         else:
             error_num += 1
-        if len(logs) > 500:
+        if len(logs) > 0:
             db.insert_log(logs)
             logs = []
     if logs:

@@ -10,6 +10,7 @@ from conf import conf
 from lib import tools
 from midpage import midpagedb
 
+
 class MidpageProduct(object):
     def __init__(self, date):
         self.date = date
@@ -24,8 +25,6 @@ class MidpageProduct(object):
 
     def run(self):
         self.save_result(self.statist())
-
-
 
 
 class CRMMidpageProduct(object):
@@ -54,6 +53,11 @@ class CRMMidpageProduct(object):
         u'多个指标相加': {
             'index': ['pv', '图片点击数'],
             'type': 'add',
+        },
+        u'插值': {
+            'minuend': u'被减数',
+            'subtrahend': u'减数',
+            'type': 'sub',
         },
         u'uv': {
             'query': {},
@@ -144,25 +148,30 @@ class CRMMidpageProduct(object):
             add_result += value_map[add_index]
         value_map[key] = add_result
 
+    def _sub_statist(self, key, value_map, index_map):
+        self._statist(index_map[key]['minuend'], value_map, index_map)
+        self._statist(index_map[key]['subtrahend'], value_map, index_map)
+        minuend = value_map[index_map[key]['minuend']]
+        subtrahend = value_map[index_map[key]['subtrahend']]
+        value_map[key] = minuend - subtrahend
+
     def _count_statist(self, key, value_map, index_map):
         value_map[key] = self.log_collection.find(index_map[key]['query']).count()
 
     def _distinct_count_statist(self, key, value_map, index_map):
         if type(index_map[key]['distinct_key']) == types.StringType:
-            value_map[key] = len(self.log_collection.find(index_map[key]['query'])\
-                .distinct(index_map[key]['distinct_key']))
+            index_map[key]['distinct_key'] = [index_map[key]['distinct_key']]
+        group = {}
+        group['_id'] = {field: '$' + field for field in index_map[key]['distinct_key']}
+        value = list(self.log_collection.aggregate([
+            {'$match': index_map[key]['query']},
+            {'$group': group},
+            {'$group': {'_id': '', 'count': {'$sum': 1}}},
+        ]))
+        if value:
+            value_map[key] = value[0]['count']
         else:
-            group = {}
-            group['_id'] = {field: '$' + field for field in index_map[key]['distinct_key']}
-            value = list(self.log_collection.aggregate([
-                {'$match': index_map[key]['query']},
-                {'$group': group},
-                {'$group': {'_id': '', 'count': {'$sum': 1}}},
-            ]))
-            if value:
-                value_map[key] = value[0]['count']
-            else:
-                value_map[key] = 0
+            value_map[key] = 0
 
     def _sum_statist(self, key, value_map, index_map):
         value = list(self.log_collection.aggregate([
@@ -194,6 +203,9 @@ class CRMMidpageProduct(object):
         value_map[key] = index_map[key]['local'](results)
 
     def _statist(self, key, value_map, index_map):
+        u"""
+        统计类型总入口，具体各个类型的统计走_[type name]_statist方法
+        """
         if value_map.get(key) is not None:
             return
         if index_map[key]['type'] == '':
@@ -228,6 +240,8 @@ class CRMMidpageProduct(object):
                         query[key] = re.compile(query[key])
 
     def statist_group(self, match, keys=None):
+        u"""统计单个分组
+        """
         index_map = copy.deepcopy(self.index_map)
         defaul_query = copy.deepcopy(self.defaul_query)
         self.make_regex(index_map)
@@ -254,6 +268,8 @@ class CRMMidpageProduct(object):
         return value_map
 
     def _iter_groups(self, layer=0):
+        u"""根据self.groups，转换出各个分组
+        """
         total_layer = len(self.groups) - 1
         group_info = self.groups[layer]
         group_queries = getattr(self, group_info['attribute'])
@@ -269,6 +285,15 @@ class CRMMidpageProduct(object):
                     yield tmp + ext
 
     def statist(self):
+        u"""统计入口
+        输出形式：
+        {
+            'group01 name': {
+                'group11 name': {index map...},
+                'group12 name': {index map...},
+            },
+        }
+        """
         ret = {}
         for group in self._iter_groups():
             match = {}
@@ -300,6 +325,8 @@ class CRMMidpageProduct(object):
         return output
 
     def write_result(self, filename, rows):
+        u"""将结果输出到文件
+        """
         num = 100
         with open(filename, 'w') as fp:
             for row in rows:
@@ -311,6 +338,8 @@ class CRMMidpageProduct(object):
                 fp.write('\n')
 
     def get_rows(self, result, group, filename):
+        u"""将一个分组的输出转换成数组形式，便于后续输出到文件
+        """
         rows = []
         group_name = []
         index_result = result
