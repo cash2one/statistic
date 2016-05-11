@@ -1,18 +1,39 @@
-# coding=utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
+
+File   : task_db.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2015-12-20
+Comment:
+"""
+# 标准库
 import json
 import datetime
+# 第三方库
 
+# 自有库
 from lib import mysql_db
 from lib import error
 
+
 class CustomIndexTask(mysql_db.BaseMysqlDb):
+    u"""
+    对应custom index task表
+    """
     def __init__(self, task_id):
         super(CustomIndexTask, self).__init__()
         self._get_task_info(task_id)
 
     def _get_task_info(self, task_id):
-        sql = "select `id`,`name`,`owner`,`topic`,`routine`,`path`,\
-            `time_delta`,`hour`,`period`,`last_run_date`, `task_type` from custom_index_task where id=%s" % task_id
+        sql = "select `id`,`name`,`owner`,`topic`,`routine`,`path`, " \
+              "`time_delta`,`hour`,`period`,`last_run_date`, `task_type` from custom_index_task where id=%s" % task_id
         self.cur.execute(sql)
         line = self.cur.fetchone()
         if line is None:
@@ -36,7 +57,7 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
 
     def update_last_run_date(self, date):
         sql = "update custom_index_task set last_run_date='%s' where id=%s" %\
-            (date, self.id)
+              (date, self.id)
         self.cur.execute(sql)
         self.conn.commit()
 

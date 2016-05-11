@@ -1,11 +1,29 @@
-# coding=utf-8
-import pymongo
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
 
+File   : midpagedb.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2015-12-20
+Comment:
+"""
+# 标准库
+import pymongo
+# 第三方库
+
+# 自有库
 from conf import conf
 
 
 class DateLogDb(object):
     date = ''
+
     def __init__(self):
         self.collection_name = 'datelog_%s' % self.date
         self.conn = pymongo.MongoClient(conf.MONGO_HOST, conf.MONGO_PORT)
@@ -51,15 +69,14 @@ class DateLogDb(object):
 
     def distinct_count(self, field, cons):
         count = 0
-        obj = []
-        obj.append({'$match': cons})
+        obj = [{'$match': cons}]
 
         dist = {}
         if len(field) > 0:
             for i in field:
                 dist[i] = '$%s' % i
-        obj.append({'$group': {'_id': dist, 'count':{'$sum':1}}})
-        obj.append({'$group':{'_id':'', 'count':{'$sum':1}}})
+        obj.append({'$group': {'_id': dist, 'count': {'$sum': 1}}})
+        obj.append({'$group': {'_id': '', 'count': {'$sum': 1}}})
         cursor = self.collection.aggregate(obj, allowDiskUse=True)
         for item in cursor:
             count = item['count']

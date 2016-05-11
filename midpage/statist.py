@@ -1,7 +1,24 @@
-# coding=utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
+
+File   : statist.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2015-12-20
+Comment:
+"""
+# 标准库
 import os
 from importlib import import_module
+# 第三方库
 
+# 自有库
 from lib import tools
 from conf import conf
 import midpagedb

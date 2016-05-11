@@ -1,15 +1,33 @@
-# coding=utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
+
+File   : analysis.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2015-12-20
+Comment:
+"""
+# 标准库
 import os
 import re
 import json
 import time
 import urlparse
+# 第三方库
 
+# 自有库
 import error
 from lib import tools
 from conf import conf
 import midpagedb
 import statist
+
 
 LOG_DATAS = {
     'qianxun': {
@@ -30,20 +48,20 @@ LOG_DATAS = {
 }
 
 
-BASE_REG = re.compile(r"^([0-9\.]+) (.*) (.*) (?P<time>\[.+\]) " + \
-    r"\"(?P<request>.*)\" (?P<status_code>[0-9]{3}) (\d+) " + \
-    r"\"(?P<referr>.*)\" \"(?P<cookie>.*)\" \"(?P<user_agent>.*)\" " +\
-    r"(?P<cost_time>[0-9\.]+) ([0-9]+) ([0-9\.]+) ([0-9\.]+) (.+) (.*) " +\
-    r"\"(.*)\" (\w*) (\w*) (\d+) (?P<timestamp>[0-9\.]+)$")
+BASE_REG = re.compile(r"^([0-9\.]+) (.*) (.*) (?P<time>\[.+\]) "
+                      r"\"(?P<request>.*)\" (?P<status_code>[0-9]{3}) (\d+) "
+                      r"\"(?P<referr>.*)\" \"(?P<cookie>.*)\" \"(?P<user_agent>.*)\" "
+                      r"(?P<cost_time>[0-9\.]+) ([0-9]+) ([0-9\.]+) ([0-9\.]+) (.+) (.*) "
+                      r"\"(.*)\" (\w*) (\w*) (\d+) (?P<timestamp>[0-9\.]+)$")
 
-MINGXING_REG = re.compile(r"^(?P<ip>[0-9\.]+) (.*) (.*) (?P<time>\[.+\]) " + \
-    r"\"(?P<request>.*)\" (?P<status_code>[0-9]{3}) (\d+) " + \
-    r"\"(?P<referr>.*)\" \"(?P<user_agent>.*)\"$")
+MINGXING_REG = re.compile(r"^(?P<ip>[0-9\.]+) (.*) (.*) (?P<time>\[.+\]) "
+                          r"\"(?P<request>.*)\" (?P<status_code>[0-9]{3}) (\d+) "
+                          r"\"(?P<referr>.*)\" \"(?P<user_agent>.*)\"$")
 
 REG_MAP = {
     'qianxun': BASE_REG,
     'mingxing': BASE_REG,
-    #'mingxing': MINGXING_REG,
+    # 'mingxing': MINGXING_REG,
 }
 
 BAIDUID_REG = re.compile(r"BAIDUID=(?P<id>.+?);")
@@ -261,8 +279,8 @@ def main(date, sources=None):
     midpagedb.DateLogDb.set_date(date)
     clear_db(sources)
     files = get_data(date, sources)
-    #files = ['/home/work/kgdc-statist/kgdc-statist/data/20160111/midpage/nj02-kgb-haiou1.nj02']
+    # files = ['/home/work/kgdc-statist/kgdc-statist/data/20160111/midpage/nj02-kgb-haiou1.nj02']
     tools.log("开始解析日志....")
     save_log(files)
-    #开启全量统计
+    # 开启全量统计
     statist.main(date, sources=sources)
