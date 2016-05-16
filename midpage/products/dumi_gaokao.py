@@ -160,7 +160,7 @@ class Product(base.CRMMidpageProduct):
     }, {
         'attribute': 'page_group',
         'type': 'index',
-        'key': 'type',
+        'key': 'page',
     }, {
         'attribute': 'index_group',
         'type': 'index',
@@ -177,7 +177,7 @@ class Product(base.CRMMidpageProduct):
                     'dumi_gaokao_recommend_college',#院校精确需求推荐页面
                     'dumi_gaokao_search_major_brief',#专业泛需求推荐页面
                     'dumi_gaokao_search_major',#专业泛需求列表页面
-					'dumi_gaokao_recommend_major',#专业精确需求推荐页面
+                    'dumi_gaokao_recommend_major',#专业精确需求推荐页面
                 ],
             },
         },
@@ -193,24 +193,14 @@ class Product(base.CRMMidpageProduct):
         'index': [
             u'PV',
             u'UV',
-            u'UPV',
-            u'地区点击数',
             u'地区点击率',
-            u'专业点击数',
             u'专业点击率',
-            u'类别点击数',
             u'类别点击率',
-            u'标签点击数',
             u'标签点击率',
-            u'学校点击数',
             u'学校点击率',
-            u'志愿填报按钮点击数',
             u'志愿填报按钮点击率',
-            u'下载度秘点击数',
             u'下载度秘点击率',
-            u'关注点击数',
             u'关注点击率',
-            u'取消关注点击数',
             u'取消关注点击率',
         ],
     }, {
@@ -221,15 +211,10 @@ class Product(base.CRMMidpageProduct):
         'index': [
             u'PV',
             u'UV',
-            u'学校点击数',
-            u'学校点击率',
-            u'志愿填报按钮点击数',
+            u'学校点击率',            
             u'志愿填报按钮点击率',
-            u'度秘查看全部链接点击数',
             u'度秘查看全部链接点击率',
-            u'关注点击数',
             u'关注点击率',
-            u'取消关注点击数',
             u'取消关注点击率',
         ],
     }, {
@@ -240,15 +225,10 @@ class Product(base.CRMMidpageProduct):
         'index': [
             u'PV',
             u'UV',
-            u'学校点击数',
             u'学校专业点击率',
-            u'志愿填报按钮点击数',
             u'志愿填报按钮点击率',
-            u'度秘查看全部链接点击数',
             u'度秘查看全部链接点击率',
-            u'关注点击数',
-            u'关注点击率',
-            u'取消关注点击数',
+            u'关注点击率',          
             u'取消关注点击率',
         ],
     }, {
@@ -259,11 +239,8 @@ class Product(base.CRMMidpageProduct):
         'index': [
             u'PV',
             u'UV',
-            u'学校专业点击数',
             u'学校专业点击率',
-            u'志愿填报按钮点击数',
-            u'志愿填报按钮点击率',
-            u'度秘查看全部链接点击数',
+            u'志愿填报按钮点击率',            
             u'度秘查看全部链接点击率',
         ],
     }, {
@@ -273,10 +250,8 @@ class Product(base.CRMMidpageProduct):
         },
         'index': [
             u'PV',
-            u'UV',
-            u'学校专业点击数',
+            u'UV',            
             u'学校专业点击率',
-            u'志愿填报按钮点击数',
             u'志愿填报按钮点击率',
         ],
     },{
@@ -286,12 +261,9 @@ class Product(base.CRMMidpageProduct):
         },
         'index': [
             u'PV',
-            u'UV',
-            u'学校专业点击数',
+            u'UV', 
             u'学校专业点击率',
-            u'志愿填报按钮点击数',
             u'志愿填报按钮点击率',
-            u'度秘查看全部链接点击数',
             u'度秘查看全部链接点击率',
         ],
     }]
@@ -320,29 +292,17 @@ class Product(base.CRMMidpageProduct):
 
     index_order = [
         u'PV',
-        u'UV',
-        u'地区点击数',
+        u'UV',       
         u'地区点击率',
-        u'专业点击数',
         u'专业点击率',
-        u'类别点击数',
-        u'类别点击率',
-        u'标签点击数',
-        u'标签点击率',
-        u'学校点击数',
-        u'学校点击率',
-        u'志愿填报按钮点击数',
+        u'类别点击率',       
+        u'标签点击率',        
+        u'学校点击率',        
         u'志愿填报按钮点击率',
-        u'下载度秘点击数',
-        u'下载度秘点击率',
-        u'关注点击数',
-        u'关注点击率',
-        u'取消关注点击数',
-        u'取消关注点击率',
-        u'学校专业点击数',
+        u'下载度秘点击率',      
+        u'关注点击率',       
+        u'取消关注点击率',        
         u'学校专业点击率',
-        u'志愿填报按钮点击数',
-        u'志愿填报按钮点击率',
-        u'度秘查看全部链接点击数',
+        u'志愿填报按钮点击率',      
         u'度秘查看全部链接点击率',    
     ]
