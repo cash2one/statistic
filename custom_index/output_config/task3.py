@@ -18,7 +18,7 @@ Comment:
 
 # 自有库
 
-indexMap = {
+index_map = {
     "client": [{
         "key": "shoubai",
         "name": u"手机百度",
@@ -71,7 +71,7 @@ indexMap = {
     }]
 }
 
-colList = [
+col_list = [
     "client",
     "system",
     "@index",

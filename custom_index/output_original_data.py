@@ -29,19 +29,19 @@ def get_rows(task_id, date):
     rows = original_data.find({"@create": date, "@task": int(task_id)})
     rows = list(rows)
     if len(rows) == 0:
-        logging.error("[ERROR]original data not found!")
+        logging.fatal("[ERROR]original data not found!")
         exit(-1)
     return rows
 
 
 def get_filename(task_id, date, key=None):
-    floder = os.path.join(conf.OUTPUT_DIR, "custom_index")
-    if not os.path.exists(floder):
-        os.makedirs(floder)
+    folder = os.path.join(conf.OUTPUT_DIR, "custom_index")
+    if not os.path.exists(folder):
+        os.makedirs(folder)
     if key:
-        filename = os.path.join(floder, "%s.%s.index.%s" % (task_id, key, date))
+        filename = os.path.join(folder, "%s.%s.index.%s" % (task_id, key, date))
     else:
-        filename = os.path.join(floder, "%s.index.%s" % (task_id, date))
+        filename = os.path.join(folder, "%s.index.%s" % (task_id, date))
     return filename
 
 
@@ -60,23 +60,18 @@ def filter_index(rows, condition):
 
 
 def create_result(rows, task_id):
-    config_path = os.path.join(conf.BASE_DIR, "custom_index/output_config/task%s.py" % task_id)
-    if not os.path.exists(config_path):
-        print "task config not exists"
-        exit(-1)
     task_conf = importlib.import_module("custom_index.output_config.task%s" % task_id)
-    total_line = 1
 
     result_config = []
-    for col in task_conf.colList:
+    for col in task_conf.col_list:
         result_config_tmp = []
         if len(result_config) == 0:
-            for index in task_conf.indexMap[col]:
+            for index in task_conf.index_map[col]:
                 index["col"] = col
                 result_config_tmp.append([index])
         else:
             for c in result_config:
-                for index in task_conf.indexMap[col]:
+                for index in task_conf.index_map[col]:
                     index["col"] = col
                     c2 = copy.deepcopy(c)
                     c2.append(index)
@@ -85,7 +80,7 @@ def create_result(rows, task_id):
 
     result = {}
     for config in result_config:
-        condition = {c["col"]:c["key"] for c in config}
+        condition = {c["col"]: c["key"] for c in config}
         line = [c["name"] for c in config if c.get("filename") is None]
         filename = config[0].get("filename", "")
         if filename not in result:
@@ -117,6 +112,12 @@ def create_output(task_id, date, result):
 
 
 def main(task_id, date):
+    logging.info("[BEGIN]task id:%s, date:%s" % (task_id, date))
+    config_path = os.path.join(conf.BASE_DIR, "custom_index/output_config/task%s.py" % task_id)
+    if not os.path.exists(config_path):
+        logging.info("task config not exists")
+        exit(-1)
     rows = get_rows(task_id, date)
     result = create_result(rows, task_id)
     create_output(task_id, date, result)
+    logging.info("[END]task id:%s, date:%s" % (task_id, date))
