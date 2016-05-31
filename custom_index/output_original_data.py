@@ -1,13 +1,26 @@
-# coding=utf-8
-import os
-import json
-import copy
-import datetime
-import importlib
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
 
+File   : output_original_data.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2016-4-30
+Comment:
+"""
+# 标准库
+import os
+import copy
+import logging
+import importlib
+# 第三方库
+
+# 自有库
 from conf import conf
-from lib import tools
-import task_db
 import data_db
 
 
@@ -16,7 +29,7 @@ def get_rows(task_id, date):
     rows = original_data.find({"@create": date, "@task": int(task_id)})
     rows = list(rows)
     if len(rows) == 0:
-        tools.log("[ERROR]original data not found!")
+        logging.error("[ERROR]original data not found!")
         exit(-1)
     return rows
 

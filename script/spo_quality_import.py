@@ -1,24 +1,39 @@
-#coding=utf-8
-import os
-import sys
-import time
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
 
-from lib import tools
-from conf import conf
-import source_config
+File   : spo_quality_import.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2015-12-30
+Comment:
+"""
+# 标准库
+import time
+import logging
+# 第三方库
+
+# 自有库
 import db
 from request import Request
-import time
 
-def import_spo_data(date, delta = 1):
-    '''
+
+def import_spo_data(date, delta=1):
+    u"""
     导入spo质量效果数据，目前主要统计『总体』:
         -- module_sla: 模块稳定性
         -- fe_sla: 前端交互稳定性
-    '''
+    :param date: 
+    :param delta: 
+    :return: 
+    """
     start_time = time.mktime(time.strptime(date, "%Y%m%d"))
     index_dict = {}
-    list = []
+    arr = []
     index_dict['module_sla'] = {'pc': '9', 'wise': '33'}
     index_dict['fe_sla'] = {'pc': '27', 'wise': '34'}
     kgqc = {'host': 'kgqc.baidu.com', 'port': '80', 'url': "/statistics/api/getStatisticsForKgdc/"}   
@@ -27,8 +42,8 @@ def import_spo_data(date, delta = 1):
     for idx in index_dict:
         '''module_sla/fe_sla'''
         for client in index_dict[idx]:
-            list.append('%s' % index_dict[idx][client])
-    data['moduleId'] = ','.join(list) 
+            arr.append('%s' % index_dict[idx][client])
+    data['moduleId'] = ','.join(arr) 
 
     client = Request()
     '''回溯最近15天的数据'''
@@ -68,7 +83,7 @@ def main(date):
     try:
         time.strptime(date, "%Y%m%d")
     except:
-        tools.log(u"日期格式错误:%s" % date)
-        tools.log(u"日期必须是%Y%m%d格式")
+        logging.info(u"日期格式错误:%s" % date)
+        logging.info(u"日期必须是%Y%m%d格式")
         return
     import_spo_data(date)

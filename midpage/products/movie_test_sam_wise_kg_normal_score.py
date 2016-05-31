@@ -5,7 +5,7 @@ from midpage import base
 
 
 class Product(base.CRMMidpageProduct):
-    defaul_query = {
+    default_query = {
         'query.cat': 'dumi_movie_test_sam_wise_kg_normal_score'
     }
 

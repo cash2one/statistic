@@ -1,4 +1,22 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
+
+File   : task3.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2016-4-30
+Comment:
+"""
+# 标准库
+
+# 第三方库
+
+# 自有库
 
 indexMap = {
     "client": [{

@@ -1,33 +1,52 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
+
+File   : import_original_data.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2016-4-30
+Comment:
+"""
+# 标准库
 import os
 import json
+import logging
 import datetime
+# 第三方库
 
+# 自有库
 from conf import conf
 from lib import tools
 from lib import error
 import task_db
 import data_db
 
+MUST_KEYS = ["@index", "@value"]
+
+
 def get_index(task_id, date, ftp):
-    floder = os.path.join(conf.DATA_DIR, "custom_index/%s" % date)
-    if not os.path.exists(floder):
-        os.makedirs(floder)
-    path = os.path.join(floder, "%s.dat" % task_id)
+    folder = os.path.join(conf.DATA_DIR, "custom_index/%s" % date)
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    path = os.path.join(folder, "%s.dat" % task_id)
     if "%s" in ftp:
         ftp = ftp % date
     tools.wget(ftp, path)
     return path
 
 
-MUST_KEYS = ["@topic", "@index", "@value"]
 def check_line(json_line, topic):
     for key in MUST_KEYS:
         if key not in json_line:
-            tools.log("[ERROR]miss key:%s=>%s" % (key, json_line))
+            logging.info("[ERROR]miss key:%s=>%s" % (key, json_line))
             return False
     if json_line["@topic"] != topic:
-        tools.log("[ERROR]@topic:%s=>%s" % (topic, json_line))
+        logging.info("[ERROR]@topic:%s=>%s" % (topic, json_line))
         return False
     return True
 
@@ -43,7 +62,7 @@ def save_index(path, task, date):
         try:
             json_line = json.loads(line)
         except:
-            tools.log("[ERROR]json error:%s" % line)
+            logging.info("[ERROR]json error:%s" % line)
         if check_line(json_line, topic):
             json_line.update(system_key)
             original_data.insert(json_line)
@@ -66,7 +85,7 @@ def get_summary_date(task_id, date):
     if len(last_date) > 0:
         last_date = last_date[0]["@create"]
     else:
-        #若无更新的数据，则至明天
+        # 若无更新的数据，则至明天
         today = datetime.date.today()
         tomorrow = today + datetime.timedelta(days=1)
         last_date = tomorrow.strftime("%Y%m%d")
@@ -80,17 +99,17 @@ def get_summary_date(task_id, date):
 
 def run_summary_cmd(date_list, task_id):
     for date in date_list:
-        tools.run_main_cmd("custom_summary_import", [task_id, date], "log/custom_summary_import.log")
+        tools.run_main_cmd("custom_summary_import", [task_id, date])
 
 
 def run(task_id, date, replace_ftp=None):
-    tools.log("[BEGIN]task id:%s, date:%s" % (task_id, date))
+    logging.info("[BEGIN]task id:%s, date:%s" % (task_id, date))
     task_id = int(task_id)
     task = task_db.CustomIndexTask(task_id)
     if task.task_type != "index":
-        tools.log('[ERROR]task type is %s' % task.task_type)
+        logging.info('[ERROR]task type is %s' % task.task_type)
         exit(-1)
-    #获取数据
+    # 获取数据
     if replace_ftp:
         ftp = replace_ftp
     else:
@@ -105,18 +124,18 @@ def run(task_id, date, replace_ftp=None):
         title = u'%s 指标入库失败' % task.name
         text = u'%s 指标入库失败\n日期:%s\nftp地址:%s' %\
             (task.name, date, ftp)
-        tools.log('[ERROR]wget error')
+        logging.info('[ERROR]wget error')
         tools.send_email(addr, title, text, cc=cc)
         exit(-1)
-    #解析入库
+    # 解析入库
     save_index(path, task, date)
-    #获取待summary待更新日期
+    # 获取待summary待更新日期
     date_list = get_summary_date(task_id, date)
-    tools.log("[INFO]summary date list:%s" % date_list)
+    logging.info("[INFO]summary date list:%s" % date_list)
     run_summary_cmd(date_list, task_id)
-    tools.log("[INFO]build output!")
-    tools.run_main_cmd("custom_original_output", [task_id, date], "log/custom_original_output.log")
-    tools.log("[END]task id:%s, date:%s" % (task_id, date))
+    logging.info("[INFO]build output!")
+    tools.run_main_cmd("custom_original_output", [task_id, date])
+    logging.info("[END]task id:%s, date:%s" % (task_id, date))
 
 
 def main(task_id, date, replace_ftp=None):
@@ -125,7 +144,7 @@ def main(task_id, date, replace_ftp=None):
     except SystemExit:
         pass
     except:
-        tools.ex()
+        logging.exception('')
         addr = 'kgdc-dev@baidu.com'
         title = u'指标入库任务【%s】失败' % task_id
         text = u'指标入库任务【%s】失败\n日期:%s' %\

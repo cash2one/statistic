@@ -1,11 +1,27 @@
-# coding=utf-8
-import time
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
 
+File   : custom_original_scheduler.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2016-4-30
+Comment:
+"""
+# 标准库
+import time
+# 第三方库
+
+# 自有库
 from core.management.base import BaseCommand
 from custom_index import import_original_data
 
-class Command(BaseCommand):
 
+class Command(BaseCommand):
     def assert_argv(self, *args):
         assert len(args) >= 4
         try:

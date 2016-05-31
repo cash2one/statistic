@@ -1,13 +1,27 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
+
+File   : import_summary_data.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2016-4-30
+Comment:
+"""
+# 标准库
 import os
 import re
 import copy
 import types
-
+import logging
+# 第三方库
 from bson.code import Code
-
+# 自有库
 from conf import conf
-from lib import tools
 from midpage import midpagedb
 
 
@@ -28,9 +42,9 @@ class MidpageProduct(object):
 
 
 class CRMMidpageProduct(object):
-    defaul_query = {}
+    default_query = {}
 
-    index_map = { #example，具体类需要复写
+    index_map = {  # example，具体类需要复写
         u'pv': {
             'query': {
                 'query.cat':'dumi_meishi',
@@ -194,8 +208,9 @@ class CRMMidpageProduct(object):
             value_map[key] = 0
 
     def _map_reduce_statist(self, key, value_map, index_map):
-        results = self.log_collection.map_reduce(Code(index_map[key]['map']),\
-            Code(index_map[key]['reduce']), "results", query=index_map[key]['query'])
+        results = self.log_collection.map_reduce(
+            Code(index_map[key]['map']), Code(index_map[key]['reduce']),
+            "results", query=index_map[key]['query'])
         value_map[key] = index_map[key]['local'](results.find())
 
     def _output_statist(self, key, value_map, index_map):
@@ -243,25 +258,25 @@ class CRMMidpageProduct(object):
         u"""统计单个分组
         """
         index_map = copy.deepcopy(self.index_map)
-        defaul_query = copy.deepcopy(self.defaul_query)
+        default_query = copy.deepcopy(self.default_query)
         self.make_regex(index_map)
-        self.make_regex(defaul_query)
+        self.make_regex(default_query)
         if keys is None:
             keys = index_map.keys()
         else:
             try:
                 index_map = {key:index_map[key] for key in keys}
             except KeyError as e:
-                tools.log('[ERROR]index not exists:%s' % e.message)
-        #补充分组条件
+                logging.info('[ERROR]index not exists:%s' % e.message)
+        # 补充分组条件
         for key in keys:
             value = index_map[key]
             if 'query' in value:
                 value['query'].update(match)
-                value['query'].update(defaul_query)
+                value['query'].update(default_query)
 
         value_map = {}
-        #开始计算指标
+        # 开始计算指标
         for key in keys:
             value = index_map[key]
             self._statist(key, value_map, index_map)
@@ -355,7 +370,7 @@ class CRMMidpageProduct(object):
             else:
                 group_sign = [g['name'] for g in group]
                 group_sign = ','.join(group_sign)
-                tools.log('[NOTICE]index not exist, index:%s, group:%s, file:%s' %\
+                logging.info('[NOTICE]index not exist, index:%s, group:%s, file:%s' %\
                     (index, group_sign, filename))
         return rows
 
