@@ -36,6 +36,7 @@ class BaseCommand(object):
             log_name = os.path.join(conf.LOG_DIR, self.log_name)
         else:
             cmd = self.__class__.__module__
+            cmd = cmd.split('.')[-1]
             log_name = os.path.join(conf.LOG_DIR, cmd)
         log.init_log(log_name)
 

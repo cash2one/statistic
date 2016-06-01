@@ -114,7 +114,7 @@ def run_main_cmd(cmd, args=None):
         args = []
     args = ["'" + unicode(arg) + "'" for arg in args]
     args = " ".join(args)
-    cmd_str = "cd %s;source ~/.bash_profile;nohup %s main.py %s %s &" %\
+    cmd_str = "cd %s;source ~/.bash_profile;nohup %s main.py %s %s 1>/dev/null 2>&1 &" %\
               (base_dir, python_cmd, cmd, args)
     logging.info(cmd_str)
     os.system(cmd_str)
