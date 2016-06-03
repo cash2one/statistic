@@ -116,6 +116,7 @@ def run(task_id, date, replace_ftp=None):
         run_summary_cmd(date_list, task_id)
         logging.info("build output!")
         tools.run_main_cmd("custom_original_output", [task_id, date])
+        task.update_last_run_date(date)
     logging.info("[END]task id:%s, date:%s" % (task_id, date))
 
 

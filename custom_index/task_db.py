@@ -14,6 +14,7 @@ Comment:
 """
 # 标准库
 import json
+import time
 import datetime
 # 第三方库
 
@@ -58,8 +59,9 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
             self.period = json.loads(self.period)
 
     def update_last_run_date(self, date):
-        sql = "update %s set last_run_date='%s' where id=%s" %\
-              (self.table_name, date, self.id)
+        date = time.strftime("%Y-%m-%d", time.strptime(date, "%Y%m%d"))
+        sql = "update %s set last_run_date='%s' where id=%s and last_run_date<'%s'" %\
+              (self.table_name, date, self.id, date)
         self.cur.execute(sql)
         self.conn.commit()
 
