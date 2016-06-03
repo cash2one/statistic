@@ -6,7 +6,7 @@ from midpage import base
 source = 'qianxun'
 
 class Product(base.CRMMidpageProduct):
-    defaul_query = {
+    default_query = {
         'source': 'qianxun',
     }
 

@@ -13,9 +13,11 @@ from importlib import import_module
 from core import get_version
 from conf import conf
 
+
 def get_commands():
     u"""
     从core/commands目录下读取所有的命令
+    :return:
     """
     core_dir = os.path.join(conf.BASE_DIR, 'core')
     command_dir = os.path.join(core_dir, 'commands')
@@ -25,9 +27,12 @@ def get_commands():
     except OSError:
         return []
 
+
 def load_command_class(name):
-    """
+    u"""
     从commands中读取Command类
+    :param name:
+    :return:
     """
     module = import_module('core.commands.%s' % (name, ))
     return module.Command()
@@ -66,8 +71,8 @@ class ManagementUtility(object):
         "django-admin.py" or "manage.py") if it can't be found.
         """
         if subcommand not in get_commands():
-            sys.stderr.write("Unknown command: %r\nType '%s help' for usage.\n" % \
-                (subcommand, self.prog_name))
+            sys.stderr.write("Unknown command: %r\nType '%s help' for usage.\n" %
+                             (subcommand, self.prog_name))
             sys.exit(1)  
         klass = load_command_class(subcommand)
         return klass
@@ -81,7 +86,7 @@ class ManagementUtility(object):
         try:
             subcommand = self.argv[1]
         except IndexError:
-            subcommand = 'help' # Display help if no arguments were given.
+            subcommand = 'help'  # Display help if no arguments were given.
 
         if subcommand == 'help' or subcommand == '--help':
             if len(args) <= 2:

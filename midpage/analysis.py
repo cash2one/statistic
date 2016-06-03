@@ -18,6 +18,7 @@ import os
 import re
 import json
 import time
+import logging
 import urlparse
 # 第三方库
 
@@ -115,7 +116,7 @@ def parse_query(query):
         try:
             query = {k.decode('cp936'):v[0].decode('cp936') for k, v in query.items() if "." not in k}
         except:
-            tools.log("[ERROR QUERY]%s" % query)
+            logging.info("[ERROR QUERY]%s" % query)
             return {}
     return query
 
@@ -147,7 +148,7 @@ def parse_request(request, ret):
         try:
             ret['query']['extend'] = json.loads(ret['query']['extend'])
         except:
-            tools.ex()
+            logging.exception('')
             raise error.ParseLineError('extend json.loads error:%s' % ret['query']['extend'])
         for key in ret['query']['extend']:
             if key.endswith('_num'):
@@ -234,7 +235,7 @@ def analysis_line(line, source):
         reg = BASE_REG
     match = reg.match(line)
     if match is None:
-        tools.log("[NOT MATCH LOG]%s" % line)
+        logging.info("[NOT MATCH LOG]%s" % line)
         return
     ret = {'source': source}
     try:
@@ -244,8 +245,8 @@ def analysis_line(line, source):
         # elif source == 'mingxing':
         #     analysis_mingxing(match, ret)
     except error.ParseLineError as e:
-        tools.log("[ParseLineError]%s" % e.message)
-        tools.log("[ERROR LOG][%s]%s" % (source, line))
+        logging.info("[ParseLineError]%s" % e.message)
+        logging.info("[ERROR LOG][%s]%s" % (source, line))
         return
     return ret
 
@@ -267,8 +268,8 @@ def save_log(files):
             logs = []
     if logs:
         db.insert_log(logs)
-    tools.log("log num:%s" % log_num)
-    tools.log("error log num:%s" % error_num)
+    logging.info("log num:%s" % log_num)
+    logging.info("error log num:%s" % error_num)
 
 
 def main(date, sources=None):
@@ -280,7 +281,7 @@ def main(date, sources=None):
     clear_db(sources)
     files = get_data(date, sources)
     # files = ['/home/work/kgdc-statist/kgdc-statist/data/20160111/midpage/nj02-kgb-haiou1.nj02']
-    tools.log("开始解析日志....")
+    logging.info("开始解析日志....")
     save_log(files)
     # 开启全量统计
     statist.main(date, sources=sources)

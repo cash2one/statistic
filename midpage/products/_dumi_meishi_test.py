@@ -8,7 +8,7 @@ source = 'qianxun_test'
 
 
 class Product(base.CRMMidpageProduct):
-    defaul_query = {
+    default_query = {
         'source': 'qianxun_test',
     }
 
