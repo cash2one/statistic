@@ -1,22 +1,36 @@
-#coding=utf-8
-import os
-import sys
-import time
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
 
+File   : kpi_import.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2015-12-30
+Comment:
+"""
+# 标准库
+import os
+import time
+import logging
+# 第三方库
+
+# 自有库
 from lib import tools
 from conf import conf
 import source_config
 import db
 
-def get_pv(date):
-    '''
-    获取pv数据
-    '''
-    
+
 def get_spo_product(date):
-    '''
+    u"""
     获取维度信息：方向(spo)、类目、端(PC/WISE/DM NA/DM手百)
-    '''
+    :param date: 
+    :return: 
+    """
     pdict = {}
     stat_db = db.SelectDataBase()
     result = stat_db.get_spo_product()
@@ -31,10 +45,13 @@ def get_spo_product(date):
 
     return pdict
 
-def init_index_dict(index_list):    
-    '''
+
+def init_index_dict(index_list):
+    u"""
     初始化指标索引词典
-    '''
+    :param index_list: 
+    :return: 
+    """
     index_dict = {}
     for key in index_list:
         index_dict[key] = {'value': 0, 'last_modify_date': 0}
@@ -43,13 +60,15 @@ def init_index_dict(index_list):
    
 
 def import_spo_data(date):
-    '''
+    u"""
     导入spo kpi:
         -- pv: 总日PV
         -- pv_influence: 搜索PV覆盖率
         -- accuracy: 结果准确率
         -- se_coverage: 需求覆盖率
-    '''
+    :param date: 
+    :return: 
+    """
     index_list = ['pv', 'pv_influence', 'accuracy', 'se_coverage', 'data_amount']
     spo_product = get_spo_product(date)
     manual_kpi = get_manual_file(date, spo_product)
@@ -100,7 +119,7 @@ def import_spo_data(date):
                         if index_dict[val]['last_modify_date'] < stats['last_modify_date']:
                             index_dict[val]['last_modify_date'] = stats['last_modify_date']
                         data.append(temp)
-            #总量数据
+            # 总量数据
             for idx in index_dict:
                 temp = {}
                 temp['side'] = side
@@ -117,10 +136,15 @@ def import_spo_data(date):
     print "insert data into db"  
     ret = stat_db.save_spo_index_info(data)
 
+
 def get_pv(srcid, side, date):
-    '''
+    u"""
     根据srcid获取资源号pv
-    '''
+    :param srcid: 
+    :param side: 
+    :param date: 
+    :return: 
+    """
     res = {}
     stat_db = db.SelectDataBase()
     stats = stat_db.get_spo_srcid_stat('srcid_pv', side, date, srcid) 
@@ -130,10 +154,15 @@ def get_pv(srcid, side, date):
 
     return res
 
+
 def get_pv_influence(srcid, side, date):
-    '''
+    u"""
     根据srcid获取资源号pv影响面
-    '''
+    :param srcid: 
+    :param side: 
+    :param date: 
+    :return: 
+    """
     res = {}
     stat_db = db.SelectDataBase()
     stats = stat_db.get_spo_srcid_stat('srcid_effect', side, date, srcid) 
@@ -142,6 +171,7 @@ def get_pv_influence(srcid, side, date):
         res['last_modify_date'] = date
 
     return res
+
 
 def build_file_map(file):
     data = []
@@ -155,6 +185,7 @@ def build_file_map(file):
             data.append(list)
     return data
 
+
 def get_manual_file(date, spo):
     '''
     不在spo列表中的数据不计入data_amount
@@ -167,14 +198,14 @@ def get_manual_file(date, spo):
     try:
         tools.wget(srcftp, path)
     except:
-        tools.log(u"下载失败！")
+        logging.info(u"下载失败！")
         return 
     data = build_file_map(path)
     data_amount = 0
 
     if data:
         inidict = {}
-        #计算能够与数据库中对应起来的类目数据总量
+        # 计算能够与数据库中对应起来的类目数据总量
         for key in data:
             if key[1] != '-':
                 if key[4] == "0":
@@ -198,11 +229,12 @@ def get_manual_file(date, spo):
                 result[side][key[0]] = temp
     return result           
 
+
 def main(date):
     try:
         time.strptime(date, "%Y%m%d")
     except:
-        tools.log(u"日期格式错误:%s" % date)
-        tools.log(u"日期必须是%Y%m%d格式")
+        logging.info(u"日期格式错误:%s" % date)
+        logging.info(u"日期必须是%Y%m%d格式")
         return
     import_spo_data(date)

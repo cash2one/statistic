@@ -2,8 +2,13 @@ import createdb
 
 VERSION = (1, 0, 0, 'alpha', 0)
 
+
 def get_version(version=None):
-    """Derives a PEP386-compliant version number from VERSION."""
+    u"""
+    Derives a PEP386-compliant version number from VERSION.
+    :param version:
+    :return:
+    """
     if version is None:
         version = VERSION
     assert len(version) == 5

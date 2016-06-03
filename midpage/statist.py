@@ -1,13 +1,30 @@
-# coding=utf-8
-import os
-from importlib import import_module
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2016 Baidu.com, Inc. All Rights Reserved
+#
+#
+"""
+文件说明：
 
-from lib import tools
+File   : statist.py
+
+Authors: yangxiaotong@baidu.com
+Date   : 2015-12-20
+Comment:
+"""
+# 标准库
+import os
+import logging
+from importlib import import_module
+# 第三方库
+
+# 自有库
 from conf import conf
 import midpagedb
 
 
-def get_proudcts():
+def get_products():
     products_dir = os.path.join(conf.BASE_DIR, "midpage/products")
     products = os.listdir(products_dir)
     products = [product for product in products if product.endswith('.py')]
@@ -31,24 +48,22 @@ def main(date, products=None, sources=None):
         if type(products) != list:
             products = [products]
     else:
-        products = get_proudcts()
+        products = get_products()
 
     for product in products:
-        tools.log('[INFO]product %s statis start' % product)
+        logging.info('[INFO]product %s statis start' % product)
         try:
             module = get_product_module(product)
         except:
-            tools.log(u"get product module error:%s" % product)
-            tools.ex()
+            logging.exception(u"get product module error:%s" % product)
 
         if not hasattr(module, 'source'):
             module.source = "qianxun"
         if sources and module.source not in sources:
-            tools.log('[INFO]product %s source not match' % product)
+            logging.info('[INFO]product %s source not match' % product)
             continue
         try:
             run_product_module(date, module)
         except:
-            tools.log(u"run product module error:%s" % product)
-            tools.ex()
-        tools.log('[INFO]product %s statis end' % product)
+            logging.exception(u"run product module error:%s" % product)
+        logging.info('[INFO]product %s statis end' % product)

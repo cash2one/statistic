@@ -94,7 +94,7 @@ def average_interaction_rounds(results):
 
 
 class Product(base.CRMMidpageProduct):
-    defaul_query = {
+    default_query = {
         'source': 'mingxing'
     }
 
