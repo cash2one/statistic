@@ -146,11 +146,26 @@ class Product(base.CRMMidpageProduct):
             },
             'type': 'count',
         },
-         u'学校专业点击率': {
+        u'学校专业点击率': {
             'numerator': u'学校专业点击数',
             'denominator': u'PV',
             'type': 'percent',
         },
+        u'页面有点数': {
+            'query': {
+                'query.act':{'$ne':'pv'},
+            },
+            'type': 'count',
+        },
+        u'页面平均停留时间': {
+            'query': {
+                'query.act':'stay_time',
+                'query.duration': {'$lt': 1800},
+            },
+            'field': 'query.duration',
+            'type': 'avg',
+        },
+        
     }
 
     groups = [{
@@ -165,6 +180,10 @@ class Product(base.CRMMidpageProduct):
         'attribute': 'index_group',
         'type': 'index',
         'key': 'os',
+    }, {
+        'attribute': 'index_from',
+        'type': 'index',
+        'key': 'from',
     }]
 
     page_group = [{
@@ -193,15 +212,26 @@ class Product(base.CRMMidpageProduct):
         'index': [
             u'PV',
             u'UV',
+            u'地区点击数',
             u'地区点击率',
+            u'专业点击数',
             u'专业点击率',
+            u'类别点击数',
             u'类别点击率',
+            u'标签点击数',
             u'标签点击率',
+            u'学校点击数',
             u'学校点击率',
+            u'志愿填报按钮点击数', 
             u'志愿填报按钮点击率',
+            u'下载度秘点击数',
             u'下载度秘点击率',
+            u'关注点击数',
             u'关注点击率',
+            u'取消关注点击数', 
             u'取消关注点击率',
+            u'页面有点数',
+            u'页面平均停留时间',
         ],
     }, {
         'name': u'院校泛需求推荐页面',
@@ -211,11 +241,18 @@ class Product(base.CRMMidpageProduct):
         'index': [
             u'PV',
             u'UV',
-            u'学校点击率',            
+            u'学校点击数',
+            u'学校点击率',
+            u'志愿填报按钮点击数', 
             u'志愿填报按钮点击率',
+            u'度秘查看全部链接点击数',
             u'度秘查看全部链接点击率',
+            u'关注点击数',
             u'关注点击率',
+            u'取消关注点击数',
             u'取消关注点击率',
+            u'页面有点数',
+            u'页面平均停留时间',
         ],
     }, {
         'name': u'院校精确需求推荐页面',
@@ -225,11 +262,18 @@ class Product(base.CRMMidpageProduct):
         'index': [
             u'PV',
             u'UV',
+            u'学校专业点击数',
             u'学校专业点击率',
+            u'志愿填报按钮点击数',
             u'志愿填报按钮点击率',
+            u'度秘查看全部链接点击数',
             u'度秘查看全部链接点击率',
-            u'关注点击率',          
+            u'关注点击数',
+            u'关注点击率',
+            u'取消关注点击数', 
             u'取消关注点击率',
+            u'页面有点数',
+            u'页面平均停留时间',
         ],
     }, {
         'name': u'专业泛需求推荐页面',
@@ -239,9 +283,14 @@ class Product(base.CRMMidpageProduct):
         'index': [
             u'PV',
             u'UV',
+            u'学校专业点击数',
             u'学校专业点击率',
-            u'志愿填报按钮点击率',            
+            u'志愿填报按钮点击数',
+            u'志愿填报按钮点击率',   
+            u'度秘查看全部链接点击数',
             u'度秘查看全部链接点击率',
+            u'页面有点数',
+            u'页面平均停留时间',
         ],
     }, {
         'name': u'专业泛需求列表页面',
@@ -250,9 +299,13 @@ class Product(base.CRMMidpageProduct):
         },
         'index': [
             u'PV',
-            u'UV',            
+            u'UV',
+            u'学校专业点击数',
             u'学校专业点击率',
+            u'志愿填报按钮点击数',
             u'志愿填报按钮点击率',
+            u'页面有点数',
+            u'页面平均停留时间',
         ],
     },{
         'name': u'专业精确需求推荐页面',
@@ -262,9 +315,14 @@ class Product(base.CRMMidpageProduct):
         'index': [
             u'PV',
             u'UV', 
+            u'学校专业点击数',
             u'学校专业点击率',
+            u'志愿填报按钮点击数',
             u'志愿填报按钮点击率',
+            u'度秘查看全部链接点击数',
             u'度秘查看全部链接点击率',
+            u'页面有点数',
+            u'页面平均停留时间',
         ],
     }]
 
@@ -277,6 +335,23 @@ class Product(base.CRMMidpageProduct):
     }, {
         'name': 'android',
         'query': {'os':'android'}
+    }]
+    
+    index_from = [{
+        'name':u'全部来源 ',
+        'query':{}        
+    },{
+        'name': 'duer-NA',
+        'query': {'query.extend.from':'duer-NA'}
+    }, {
+        'name': 'duer-shoubai',
+        'query': {'query.extend.from':'duer-shoubai'}
+    }, {
+        'name': 'mms-edu',
+        'query': {'query.extend.from':'mms-edu'}
+    }, {
+        'name': u'其它',
+        'query': {'query.extend.from':{'$exists': False}}
     }]
 
     file_group = [{
@@ -293,16 +368,30 @@ class Product(base.CRMMidpageProduct):
     index_order = [
         u'PV',
         u'UV',       
+        u'地区点击数',
         u'地区点击率',
+        u'专业点击数',
         u'专业点击率',
-        u'类别点击率',       
-        u'标签点击率',        
-        u'学校点击率',        
+        u'类别点击数',
+        u'类别点击率',
+        u'标签点击数',        
+        u'标签点击率',  
+        u'学校点击数',         
+        u'学校点击率',   
+        u'志愿填报按钮点击数',        
         u'志愿填报按钮点击率',
-        u'下载度秘点击率',      
-        u'关注点击率',       
-        u'取消关注点击率',        
+        u'下载度秘点击数',
+        u'下载度秘点击率', 
+        u'关注点击数', 
+        u'关注点击率',      
+        u'取消关注点击数',
+        u'取消关注点击率',
+        u'学校专业点击数',        
         u'学校专业点击率',
-        u'志愿填报按钮点击率',      
-        u'度秘查看全部链接点击率',    
+        u'志愿填报按钮点击数',
+        u'志愿填报按钮点击率', 
+        u'度秘查看全部链接点击数',        
+        u'度秘查看全部链接点击率', 
+        u'页面有点数',
+        u'页面平均停留时间',        
     ]
