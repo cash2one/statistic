@@ -81,7 +81,7 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
     @classmethod
     def get_routine_tasks_by_hour(cls, hour):
         conn, cur = cls._get_connect()
-        sql = "select `id` from %s where routine=1 and hour=%s" % (cls.table_name, hour)
+        sql = "select `id` from %s where routine=1 and hour=%s and mark_del=0" % (cls.table_name, hour)
         cur.execute(sql)
         lines = cur.fetchall()
         lines = [line[0] for line in lines]
@@ -90,7 +90,7 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
     @classmethod
     def get_unroutine_tasks(cls):
         conn, cur = cls._get_connect()
-        sql = "select `id` from %s where routine=0 and `task_type`='index'" % cls.table_name
+        sql = "select `id` from %s where routine=0 and `type`='index' and mark_del=0" % cls.table_name
         cur.execute(sql)
         lines = cur.fetchall()
         lines = [line[0] for line in lines]

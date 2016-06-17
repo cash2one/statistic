@@ -165,6 +165,12 @@ class Product(base.CRMMidpageProduct):
             'field': 'query.duration',
             'type': 'avg',
         },
+        u'跳转到学校专业推荐数': {
+            'query': {
+                'query.act': 'jump_major',
+            },
+            'type': 'count',
+        },
         
     }
 
@@ -222,6 +228,7 @@ class Product(base.CRMMidpageProduct):
             u'标签点击率',
             u'学校点击数',
             u'学校点击率',
+            u'跳转到学校专业推荐数',
             u'志愿填报按钮点击数', 
             u'志愿填报按钮点击率',
             u'下载度秘点击数',
@@ -251,6 +258,7 @@ class Product(base.CRMMidpageProduct):
             u'关注点击率',
             u'取消关注点击数',
             u'取消关注点击率',
+            u'跳转到学校专业推荐数',
             u'页面有点数',
             u'页面平均停留时间',
         ],
@@ -272,6 +280,7 @@ class Product(base.CRMMidpageProduct):
             u'关注点击率',
             u'取消关注点击数', 
             u'取消关注点击率',
+            u'跳转到学校专业推荐数',
             u'页面有点数',
             u'页面平均停留时间',
         ],
@@ -341,14 +350,17 @@ class Product(base.CRMMidpageProduct):
         'name':u'全部来源 ',
         'query':{}        
     },{
-        'name': 'duer-NA',
+        'name': u'度秘NA',
         'query': {'query.extend.from':'duer-NA'}
     }, {
-        'name': 'duer-shoubai',
+        'name': u'度秘手百',
         'query': {'query.extend.from':'duer-shoubai'}
     }, {
-        'name': 'mms-edu',
+        'name': u'百度教育',
         'query': {'query.extend.from':'mms-edu'}
+    }, {
+        'name': u'阿拉丁',
+        'query': {'query.extend.from':'ala-dumi-will'}
     }, {
         'name': u'其它',
         'query': {'query.extend.from':{'$exists': False}}
@@ -392,6 +404,7 @@ class Product(base.CRMMidpageProduct):
         u'志愿填报按钮点击率', 
         u'度秘查看全部链接点击数',        
         u'度秘查看全部链接点击率', 
+        u'跳转到学校专业推荐数',
         u'页面有点数',
         u'页面平均停留时间',        
     ]
