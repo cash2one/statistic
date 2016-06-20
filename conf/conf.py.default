@@ -6,7 +6,7 @@ DEVELOPING = True
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
-
+LOG_DIR = os.path.join(BASE_DIR, "log")
 
 if DEVELOPING is True:
     DB_HOST = "cq01-kgdc-dev-db.epc.baidu.com"
@@ -14,7 +14,6 @@ if DEVELOPING is True:
     DB_USER = "kgdc"
     DB_PASSWORD = "kgdc"
     DB_NAME = "mvs_platform"
-
 
     MONGO_HOST = "cq01-kgdc-dev-db.epc.baidu.com"
     MONGO_PORT = 27017
@@ -26,7 +25,6 @@ else:
     DB_USER = "root"
     DB_PASSWORD = "521aladdin"
     DB_NAME = "mvs_platform"
-
 
     MONGO_HOST = "cq01-testing-ps7163.cq01.baidu.com"
     MONGO_PORT = 27017
