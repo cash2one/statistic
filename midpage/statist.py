@@ -12,6 +12,8 @@ File   : statist.py
 Authors: yangxiaotong@baidu.com
 Date   : 2015-12-20
 Comment:
+
+根据mongo里解析的nginx日志数据统计分析各个装逼
 """
 # 标准库
 import os
@@ -44,9 +46,11 @@ def run_product_module(date, module):
 
 def main(date, products=None, sources=None):
     midpagedb.DateLogDb.set_date(date)
+    # 根据命令决定是跑一个产品
     if products:
         if type(products) != list:
             products = [products]
+    # 或者跑所有midpage/products 下所有非'_'开头的产品
     else:
         products = get_products()
 

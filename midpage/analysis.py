@@ -12,6 +12,9 @@ File   : analysis.py
 Authors: yangxiaotong@baidu.com
 Date   : 2015-12-20
 Comment:
+
+从ftp地址获取线上nginx日志，解析日志，并存入mongo，
+随后等待statist.py模块对解析后的日志做指标统计.
 """
 # 标准库
 import os
@@ -78,6 +81,12 @@ def clear_db(sources):
 
 
 def get_data(date, sources=None):
+    """
+    wget数据到本地
+    :param date:
+    :param sources:
+    :return:
+    """
     files = []
     midpage_dir = os.path.join(conf.DATA_DIR, "midpage/%s" % date)
     for source, log_dict in LOG_DATAS.items():
@@ -99,6 +108,11 @@ def get_data(date, sources=None):
 
 
 def iter_file(files):
+    """
+    根据files里的配置，挨个读取文件，并按照行返回。
+    :param files:
+    :return:
+    """
     for obj in files:
         source = obj["source"]
         file_name = obj["file_name"]
@@ -230,6 +244,12 @@ def analysis_mingxing(match, ret):
 
 
 def analysis_line(line, source):
+    """
+    解析一行数据
+    :param line:
+    :param source:
+    :return:
+    """
     reg = REG_MAP.get(source)
     if reg is None:
         reg = BASE_REG
@@ -252,18 +272,26 @@ def analysis_line(line, source):
 
 
 def save_log(files):
+    """
+    解析完的数据保存至mongodb
+    :param files:
+    :return:
+    """
     logs = []
     db = midpagedb.DateLogDb()
     error_num = 0
     log_num = 0
+    # 按行循环
     for source, line in iter_file(files):
+        # 分析一行
         log_line = analysis_line(line, source)
         if log_line:
             logs.append(log_line)
             log_num += 1
         else:
             error_num += 1
-        if len(logs) > 0:
+        # 500行写一次mongo
+        if len(logs) > 500:
             db.insert_log(logs)
             logs = []
     if logs:
@@ -277,8 +305,11 @@ def main(date, sources=None):
         sources = sources.split(',')
     else:
         sources = None
+    # 设置mongo日期，在statist里面还会再设置一次
     midpagedb.DateLogDb.set_date(date)
+    # 清空现有数据库
     clear_db(sources)
+    # 根据LOG_DATAS的配置，wget下数据，返回格式 [{"source": xxx, "file_name": xxx},{……}]
     files = get_data(date, sources)
     # files = ['/home/work/kgdc-statist/kgdc-statist/data/20160111/midpage/nj02-kgb-haiou1.nj02']
     logging.info("开始解析日志....")

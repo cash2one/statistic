@@ -5,8 +5,9 @@ from conf import conf
 from midpage import base
 from midpage import midpagedb
 
+
 class Product(base.MidpageProduct):
-    #每个类别的指标项结构
+    # 每个类别的指标项结构
     def template(self):
         ret = {
             'pv':0,
@@ -36,7 +37,7 @@ class Product(base.MidpageProduct):
         }
         return ret
 
-    #整体结构
+    # 整体结构
     def getRetStruct(self):
         na = {}
         na['ios'] = self.template()
@@ -56,7 +57,7 @@ class Product(base.MidpageProduct):
         ret['total'] = total
         return ret
 
-    #数据库查询构建函数
+    # 数据库查询构建函数
     def getInfo(self,collection,match,groupList):
         commandList = []
         commandList.append({'$match':match})
@@ -65,7 +66,7 @@ class Product(base.MidpageProduct):
         ret = collection.aggregate(commandList);
         return ret
 
-    #指标计算
+    # 指标计算
     def indexCount(self, collection, dataset):
         ret = self.template()
         #pv

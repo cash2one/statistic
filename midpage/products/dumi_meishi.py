@@ -1,10 +1,8 @@
 # coding=utf-8
-import os
 
 from midpage import base
 
 source = 'qianxun'
-
 
 
 class Product(base.CRMMidpageProduct):
@@ -12,7 +10,7 @@ class Product(base.CRMMidpageProduct):
         'source': 'qianxun',
     }
 
-    index_map = { #example，具体类需要复写
+    index_map = {
         u'PV': {
             'query': {
                 'query.act': 'pv',
