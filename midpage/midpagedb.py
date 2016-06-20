@@ -81,3 +81,35 @@ class DateLogDb(object):
         for item in cursor:
             count = item['count']
         return count
+
+
+class FrontMongoDb(object):
+    """
+    用于推送数据到kgdc前台展现数据库，
+    同时推到表original_data 和 daily_summary_data
+    original_data在前台用于原始推送数据
+    daily_summary_data，对于周级数据，会填满每一天的然后推送到该表（这些操作在前台程序处理），对于天级数据，直接推送。
+    此处都按照天级推送
+    xulei12@baidu.com 2016.06.20
+    """
+    def __init__(self):
+        self.conn = pymongo.MongoClient(conf.MONGO_HOST, conf.MONGO_PORT)
+        self.db = self.conn[conf.MONGO_FONT_DB]
+        self.collection_origin = self.db["original_data"]
+        self.collection_summary = self.db["daily_summary_data"]
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        if self.conn:
+            self.conn.close()
+            self.conn = None
+
+    def insert(self, data):
+        if type(data) == list:
+            self.collection_origin.insert_many(data)
+            self.collection_summary.insert_many(data)
+        else:
+            self.collection_origin.insert_one(data)
+            self.collection_summary.insert_one(data)

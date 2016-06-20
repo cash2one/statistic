@@ -16,6 +16,7 @@ Comment:
 import os
 import re
 import copy
+import json
 import types
 import logging
 # 第三方库
@@ -334,6 +335,10 @@ class CRMMidpageProduct(object):
             raise Exception("[ERROR]group can't be empty:%s" % group_info["attribute"])
         for g in group_queries:
             ret = [copy.deepcopy(g)]
+            # added by xulei12@baidu.com 2016.6.20 增加一个key字段，推送到mongo用
+            for item in ret:
+                item["key"] = group_info["key"]
+            # add ended
             if layer == total_layer:
                 yield ret
             else:
@@ -352,6 +357,10 @@ class CRMMidpageProduct(object):
         }
         """
         ret = {}
+        # added by xulei12@baidu.com 2016.6.20 推送到kgdc前台mongo
+        ret_for_front = []
+        # add ended
+
         # 将各级别的query字段合成一个query，并将所有的key合成一个list
         for group in self._iter_groups():
             match = {}
@@ -372,7 +381,9 @@ class CRMMidpageProduct(object):
                 if tmp_ret.get(item["name"]) is None:
                     tmp_ret[item["name"]] = {}
                 tmp_ret = tmp_ret[item["name"]]
-            tmp_ret[group[-1]["name"]] = self.statist_group(match, keys)
+            index_json = self.statist_group(match, keys)
+            tmp_ret[group[-1]["name"]] = index_json
+
             # group_len = len(group) - 1
             # for i, g in enumerate(group):
             #     if i == group_len:
@@ -381,7 +392,11 @@ class CRMMidpageProduct(object):
             #     elif tmp_ret.get(g["name"]) is None:
             #         tmp_ret[g["name"]] = {}
             #     tmp_ret = tmp_ret[g["name"]]
-        return ret
+
+            # added by xulei12@baidu.com 2016.6.20 推送到kgdc前台mongo
+            ret_for_front.extend(self.format_index_for_mongo(index_json, group))
+            # add ended
+        return ret, ret_for_front
 
     def _get_path(self):
         date = self.date
@@ -453,5 +468,53 @@ class CRMMidpageProduct(object):
             filename = os.path.join(path, "%s.txt" % filename)
             self.write_result(filename, rows)
 
+    def save_for_kgdc(self, result):
+        # 根据product名字，创建文件夹，并返回路径
+        module_name = self.__module__.split(".")[-1]
+        path = os.path.join(conf.OUTPUT_DIR, "kgdc/%s" % module_name)
+        if not os.path.exists(path):
+            os.makedirs(path)
+        file_name = os.path.join(path, "%s.txt" % self.date)
+        with open(file_name, "w") as fp:
+            for row in result:
+                try:
+                    fp.write(json.dumps(row, ensure_ascii=False).encode("utf-8"))
+                except Exception as e :
+                    print row
+                    print json.dumps(row)
+                    print json.dumps(row, ensure_ascii=False)
+                    print type(json.dumps(row, ensure_ascii=False))
+                fp.write("\n")
+
+    def format_index_for_mongo(self, index_json, group):
+        """
+        将每个group计算出来的指标，json格式，加上group信息，组成kgdc需要的前台对应字符串
+        xulei12@baidu.com 2016.6.20
+        :param index_json: 指标字符串,举例 {"pv": 1200, "uv": 3600}
+        :param group: group结构定义，举例
+         [
+         {'query': {'client': 'NA'}, 'name': 'NA', 'key': 'client'},
+        {'query': {}, 'name': 'total', 'key': 'os'}
+        ]
+        :return: 举例{'pv': 1200, 'client': 'NA', 'os': 'total', 'uv': 3600}
+        """
+        ret = []
+        group_json = {}
+        for group_item in group:
+            group_json[group_item["key"]] = group_item["name"]
+
+        for key, value in index_json.items():
+            index_item = dict()
+            index_item["@index"] = key
+            index_item["@value"] = value
+            index_item.update(group_json)
+            ret.append(index_item)
+
+        return ret
+
     def run(self):
-        self.save_result(self.statist())
+        # modified by xulei12@baidu.com 2016.6.20
+        index_result, index_kgdc = self.statist()
+        self.save_result(index_result)
+        self.save_for_kgdc(index_kgdc)
+        # modify ended

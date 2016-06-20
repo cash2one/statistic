@@ -3,9 +3,11 @@ import pymongo
 
 from conf import conf
 
+
 class BaseMongoLogDb(object):
     DB_NAME = conf.MONGO_DB
     COLLECTION_NAME = ""
+
     def __init__(self):
         self.conn = self._get_connect()
         self.db = self.conn[self.DB_NAME]
