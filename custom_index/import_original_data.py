@@ -42,7 +42,11 @@ def save_index(path, task, date):
             logging.error("json error:%s" % line)
         if base.check_line(json_line, MUST_KEYS):
             json_line.update(system_key)
-            original_data.insert(json_line)
+            try:
+                original_data.insert(json_line)
+            except:
+                tools.log("%s" % json_line)
+                raise
 
 
 def get_summary_date(task_id, date):

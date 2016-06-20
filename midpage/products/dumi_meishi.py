@@ -231,6 +231,11 @@ class Product(base.CRMMidpageProduct):
             'denominator': u'榜单卡片展现数',
             'type': 'percent',
         },
+        u'榜单卡片点击率': {
+            'numerator': u'榜单卡片点击数',
+            'denominator': u'PV',
+            'type': 'percent',
+        },
         u'回到顶部icon点击数': {
             'query': {
                 'query.act': 'b_click_top',
@@ -374,6 +379,7 @@ class Product(base.CRMMidpageProduct):
             u'榜单卡片点击数',
             u'榜单卡片展现数',
             u'榜单卡片点展比',
+            u'榜单卡片点击率',
             u'页面平均停留时间',
         ],
     }]
@@ -422,6 +428,7 @@ class Product(base.CRMMidpageProduct):
         u'餐厅点击率',
         u'餐厅点展比',
         u'榜单卡片点展比',
+        u'榜单卡片点击率',
         u'回到顶部icon点击率',
         u'页面平均停留时间',
     ]

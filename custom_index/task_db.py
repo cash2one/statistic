@@ -15,6 +15,7 @@ Comment:
 # 标准库
 import json
 import time
+import logging
 import datetime
 # 第三方库
 
@@ -60,8 +61,9 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
 
     def update_last_run_date(self, date):
         date = time.strftime("%Y-%m-%d", time.strptime(date, "%Y%m%d"))
-        sql = "update %s set last_run_date='%s' where id=%s and last_run_date<'%s'" %\
+        sql = "update %s set last_run_date='%s' where id=%s and (last_run_date<'%s' or last_run_date is null)" %\
               (self.table_name, date, self.id, date)
+        logging.info(sql)
         self.cur.execute(sql)
         self.conn.commit()
 
@@ -79,7 +81,7 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
     @classmethod
     def get_routine_tasks_by_hour(cls, hour):
         conn, cur = cls._get_connect()
-        sql = "select `id` from %s where routine=1 and hour=%s" % (cls.table_name, hour)
+        sql = "select `id` from %s where routine=1 and hour=%s and mark_del=0" % (cls.table_name, hour)
         cur.execute(sql)
         lines = cur.fetchall()
         lines = [line[0] for line in lines]
@@ -88,7 +90,7 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
     @classmethod
     def get_unroutine_tasks(cls):
         conn, cur = cls._get_connect()
-        sql = "select `id` from %s where routine=0 and `task_type`='index'" % cls.table_name
+        sql = "select `id` from %s where routine=0 and `type`='index' and mark_del=0" % cls.table_name
         cur.execute(sql)
         lines = cur.fetchall()
         lines = [line[0] for line in lines]
