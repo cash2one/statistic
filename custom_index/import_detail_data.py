@@ -22,7 +22,7 @@ import base
 import task_db
 import data_db
 
-MUST_KEYS = ["@topic"]
+MUST_KEYS = []
 
 
 def save_index(path, task, date):
