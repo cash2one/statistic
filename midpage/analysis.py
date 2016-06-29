@@ -23,6 +23,7 @@ import json
 import time
 import logging
 import urlparse
+from multiprocessing import Process
 # 第三方库
 
 # 自有库
@@ -31,6 +32,7 @@ from lib import tools
 from conf import conf
 import midpagedb
 import statist
+
 
 
 LOG_DATAS = {
@@ -113,12 +115,9 @@ def iter_file(files):
     :param files:
     :return:
     """
-    for obj in files:
-        source = obj["source"]
-        file_name = obj["file_name"]
-        for line in open(file_name):
-            line = line.rstrip("\r\n").decode("utf-8")
-            yield source, line
+    for line in open(files):
+        line = line.rstrip("\r\n").decode("utf-8")
+        yield line
 
 
 def parse_query(query):
@@ -271,19 +270,19 @@ def analysis_line(line, source):
     return ret
 
 
-def save_log(files):
+def process_file(source, file_name):
     """
     解析完的数据保存至mongodb
-    :param files:
+    :param source:
+    :param file_name:
     :return:
     """
-    logs = []
     db = midpagedb.DateLogDb()
     error_num = 0
     log_num = 0
-    # 按行循环
-    for source, line in iter_file(files):
-        # 分析一行
+    logs = []
+    for line in iter_file(file_name):
+            # 分析一行
         log_line = analysis_line(line, source)
         if log_line:
             logs.append(log_line)
@@ -298,6 +297,24 @@ def save_log(files):
         db.insert_log(logs)
     logging.info("log num:%s" % log_num)
     logging.info("error log num:%s" % error_num)
+
+
+def save_log(files):
+    """
+    解析完的数据保存至mongodb
+    :param files:
+    :return:
+    """
+    plist = []
+    for obj in files:
+        source = obj["source"]
+        file_name = obj["file_name"]
+        p = Process(target=process_file, args=(source, file_name))
+        plist.append(p)
+        p.start()
+
+    for p in plist:
+        p.join()
 
 
 def main(date, sources=None):
