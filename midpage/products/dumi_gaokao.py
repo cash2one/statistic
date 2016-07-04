@@ -158,7 +158,7 @@ class Product(base.CRMMidpageProduct):
         },
         u'页面平均停留时间': {
             'query': {
-                'query.act' : 'stay_time',
+                'query.act': 'stay_time',
                 'query.duration': {'$lt': 1800},
             },
             'field': 'query.duration',

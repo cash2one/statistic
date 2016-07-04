@@ -352,19 +352,21 @@ def save_log(files):
     :param files:
     :return:
     """
-    # plist = []
-    pool = Pool(processes=10)
+    plist = []
+    # pool = Pool(processes=10)
     for obj in files:
         source = obj["source"]
         file_name = obj["file_name"]
-        pool.apply_async(process_file, (source, file_name))     # 维持执行的进程总数为10
-        # p = Process(target=process_file, args=(source, file_name))
-        # plist.append(p)
-        # p.start()
-    # for p in plist:
-        # p.join()
-    pool.close()
-    pool.join()
+        # pool.apply_async(process_file, (source, file_name))     # 维持执行的进程总数为10
+        p = Process(target=process_file, args=(source, file_name))
+        plist.append(p)
+        p.start()
+
+    for p in plist:
+        p.join()
+
+    # pool.close()
+    # pool.join()
 
 
 def main(date, sources=None):
