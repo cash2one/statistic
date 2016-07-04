@@ -54,25 +54,48 @@ def build_srcid_map(srcid_path, all_pv):
     
 
 def import_data(date, side, path):
+    """
+    xulei12@baidu.com
+    2016-07-04 大搜PV数据获取不到，改写逻辑
+    :param date:
+    :param side:
+    :param path:
+    :return:
+    """
     pv_ftp = convert_path(source_config.SPO_SRC[side]["pv"], date)
     srcid_ftp = convert_path(source_config.SPO_SRC[side]["srcid"], date)
     pv_path = os.path.join(path, "pv.%s" % source_config.SIDE_NAME[side])
     srcid_path = os.path.join(path, "srcid.%s" % source_config.SIDE_NAME[side])
+    pv_success = True
     try:
+        # 获取大搜PV数据
         tools.wget(pv_ftp, pv_path)
+    except:
+        logging.info(u"下载PV数据失败！")
+        pv_success = False
+    try:
         tools.wget(srcid_ftp, srcid_path)
     except:
-        logging.info(u"下载失败！")
+        logging.info(u"下载srcid数据失败！")
         return
-    pv = open(pv_path).read().rstrip("\r\n")
-    pv = float(pv)
+
+    if pv_success:
+        pv = open(pv_path).read().rstrip("\r\n")
+        pv = float(pv)
+    else:
+        pv = None
+
     srcid_query_map, srcid_pv_map, srcid_effect_map = build_srcid_map(srcid_path, pv)
+
     stat_db = db.SaveDataBase(date, side)
     stat_db.clear_spo_srcid_stat()
     stat_db.save_spo_srcid_stat("srcid_pv", srcid_pv_map.items())
     logging.info("srcid_pv number:%s" % len(srcid_pv_map))
-    stat_db.save_spo_srcid_stat("srcid_effect", srcid_effect_map.items())
-    logging.info("srcid_effect number:%s" % len(srcid_effect_map))
+    if srcid_effect_map:
+        stat_db.save_spo_srcid_stat("srcid_effect", srcid_effect_map.items())
+        logging.info("srcid_effect number:%s" % len(srcid_effect_map))
+    else:
+        logging.info("there is no srcid_effect data")
     stat_db.clear_spo_query_stat()
     query_stat_list = []
     for srcid, query_pv_list in srcid_query_map.items():
