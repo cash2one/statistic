@@ -346,7 +346,7 @@ class Product(base.CRMMidpageProduct):
     }]
     
     index_from = [{
-        'name':u'全部来源 ',
+        'name':u'全部来源',
         'query':{}        
     },{
         'name': u'度秘NA',

@@ -58,6 +58,8 @@ class DateLogDb(object):
         self.collection.ensure_index('source')
         self.collection.ensure_index('url')
         self.collection.ensure_index('query.cat')
+        self.collection.create_index([('query.act', pymongo.ASCENDING),
+                                                ('query.cat', pymongo.ASCENDING)])
 
     def clear(self, sources=None):
         if sources:

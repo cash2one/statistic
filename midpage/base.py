@@ -384,15 +384,6 @@ class CRMMidpageProduct(object):
             index_json = self.statist_group(match, keys)
             tmp_ret[group[-1]["name"]] = index_json
 
-            # group_len = len(group) - 1
-            # for i, g in enumerate(group):
-            #     if i == group_len:
-            #         tmp_ret[g["name"]] = self.statist_group(match, keys)
-            #         break
-            #     elif tmp_ret.get(g["name"]) is None:
-            #         tmp_ret[g["name"]] = {}
-            #     tmp_ret = tmp_ret[g["name"]]
-
             # added by xulei12@baidu.com 2016.6.20 推送到kgdc前台mongo
             ret_for_front.extend(self.format_index_for_mongo(index_json, group))
             # add ended
@@ -477,13 +468,7 @@ class CRMMidpageProduct(object):
         file_name = os.path.join(path, "%s.txt" % self.date)
         with open(file_name, "w") as fp:
             for row in result:
-                try:
-                    fp.write(json.dumps(row, ensure_ascii=False).encode("utf-8"))
-                except Exception as e :
-                    print row
-                    print json.dumps(row)
-                    print json.dumps(row, ensure_ascii=False)
-                    print type(json.dumps(row, ensure_ascii=False))
+                fp.write(json.dumps(row, ensure_ascii=False).encode("utf-8"))
                 fp.write("\n")
 
     def format_index_for_mongo(self, index_json, group):
@@ -496,7 +481,7 @@ class CRMMidpageProduct(object):
          {'query': {'client': 'NA'}, 'name': 'NA', 'key': 'client'},
         {'query': {}, 'name': 'total', 'key': 'os'}
         ]
-        :return: 举例{'pv': 1200, 'client': 'NA', 'os': 'total', 'uv': 3600}
+        :return: 举例[{'@index':'pv', '@value': 1200, 'client': 'NA', 'os': 'total'},.....]
         """
         ret = []
         group_json = {}
@@ -504,9 +489,10 @@ class CRMMidpageProduct(object):
             group_json[group_item["key"]] = group_item["name"]
 
         for key, value in index_json.items():
-            index_item = dict()
-            index_item["@index"] = key
-            index_item["@value"] = value
+            index_item = {
+                '@index': key,
+                '@value': value
+            }
             index_item.update(group_json)
             ret.append(index_item)
 
