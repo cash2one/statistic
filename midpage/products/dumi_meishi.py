@@ -255,6 +255,40 @@ class Product(base.CRMMidpageProduct):
             'field': 'query.duration',
             'type': 'avg',
         },
+        u'到店付买单点击数': {
+            'query': {
+                'query.act': 'a_click_daodianfu',
+            },
+            'type': 'count',
+        },
+        u'到店付买单点击率': {
+            'numerator': u'到店付买单点击数',
+            'denominator': u'PV',
+            'type': 'percent',
+        },
+        u'到店付卡片点击数': {
+            'query': {
+                'query.act': 'a_click_daodianfu_card',
+            },
+            'type': 'count',
+        },
+        u'到店付卡片点击率': {
+            'numerator': u'到店付卡片点击数',
+            'denominator': u'PV',
+            'type': 'percent',
+        },
+        u'到店付信息展现数': {
+            'query': {
+                'query.act': 'pv',
+            },
+            'field': 'query.daodianfu_num',
+            'type': 'sum',
+        },
+        u'到店付信息展现率': {
+            'numerator': u'到店付信息展现数',
+            'denominator': u'PV',
+            'type': 'percent',
+        },
     }
 
     groups = [{
@@ -324,6 +358,12 @@ class Product(base.CRMMidpageProduct):
             u'相关评价tag整体点击数',
             u'相关评价tag整体点击率',
             u'页面平均停留时间',
+            u'到店付买单点击数',
+            u'到店付买单点击率',
+            u'到店付卡片点击数',
+            u'到店付卡片点击率',
+            u'到店付信息展现数',
+            u'到店付信息展现率',
         ],
     }, {
         'name': u'菜品推荐页',
@@ -431,4 +471,10 @@ class Product(base.CRMMidpageProduct):
         u'榜单卡片点击率',
         u'回到顶部icon点击率',
         u'页面平均停留时间',
+        u'到店付买单点击数',
+        u'到店付买单点击率',
+        u'到店付卡片点击数',
+        u'到店付卡片点击率',
+        u'到店付信息展现数',
+        u'到店付信息展现率',
     ]
