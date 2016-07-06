@@ -40,6 +40,7 @@ def save_index(path, task, date, time_span=None):
     sub_project = task.sub_project_id
     system_key = {"@task": task.id, "@subProject": sub_project}
     timely_data = data_db.TimelyData()
+    timely_data_latest = data_db.TimelyDateLatest()
     # 清空数据流程，手动任务会进入该流程
     if time_span and len(time_span) >= 2:
         # 构造清空的query
@@ -68,9 +69,25 @@ def save_index(path, task, date, time_span=None):
             try:
                 # logging.info("%s" % json.dumps(update_query, ensure_ascii=False))
                 # logging.info("%s" % json.dumps(json_line, ensure_ascii=False))
-                timely_data.update(update_query, json_line)
+                timely_data.update(update_query, json_line, True)
             except:
-                logging.warning("%s" % json_line)
+                logging.warning("write to timely_data error,\n%s" % json_line)
+                raise
+
+            # 更新最新指标值库
+            update_query = {"@subProject": sub_project, "@index": json_line["@index"]}
+            try:
+                ret = timely_data_latest.find(update_query)
+                ret = list(ret)
+                # 之前没有该指标，就直接插入
+                if len(ret) == 0:
+                    timely_data_latest.insert(json_line)
+                # 否则，如果已存储指标比现在的旧，更新
+                else:
+                    update_query["@create"] = {"$lte": json_line["@create"]}
+                    timely_data_latest.update(update_query, json_line, False)
+            except:
+                logging.warning("write to timely_data_latest error,\n%s" % json_line)
                 raise
 
 
