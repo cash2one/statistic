@@ -28,6 +28,14 @@ class DailySummaryData(mongo_db.BaseMongoFontDb):
     COLLECTION_NAME = "daily_summary_data"
 
 
+class TimelyData(mongo_db.BaseMongoFontDb):
+    COLLECTION_NAME = "timely_data"
+
+
+class TimelyDateLatest(mongo_db.BaseMongoFontDb):
+    COLLECTION_NAME = "timely_data_latest"
+
+
 class DetailData(mongo_db.BaseMongoFontDb):
     def __init__(self, date):
         month = date[:-2]

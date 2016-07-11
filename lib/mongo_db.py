@@ -38,6 +38,9 @@ class BaseMongoLogDb(object):
         else:
             self.collection.insert_one(data)
 
+    def update(self, query, data, upsert=False):
+            self.collection.replace_one(query, data, upsert=upsert)
+
     def _clear(self):
         self.collection.remove()
 
