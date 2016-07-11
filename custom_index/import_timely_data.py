@@ -91,7 +91,7 @@ def save_index(path, task, date, time_span=None):
                 raise
 
 
-def run(task_id, date, replace_ftp=None, time_span=None):
+def run(task_id, date, time_span=None, replace_ftp=None):
     """
     如果不指定replace_ftp，则使用默认的地址配置。
     如果不指定time_span， 则表示周期自动任务，不走清空流程
@@ -138,16 +138,18 @@ def run(task_id, date, replace_ftp=None, time_span=None):
         tools.send_email(addr, title, text, cc=cc)
         exit(-1)
     else:
+        # 时效性指标的日期格式，只是在存储入库的时候更改格式。
+        date = time.strftime("%Y-%m-%d", time.strptime(date, "%Y%m%d"))
         # 解析入库
         save_index(path, task, date, time_span)
         # 更新最近运行时间
-        task.update_last_run_date(date, update_time)
+        task.update_last_run_time(date, update_time)
     logging.info("[END]task id:%s, date:%s, time:%s" % (task_id, date, update_time))
 
 
-def main(task_id, date, replace_ftp=None, time_span=None):
+def main(task_id, date, time_span=None, replace_ftp=None):
     try:
-        run(task_id, date, replace_ftp, time_span)
+        run(task_id, date, time_span, replace_ftp)
     except SystemExit:
         pass
     except:

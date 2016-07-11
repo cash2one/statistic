@@ -45,7 +45,7 @@ def check_line(json_line, must_keys):
 
 def merge_date_time(str_date, str_time):
     """
-    将20160706与15:33合并成 20160706 15:33
+    将2016-07-06与15:33合并成 2016-07-06 15:33
     xulei12@baidu.com
     2016.07.06
     :param str_date:
@@ -57,16 +57,17 @@ def merge_date_time(str_date, str_time):
 
 def date_time_str2utc(str_date, str_time):
     """
-    将20160706 05:00 这样的北京时间，转换为utc时间格式    2016-07-05 21:00
+    将2016-07-06 05:00 这样的北京时间，转换为utc时间格式    2016-07-05 21:00
     xulei12@baidu.com
     2016.07.06
-    :param str_date: 20160706
+    :param str_date: 2016-07-06
     :param str_time: 05:00
     :return:返回值为一个datetime类，但是可以直接打印或使用，格式为  2016-07-05 21:00
     """
-    year = int(str_date[0:4])
-    month = int(str_date[4:6])
-    day = int(str_date[6:8])
+    list_date = str_date.split("-")
+    year = int(list_date[0])
+    month = int(list_date[1])
+    day = int(list_date[2])
     str_time = str_time.split(":")
     hour = int(str_time[0])
     minute = int(str_time[1])

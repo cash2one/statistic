@@ -67,6 +67,15 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
               (self.table_name, str_date, self.id, str_date)
         logging.info(sql)
         self.cur.execute(sql)
+        self.conn.commit()
+
+    def update_last_run_time(self, update_date, update_time="00:00"):
+        """
+        此处的date格式为2016-07-06
+        :param update_date:
+        :param update_time:
+        :return:
+        """
         # 增加了一个精确到分钟的更新时间。为考虑兼容性，原有天级暂时不删除
         str_time = base.date_time_str2utc(update_date, update_time)
         sql = "update %s set last_run_time='%s' where id=%s and (last_run_time<'%s' or last_run_time is null)" %\

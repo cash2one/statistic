@@ -47,14 +47,14 @@ class Command(BaseCommand):
                 date_format = False
             assert date_format
 
-    def handle(self, task_id, date, ftp=None, time_span=None, *args):
+    def handle(self, task_id, date, time_span=None, ftp=None, *args):
         u"""params:
     task_id 导入任务id
     date  %Y%m%d格式日期
-    ftp 下载数据的地址，可选
     time_span 导入的时间区间,格式 14:22-15:30 可选
+    ftp 下载数据的地址，可选
         """
         if time_span:
             time_span = time_span.split("-")
-        import_timely_data.main(task_id, date, ftp, time_span)
+        import_timely_data.main(task_id, date, time_span, ftp)
 
