@@ -96,16 +96,21 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
         raise error.Error("unknown period type")
 
     def if_run_now(self):
-        now = datetime.datetime.now()
         # 为时效性任务
-        if self.task_type == "timely":
-            # 现在时间大于首次运行时间
-            str_now = "%s:%s" % (now.hour, now.minute)
-            if str_now > self.period["first"]:
-                # 距离上次运行时间大于运行间隔
-                last = base.utc_str2date_time(self.last_run_time)
-                if now - last > datetime.timedelta(minutes=self.period["interval"]):
-                    return True
+        if self.task_type != "timely":
+            return False
+
+        # 统一换算为分钟数
+        ts_now = int(time.time()/60)
+        # 计算首次运行的ts分钟
+        today = datetime.date.today()
+        first_time = str(today)+" "+self.period["first"]
+        first_time = time.strptime(first_time, "%Y-%m-%d %H:%M")
+        first_ts = int(time.mktime(first_time)/60)
+        # 现在时间大于首次运行时间
+        if ts_now >= first_ts:
+            if (ts_now-first_ts) % (self.period["interval"]) == 0:
+                return True
         return False
 
     @classmethod
