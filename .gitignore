@@ -31,3 +31,6 @@ data
 
 #config
 conf/conf.py
+
+# temp file
+*.zip
