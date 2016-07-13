@@ -35,3 +35,4 @@ echo "压缩完毕：new.zip"
 echo "完成。传送到本地"
 
 sz -be old.zip new.zip
+rm old.zip new.zip
