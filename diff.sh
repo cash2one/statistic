@@ -1,4 +1,4 @@
-#!/bin/bashi
+#!/bin/bash
 # xulei12@baidu.com 2016.7.13 
 # 比较当前git库当前分支上2个版本的差异，并打包成2个压缩包
 
