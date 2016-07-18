@@ -55,6 +55,21 @@ def merge_date_time(str_date, str_time):
     return str_date + " " + str_time
 
 
+def merge_date_time2ts(str_date, str_time):
+    """
+    将2016-07-18与15:33合并成ts  1468827180.0
+    xulei12@baidu.com
+    2016.07.18
+    :param str_date: 2016-07-18
+    :param str_time: 15:33
+    :return:1468827180.0
+    """
+    time_str = str_date + " " + str_time
+    time_obj = time.strptime(time_str, "%Y-%m-%d %H:%M")
+    time_ts = time.mktime(time_obj)
+    return time_ts
+
+
 def date_time_str2utc(str_date, str_time):
     """
     将2016-07-06 05:00 这样的北京时间，转换为utc时间格式    2016-07-05 21:00
