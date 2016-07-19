@@ -104,3 +104,38 @@ def utc_str2date_time(utc):
         utc = datetime.datetime(utc.tm_year, utc.tm_mon, utc.tm_mday, utc.tm_hour, utc.tm_min)
     ret = utc + datetime.timedelta(hours=8)
     return ret
+
+
+def json_list_find(json_list, query, find_all=False):
+    """
+    类似前端的_.find接口，从json_list中找到符合条件query的项
+    xulei12@baidu.com 2016-07-18
+    :param json_list:  [{},{}]
+    :param query: {}
+    :param find_all: false-只查找一个，true-查找所有
+    :return:
+    """
+    if not isinstance(json_list, list):
+        return {}
+
+    ret = []
+    for item in json_list:
+        if json_match(item, query):
+            ret.append(item)
+            if not find_all:
+                return item
+    return ret
+
+
+def json_match(data, query):
+    """
+    判断date是否符合query的要求
+    xulei12@baidu.com 2016-07-18
+    :param data:
+    :param query:
+    :return:
+    """
+    for (key, value) in query.items():
+        if data[key] != value:
+            return False
+    return True
