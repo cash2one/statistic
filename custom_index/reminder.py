@@ -33,23 +33,25 @@ class Reminder(object):
         self.date = date
         self.db = mongo_db
         self.indicators = indicators
-        self.indicator_id2name_map = {}
-        self.indicator_name2id_map = {}
+        self.indicator_source2name_map = {}
+        self.indicator_name2source_map = {}
         self.subscribe = subscribe_db.Subscribe(self.indicators, task.sub_project_id)
         self._get_indicators()
+        self.info = self.subscribe.info
 
     def _get_indicators(self):
         db = mysql_db.BaseMysqlDb()
-        sql = "select `id`,`name` from rawdata_indicator where sub_project_id=%s" % self.task.sub_project_id
+        sql = "select `source_name`,`name` from rawdata_indicator where sub_project_id=%s" % self.task.sub_project_id
         db.cur.execute(sql)
         for item in db.cur.fetchall():
-            self.indicator_name2id_map[item[0]] = item[1]
-            self.indicator_id2name_map[item[1]] = item[0]
+            self.indicator_source2name_map[item[0]] = item[1]
+            self.indicator_name2source_map[item[1]] = item[0]
 
-    def arrange_by_indicator_and_page(self, info):
+    def arrange_by_indicator_and_page(self):
         # indicator + page 唯一确定一个订阅信息。把拉平的数据,把用户信息整理合并
         # page与dimension一一对应。
         ret = []
+        info = self.info
         for item in info:
             query = {
                 "indicator": item["indicator"],
@@ -62,12 +64,14 @@ class Reminder(object):
             # 否则user字段转换成list
             else:
                 item["user"] = [item["user"]]
+                item["name"] = self.indicator_source2name_map[item["indicator"]]
                 ret.append(copy.deepcopy(item))
-        return ret
+        self.info = ret
 
-    def calculate_value(self, info):
+    def calculate_value(self):
         # 根据整理好的以 indicator + page 为维度的信息，计算发送的订阅信息
         # 发送的订阅信息如下
+        info = self.info
         date = datetime.datetime.strptime(self.date, "%Y%m%d")
         yesterday = date - datetime.timedelta(days=1)
         last_week_date = date - datetime.timedelta(days=6)
@@ -82,34 +86,78 @@ class Reminder(object):
                 "@subProject": self.task.sub_project_id
             }
             query.update(item["dimension"])
-            logging.info(query)
+            logging.debug("query is :\n%s" % json.dumps(query, ensure_ascii=False))
             query_ret = []
             for one_query in self.db.find(query):
                 del one_query["_id"]
                 query_ret.append(one_query)
             email_msg = {}
             if self.task.period["type"] == "weekly":
+                # 获取今天
                 find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": date})
-                email_msg["this_value"] = (find_ret["@value"] if "@value" in find_ret else "-")
+                email_msg["this_value"] = find_ret.get("@value", "-")
+                # 获取上周同一天
                 find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": last_week_date})
-                email_msg["last_value"] = (find_ret["@value"] if "@value" in find_ret else "-")
-                value = self.get_diff_rate(email_msg["this_value"], email_msg["last_value"])
-                email_msg["diff_rate"] = (value if value else "-")
-                email_msg["week_diff_rate"] =
+                email_msg["last_value"] = find_ret.get("@value", "-")
+                # 获取周同比
+                email_msg["diff_rate"] = self.get_diff_rate(email_msg["this_value"], email_msg["last_value"], 4)
+                # 其他为空
+                email_msg["week_diff_rate"] = "-"
+                email_msg["week_avg"] = "-"
+                email_msg["link"] = "http://kgdc.baidu.com/perform/%s" % item["page"]
             elif self.task.period["type"] == "daily":
-                pass
+                # 获取今天
+                find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": date})
+                email_msg["this_value"] = find_ret.get("@value", "-")
+                # 获取昨天
+                find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": yesterday})
+                email_msg["last_value"] = find_ret.get("@value", "-")
+                # 获取天同比
+                email_msg["diff_rate"] = self.get_diff_rate(email_msg["this_value"], email_msg["last_value"], 4)
+                # 获取周环比
+                find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": last_week_date})
+                last_week_value = find_ret.get("@value", "-")
+                email_msg["week_diff_rate"] = self.get_diff_rate(email_msg["this_value"], last_week_value, 4)
+                # 计算周均值
+                total = base.json_list_sum_by(query_ret, "@value")
+                if not total or len(query_ret) == 0:
+                    email_msg["week_avg"] = "-"
+                else:
+                    email_msg["week_avg"] = round(total/len(query_ret), 4)
+                email_msg["link"] = "http://kgdc.baidu.com/perform/%s" % item["page"]
             else:
                 pass
+            item["email_msg"] = email_msg
+            logging.debug("info is: \n%s" % json.dumps(item, ensure_ascii=False))
 
-    def get_diff_rate(self, new_data, old_data):
+    def arrange_by_user(self):
+        user_list = []
+        data = []
+        info = self.info
+        for item in info:
+            user_list = list(set(user_list + item["user"]))
+        logging.debug("all user is :\n%s" % user_list)
+
+        for user in user_list:
+            user_data = {}
+            for item in info:
+                if user in item["user"]:
+                    user_data[item["name"]] = item["email_msg"]
+            data.append({user: user_data})
+        logging.debug("data to send function is:\n%s" % json.dumps(data, ensure_ascii=False))
+
+    def get_diff_rate(self, new_data, old_data, ndigits=None):
         try:
             new_data = float(new_data)
             old_data = float(old_data)
         except Exception as e:
-            return ""
+            return "-"
         if not new_data or not old_data:
-            return ""
-        return (new_data - old_data) / old_data
+            return "-"
+        ret = (new_data - old_data) / old_data
+        if ndigits:
+            ret = round(ret, ndigits)
+        return ret
 
     def send_remind_email(self, data):
         """
@@ -136,21 +184,26 @@ class Reminder(object):
         """
         pass
 
+    def run(self):
+        self.arrange_by_indicator_and_page()
+        self.calculate_value()
+        self.arrange_by_user()
+        self.send_remind_email()
+
 def test():
     import task_db
     import data_db
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
     task_id = 46
     date = "20160717"
     task = task_db.CustomIndexTask(task_id)
     original_data = data_db.OriginalData()
     indicators = ["pv", "session_num"]
     remind = Reminder(task=task, date=date, mongo_db=original_data, indicators=indicators)
-    print json.dumps(remind.indicator_id2name_map, ensure_ascii=False)
-    print json.dumps(remind.indicator_name2id_map, ensure_ascii=False)
+    logging.debug(json.dumps(remind.indicator_source2name_map, ensure_ascii=False))
+    logging.debug(json.dumps(remind.indicator_name2source_map, ensure_ascii=False))
 
-    print len(remind.subscribe.info)
-    info = remind.arrange_by_indicator_and_page(remind.subscribe.info)
-    print len(info)
-    for item in info:
-        print json.dumps(item, ensure_ascii=False)
-    remind.calculate_value(info)
+    remind.arrange_by_indicator_and_page()
+    remind.calculate_value()
+    remind.arrange_by_user()

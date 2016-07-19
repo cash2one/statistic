@@ -43,7 +43,7 @@ class Subscribe(mysql_db.BaseMysqlDb):
         query = "(" + query[0:-1] + ")"
         sql = "select `indicator`,`user`,`page`,`dimension` from %s where sub_project_id=%s and indicator in %s" %\
               (self.table_name, sub_project_id, query)
-        logging.info(sql)
+        logging.debug(sql)
         self.cur.execute(sql)
         for line in self.cur.fetchall():
             item = {
@@ -90,6 +90,3 @@ class Subscribe(mysql_db.BaseMysqlDb):
         lines = cur.fetchall()
         lines = [line[0] for line in lines]
         return lines
-
-if __name__ == "__main__":
-    print "xx"

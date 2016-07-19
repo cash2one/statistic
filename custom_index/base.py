@@ -139,3 +139,19 @@ def json_match(data, query):
         if data[key] != value:
             return False
     return True
+
+
+def json_list_sum_by(json_list, key):
+    """
+    类似前端接口 sumBy， 将key字段的所有值求和
+    :param json_list:
+    :param query:
+    :return:
+    """
+    ret = 0
+    for item in json_list:
+        try:
+            ret += float(item[key])
+        except:
+            continue
+    return ret
