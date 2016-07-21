@@ -124,7 +124,7 @@ def json_list_find(json_list, query, find_all=False):
             ret.append(item)
             if not find_all:
                 return item
-    return ret
+    return ret if find_all else {}
 
 
 def json_match(data, query):
