@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>KGDC订阅通知</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body style="margin: 0; padding: 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr><td>
+        <table align="center" border="1" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
+            <tr>
+                <th width="80">订阅指标</th>
+                <td>{{ monitor.id }}</td>
+                <th width="80">监控名</th>
+                <td>{{ monitor.name }}</td>
+            </tr>
+            {% if monitor.desc %}
+            <tr>
+                <th>监控描述</th>
+                <td colspan="3" style="word-break: break-all;">{{ monitor.desc }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>KG模块</th>
+                <td>{{ monitor.module.name }}</td>
+                <th>监控工具</th>
+                <td>{{ monitor.monitor_tool.name }}</td>
+            </tr>
+            <tr>
+                <th>报警ID</th>
+                <td>{{ monitor_alert.id }}</td>
+                <th>报警名</th>
+                <td>{{ monitor_alert.name }}</td>
+            </tr>
+            {% if monitor_alert.desc %}
+            <tr>
+                <th>报警描述</th>
+                <td colspan="3" style="word-break: break-all;">{{ monitor_alert.desc }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>报警等级</th>
+                <td>{{ level_name }}</td>
+                {% ifequal continue_time '' %}
+                <th></th>
+                <td></td>
+                {% else %}
+                <th><font color="red">持续时间</font></th>
+                <td><font color="red">{{ continue_time }}分钟</font></td>
+                {% endifequal %}
+            </tr>
+            <tr>
+                <th>监控负责人</th>
+                <td colspan="3">{{ monitor.owner }}</td>
+            </tr>
+            <tr>
+                <th>报警时间</th>
+                <td>{{ check_time }}</td>
+                <th>检测时间</th>
+                <td>{{ begin_time }}</td>
+            </tr>
+            <tr>
+                <th>
+                    更多信息
+                </th>
+                <td colspan="3">
+                    <a href="{{ host }}/module/monitorDetail/{{ monitor.id }}/" style="margin-right: 5px">报警详情</a>
+                    <a href="{{ host }}/module/monitorStat/{{ monitor.id }}/" style="margin-right: 5px">历史指标</a>
+                    <a href="{{ host }}/module/createMonitor/{{ monitor.id }}/" style="margin-right: 5px">查看配置</a>
+                    {% if detector_task %}
+                    <a href="{{ host }}/detector/detectTaskReport/{{ detector_task.id }}/" style="margin-right: 5px">自动定位</a>
+                    {% endif %}
+                    {% if data_flow %}
+                    <a href="{{ host }}/dataflow/dataFlowView/{{ data_flow.id }}/">数据流</a>
+                    {% endif %}
+                </td>
+            </tr>
+
+        </table>
+    </td></tr>
+    <tr><td style="padding-top:20px;">
+        <table align="center" border="1" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
+            {% if custom_msg %}
+            <tr>
+                <th colspan="4">用户信息</th>
+            </tr>
+            <tr>
+                <td colspan="4" style="word-break: break-all;">{{ custom_msg|safe }}</td>
+            </tr>
+            {% endif %}
+            {% if error_condition_list %}
+            <tr>
+                <th colspan="4">异常指标</th>
+            </tr>
+            {% endif %}
+            {% for condition in error_condition_list %}
+            <tr>
+                <th>报警指标</th>
+                <td colspan="3">
+                    <font color="red">
+                    {{ condition.stat.desc }}
+                    {% if "part" in condition.stat %} ({{ condition.stat.part }}){% endif %}
+                    </font>
+                </td>
+            </tr>
+            {% if "group" in condition.stat and condition.stat.group %}
+            <tr>
+                <th>{{ condition.stat.group_name }}</th>
+                <td colspan="3">
+                    <font color="red">
+                    {{ condition.stat.group }}
+                    </font>
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>报警条件</th>
+                <td>
+                    <font color="red">
+                    {{ condition.threshold_type }} {{ condition.threshold.operator }} {{ condition.threshold.value }}
+                    </font>
+                </td>
+                <th>实际值</th>
+                <td>
+                    <font color="red">
+                    {% if condition.value == None %}null{% else %}{{ condition.value }}{% endif %}
+                    {{ condition.original }}
+                    </font>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if other_condition_list %}
+            <tr>
+                <th colspan="4">正常指标</th>
+            </tr>
+            {% endif %}
+            {% for condition in other_condition_list %}
+            <tr>
+                <th>报警指标</th>
+                <td colspan="3">
+                    {{ condition.stat.desc }}
+                    {% if "part" in condition.stat %} ({{ condition.stat.part }}){% endif %}
+                </td>
+            </tr>
+            {% if "group" in condition.stat and condition.stat.group %}
+            <tr>
+                <th>{{ condition.stat.group_name }}</th>
+                <td colspan="3">
+                    {{ condition.stat.group }}
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>报警条件</th>
+                <td>
+                    {{ condition.threshold_type }} {{ condition.threshold.operator }} {{ condition.threshold.value }}
+                </td>
+                <th>实际值</th>
+                <td>
+                    {% if condition.value == None %}null{% else %}{{ condition.value }}{% endif %}
+                    {{ condition.original }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </td></tr>
+    </table>
+</body>
+</html>

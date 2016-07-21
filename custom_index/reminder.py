@@ -25,6 +25,12 @@ import logging
 import base
 import subscribe_db
 from lib import mysql_db
+from lib import tools
+from django.template import Template, Context
+
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 
 class Reminder(object):
@@ -38,6 +44,7 @@ class Reminder(object):
         self.subscribe = subscribe_db.Subscribe(self.indicators, task.sub_project_id)
         self._get_indicators()
         self.info = self.subscribe.info
+        self.data = []
 
     def _get_indicators(self):
         db = mysql_db.BaseMysqlDb()
@@ -145,6 +152,7 @@ class Reminder(object):
                     user_data[item["name"]] = item["email_msg"]
             data.append({user: user_data})
         logging.debug("data to send function is:\n%s" % json.dumps(data, ensure_ascii=False))
+        self.data = data
 
     def get_diff_rate(self, new_data, old_data, ndigits=None):
         try:
@@ -158,6 +166,33 @@ class Reminder(object):
         if ndigits:
             ret = round(ret, ndigits)
         return ret
+
+    def get_body(self):
+        """
+
+        :return:
+        """
+        data_flow = self.data
+
+        render_text = {
+            "data_flow": data_flow,
+            "custom_msg": self.monitor_task.error_msg,
+            "host": settings.HOST,
+            "monitor": self.monitor,
+            "monitor_alert": self.monitor_alert,
+            "error_condition_list": error_condition_list,
+            "other_condition_list": other_condition_list,
+            "check_time": self.alarm_log.check_time,
+            "begin_time": self.begin_time,
+            "level_name": self.level_name,
+            "continue_time": continue_time,
+            "detector_task": detector_task,
+        }
+
+        email_body = os.path.join(base_alarm.ALARM_PATH, "templates/module_monitor_email.html")
+        t = Template(open(email_body).read())
+        html = t.render(Context(render_text))
+        return html
 
     def send_remind_email(self, data):
         """
@@ -182,13 +217,31 @@ class Reminder(object):
         }
         :return: 发送成功的邮件数量
         """
-        pass
+        text = ''
+        cc = 'kgdc-dev@baidu.com'
+        for user in data:
+            index_list = []
+            for user_name, msg in user.items():
+                email_addr = '%s@baidu.com' % user_name
+                for index, changes in msg.items():
+                    index_list.append(index)
+                    for change, value in changes.items():
+                        print change, value
+                        # text = u'<html><h1>你好</h1></html>'
+                index_str = ''
+                for index_unicode in index_list:
+                    index_str += index_unicode.encode('utf-8')
+                title = u'订阅指标【%s】有更新' % index_str
+                tools.send_email(email_addr, title.encode('utf-8'), text.encode('utf-8'), True)
+        #print data
+
 
     def run(self):
         self.arrange_by_indicator_and_page()
         self.calculate_value()
         self.arrange_by_user()
         self.send_remind_email()
+
 
 def test():
     import task_db
