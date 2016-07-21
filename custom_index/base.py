@@ -155,3 +155,16 @@ def json_list_sum_by(json_list, key):
         except:
             continue
     return ret
+
+
+def json_list_sort_by(json_list, indentity):
+    """
+    类似前端的接口_.sortBy
+
+    :param json_list: 输入的json格式list，要排序的列表
+    :param indentity: 排序关键字 json 格式
+                    {"key": 1}  表示按照字段key升序排序，
+                    {"key": -1} 表示按照字段key降序排序
+    :return:
+    """
+    pass

@@ -33,6 +33,7 @@ class Reminder(object):
         self.date = date
         self.db = mongo_db
         self.indicators = indicators
+        self.email_data = {}
         self.indicator_source2name_map = {}
         self.indicator_name2source_map = {}
         self.subscribe = subscribe_db.Subscribe(self.indicators, task.sub_project_id)
@@ -157,28 +158,34 @@ class Reminder(object):
         ret = (new_data - old_data) / old_data
         if ndigits:
             ret = round(ret, ndigits)
-        return ret
+        self.email_data = ret
 
-    def send_remind_email(self, data):
+    def send_remind_email(self):
         """
         根据data的内容，发送邮件，并记录日志。
 
         :param data: 发送的订阅数据，格式如下：
         {
             "xulei12":      # 要发送的用户
-                {
-                    "pv":   # 指标名
-                        {
-                            "this_value": 123,      # 今日/本周值
-                            "last_value": 120,      # 昨日/上周值
-                            "diff_rate": 0.02,      # 日/周环比
-                            "week_diff_rate": 0.01, # 周同比
-                            "week_avg": 122,        # 周均
-                            "link": "kgdc.baidu.com/perform/1" # 链接
-                        },
-                    "uv": {}
-                },
-            "liuyangang": {}
+                [
+                    {
+                        "indicator": "pv":   # 指标名
+                        "this_value": 123,      # 今日/本周值
+                        "last_value": 120,      # 昨日/上周值
+                        "diff_rate": 0.02,      # 日/周环比
+                        "week_diff_rate": 0.01, # 周同比
+                        "week_avg": 122,        # 周均
+                        "page": 9,              # 页面id
+                        "page_name": "度秘提醒-总体概况"   # 页面名字
+                        "link": "kgdc.baidu.com/perform/1" # 链接
+                    },
+                    {
+                        "indicator": "uv",
+                        ……
+                    }
+                ],
+            "liuyangang": [],
+            ……
         }
         :return: 发送成功的邮件数量
         """
