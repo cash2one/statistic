@@ -57,9 +57,9 @@ def init_log(log_path=None, level=logging.INFO, when="midnight", backup=7,
     logger.setLevel(level)
 
     if log_path is not None:
-        dir = os.path.dirname(log_path)
-        if not os.path.isdir(dir):
-            os.makedirs(dir)
+        dir_name = os.path.dirname(log_path)
+        if not os.path.isdir(dir_name):
+            os.makedirs(dir_name)
 
         handler = logging.handlers.TimedRotatingFileHandler(log_path + ".log",
                                                             when=when,
@@ -74,6 +74,14 @@ def init_log(log_path=None, level=logging.INFO, when="midnight", backup=7,
         handler.setLevel(logging.WARNING)
         handler.setFormatter(formatter)
         logger.addHandler(handler)
+
+        # added by xulei12@baidu.com 2016-07-21 订阅特性
+        email_logger = logging.getLogger("email")
+        handler = logging.handlers.TimedRotatingFileHandler(os.path.join(dir_name, "email.log"),
+                                                            when=when,
+                                                            backupCount=backup)
+        email_logger.addHandler(handler)
+        # add ended 订阅特性
 
     handler = logging.StreamHandler()
     logger.addHandler(handler)
