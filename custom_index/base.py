@@ -106,6 +106,27 @@ def utc_str2date_time(utc):
     return ret
 
 
+def get_diff_rate(new_data, old_data, ndigits=None):
+    """
+    计算差异百分比。统一成字符串输出格式
+    :param new_data:
+    :param old_data:
+    :param ndigits:
+    :return:
+    """
+    try:
+        new_data = float(new_data)
+        old_data = float(old_data)
+    except Exception as e:
+        return "-"
+    if not new_data or not old_data:
+        return "-"
+    ret = (new_data - old_data) / old_data
+    if ndigits:
+        ret = round(ret, ndigits)
+    return str(ret)
+
+
 def json_list_find(json_list, query, find_all=False):
     """
     类似前端的_.find接口，从json_list中找到符合条件query的项

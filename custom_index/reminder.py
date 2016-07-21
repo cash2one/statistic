@@ -49,8 +49,53 @@ class Reminder(object):
             self.indicator_name2source_map[item[1]] = item[0]
 
     def arrange_by_indicator_and_page(self):
-        # indicator + page 唯一确定一个订阅信息。把拉平的数据,把用户信息整理合并
-        # page与dimension一一对应。
+        """
+        indicator + page 唯一确定一个订阅信息。把拉平的数据,把用户信息整理合并成list
+        page与dimension一一对应。
+        入口数据格式为
+        [{
+            'indicator': 'pv',
+            'dimension': {'product': 'all_shoubai', 'os': '总体'},
+            'user': 'xulei12'
+            , 'page': 6
+        }, {
+            'indicator': 'session_num',
+            'dimension': {'product': 'all_shoubai', 'os': '总体'},
+            'user': 'xulei12',
+            'page': 6
+        }, {
+            'indicator': 'session_num',
+            'dimension': {'product': 'all_app', 'os': '总体'},
+            'user': 'liuyangang',
+            'page': 6
+        }, {
+            'indicator': 'session_num',
+            'dimension': {'product': 'emotion_all', 'os': '总体'},
+            'user': 'xulei12',
+            'page': 15
+        }]
+        :return:
+        出口的数据格式为
+        [{
+            "indicator": "pv",
+            "page": 6,
+            "dimension": {"product": "all_shoubai", "os": "总体"},
+            "name": "pv",
+            "user": ["xulei12"]
+        }, {
+            "indicator": "session_num",
+            "page": 6,
+            "dimension": {"product": "all_shoubai", "os": "总体"},
+            "name": "Session数量",
+            "user": ["xulei12", "liuyangang"]
+        }, {
+            "indicator": "session_num",
+            "page": 15,
+            "dimension": {"product": "emotion_all", "os": "安卓"},
+            "name": "Session数量",
+            "user": ["xulei12"]
+        }]
+        """
         ret = []
         info = self.info
         for item in info:
@@ -70,8 +115,63 @@ class Reminder(object):
         self.info = ret
 
     def calculate_value(self):
-        # 根据整理好的以 indicator + page 为维度的信息，计算发送的订阅信息
-        # 发送的订阅信息如下
+        """
+        根据整理好的以 indicator + page 为维度的信息，计算发送的订阅信息
+        :return:
+        入口为接口arrange_by_indicator_and_page()的数据。出口数据格式为
+        [{
+            "indicator": "pv",
+            "name": "pv",
+            "page": 6,
+            "dimension": {"product": "all_shoubai", "os": "总体"},
+            "user": ["xulei12"],
+            "email_msg": {
+                "indicator": "pv",
+                "this_value": "104291.0",
+                "last_value": "104053.0",
+                "diff_rate": "0.0023",
+                "week_diff_rate": "0.1616",
+                "week_avg": "99983.5714",
+                "page": 6,
+                "page_name": "",
+                "link": "http://kgdc.baidu.com/perform/6"
+            },
+        }, {
+            "indicator": "session_num",
+            "name": "Session数量",
+            "page": 6,
+            "dimension": {"product": "all_shoubai", "os": "总体"},
+            "user": ["xulei12", "liuyangang"],
+            "email_msg": {
+                "indicator": "session_num",
+                "this_value": "20083.0",
+                "last_value": "20225.0",
+                "diff_rate": "-0.007",
+                "week_diff_rate": "0.008",
+                "week_avg": "20639.7143",
+                "page": 6,
+                "page_name": "",
+                "link": "http://kgdc.baidu.com/perform/6"
+            },
+        }, {
+            "indicator": "session_num",
+            "name": "Session数量",
+            "page": 15,
+            "dimension": {"product": "emotion_all", "os": "安卓"},
+            "user": ["xulei12"],
+            "email_msg": {
+                "indicator": "session_num",
+                "this_value": "-",
+                "last_value": "-",
+                "diff_rate": "-",
+                "week_diff_rate": "-",
+                "week_avg": "-",
+                "page": 15,
+                "page_name": "",
+                "link": "http://kgdc.baidu.com/perform/15"
+            },
+        }]
+        """
         info = self.info
         date = datetime.datetime.strptime(self.date, "%Y%m%d")
         yesterday = date - datetime.timedelta(days=1)
@@ -92,7 +192,12 @@ class Reminder(object):
             for one_query in self.db.find(query):
                 del one_query["_id"]
                 query_ret.append(one_query)
-            email_msg = {}
+            email_msg = {
+                "indicator": item["indicator"],
+                "page": item["page"],
+                "page_name": "",
+                "link": "http://kgdc.baidu.com/perform/%s" % item["page"]
+            }
             if self.task.period["type"] == "weekly":
                 # 获取今天
                 find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": date})
@@ -101,11 +206,10 @@ class Reminder(object):
                 find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": last_week_date})
                 email_msg["last_value"] = find_ret.get("@value", "-")
                 # 获取周同比
-                email_msg["diff_rate"] = self.get_diff_rate(email_msg["this_value"], email_msg["last_value"], 4)
+                email_msg["diff_rate"] = base.get_diff_rate(email_msg["this_value"], email_msg["last_value"], 4)
                 # 其他为空
                 email_msg["week_diff_rate"] = "-"
                 email_msg["week_avg"] = "-"
-                email_msg["link"] = "http://kgdc.baidu.com/perform/%s" % item["page"]
             elif self.task.period["type"] == "daily":
                 # 获取今天
                 find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": date})
@@ -114,51 +218,44 @@ class Reminder(object):
                 find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": yesterday})
                 email_msg["last_value"] = find_ret.get("@value", "-")
                 # 获取天同比
-                email_msg["diff_rate"] = self.get_diff_rate(email_msg["this_value"], email_msg["last_value"], 4)
+                email_msg["diff_rate"] = base.get_diff_rate(email_msg["this_value"], email_msg["last_value"], 4)
                 # 获取周环比
                 find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": last_week_date})
                 last_week_value = find_ret.get("@value", "-")
-                email_msg["week_diff_rate"] = self.get_diff_rate(email_msg["this_value"], last_week_value, 4)
+                email_msg["week_diff_rate"] = base.get_diff_rate(email_msg["this_value"], last_week_value, 4)
                 # 计算周均值
                 total = base.json_list_sum_by(query_ret, "@value")
                 if not total or len(query_ret) == 0:
                     email_msg["week_avg"] = "-"
                 else:
-                    email_msg["week_avg"] = round(total/len(query_ret), 4)
-                email_msg["link"] = "http://kgdc.baidu.com/perform/%s" % item["page"]
+                    email_msg["week_avg"] = str(round(total/len(query_ret), 4))
             else:
                 pass
             item["email_msg"] = email_msg
             logging.debug("info is: \n%s" % json.dumps(item, ensure_ascii=False))
 
     def arrange_by_user(self):
+        """
+        将calculate_value()出口的数据整理成send_remind_email()需要的格式.
+        具体数据样例见send_remind_email注释
+        :param self:
+        :return:
+        """
         user_list = []
-        data = []
+        data = {}
         info = self.info
         for item in info:
             user_list = list(set(user_list + item["user"]))
         logging.debug("all user is :\n%s" % user_list)
 
         for user in user_list:
-            user_data = {}
+            user_data = []
             for item in info:
                 if user in item["user"]:
-                    user_data[item["name"]] = item["email_msg"]
-            data.append({user: user_data})
+                    user_data.append(item["email_msg"])
+            data.update({user: user_data})
+        self.email_data = data
         logging.debug("data to send function is:\n%s" % json.dumps(data, ensure_ascii=False))
-
-    def get_diff_rate(self, new_data, old_data, ndigits=None):
-        try:
-            new_data = float(new_data)
-            old_data = float(old_data)
-        except Exception as e:
-            return "-"
-        if not new_data or not old_data:
-            return "-"
-        ret = (new_data - old_data) / old_data
-        if ndigits:
-            ret = round(ret, ndigits)
-        self.email_data = ret
 
     def send_remind_email(self):
         """
@@ -170,11 +267,11 @@ class Reminder(object):
                 [
                     {
                         "indicator": "pv":   # 指标名
-                        "this_value": 123,      # 今日/本周值
-                        "last_value": 120,      # 昨日/上周值
-                        "diff_rate": 0.02,      # 日/周环比
-                        "week_diff_rate": 0.01, # 周同比
-                        "week_avg": 122,        # 周均
+                        "this_value": "123",      # 今日/本周值
+                        "last_value": "120",      # 昨日/上周值
+                        "diff_rate": "0.02",      # 日/周环比
+                        "week_diff_rate": "0.01", # 周同比
+                        "week_avg": "122",        # 周均
                         "page": 9,              # 页面id
                         "page_name": "度秘提醒-总体概况"   # 页面名字
                         "link": "kgdc.baidu.com/perform/1" # 链接
