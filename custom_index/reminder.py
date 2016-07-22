@@ -28,6 +28,7 @@ from lib import mysql_db
 from lib import tools
 
 import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 logger = logging.getLogger("email")
@@ -267,7 +268,7 @@ class Reminder(object):
                 if not total or len(query_ret) == 0:
                     email_msg["week_avg"] = "-"
                 else:
-                    email_msg["week_avg"] = str(round(total/len(query_ret), 4))
+                    email_msg["week_avg"] = str(round(total / len(query_ret), 4))
             else:
                 pass
             item["email_msg"] = email_msg
@@ -303,18 +304,19 @@ class Reminder(object):
         :param json_str:
         :return:
         """
-        tr = ('<tr>'
-            '<td style="text-align:center;">%s</td>'
-            '<td style="text-align:center;">%s</td>'
-            '<td style="text-align:center;">%s</td>'
-            '<td style="text-align:center;">%s</td>'
-            '<td style="text-align:center;">%s</td>'
-            '<td style="text-align:center;">%s</td>'
-            '<td ><a href="%s">%s</a></td>'
-            '</tr>') % (json_str['name'], json_str['this_value'],
-                        json_str['last_value'], json_str['diff_rate'],
-                        json_str['week_diff_rate'], json_str['week_avg'],
-                        json_str['link'], json_str["page_name"])
+        tr = (
+                 '<tr>'
+                 '<td>%s</td>'
+                 '<td>%s</td>'
+                 '<td>%s</td>'
+                 '<td>%s</td>'
+                 '<td>%s</td>'
+                 '<td>%s</td>'
+                 '<td><a href="%s">%s</a></td>'
+                 '</tr>') % (json_str['name'], json_str['this_value'],
+                             json_str['last_value'], json_str['diff_rate'],
+                             json_str['week_diff_rate'], json_str['week_avg'],
+                             json_str['link'], json_str["page_name"])
         return tr
 
     def send_remind_email(self):
@@ -347,22 +349,38 @@ class Reminder(object):
         }
         :return: 发送成功的邮件数量
         """
-        head = ('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+        head = (
+                '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/'
+                'xhtml1-transitional.dtd">'
                 '<html xmlns="http://www.w3.org/1999/xhtml">'
-                '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>KGDC订阅通知</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/></head>'
+                '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>KGDC订阅通知'
+                '</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/></head>'
                 '<body style="margin: 0; padding: 0;">')
 
+        table1 = ('<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">'
+                 '<tr><td><table align="center" border="1" cellpadding="0" cellspacing="0"'
+                 ' width="900" style="border-collapse: collapse;">'
+                 '<tr>'
+                 '<th align="center">指标</th>'
+                 '<th width="120" align="center">今日/本周</th>'
+                 '<th width="120" align="center">昨日/上周</th>'
+                 '<th width="120" align="center">日/周环比</th>'
+                 '<th width="120" align="center">周同比</th>'
+                 '<th width="120" align="center">周均</th>'
+                 '<th align="center">详情页面</th>'
+                 '</tr>')
         table = ('<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">'
-                '<tr><td><table align="center" border="1" cellpadding="0" cellspacing="0" width="900" style="border-collapse: collapse;">'
-                '<tr>'
-                    '<th width="100">指标</th>'
-                    '<th width="120">今日/本周</th>'
-                    '<th width="120">昨日/上周</th>'
-                    '<th width="120">日/周环比</th>'
-                    '<th width="120">周同比</th>'
-                    '<th width="120">周均</th>'
-                    '<th width="120">详情页面</th>'
-                '</tr>')
+                 '<tr><td><table align="center" border="1" cellpadding="0" cellspacing="0"'
+                 ' width="900" style="border-collapse: collapse;">'
+                 '<tr>'
+                 '<th>指标</th>'
+                 '<th width="120">今日/本周</th>'
+                 '<th width="120">昨日/上周</th>'
+                 '<th width="120">日/周环比</th>'
+                 '<th width="120">周同比</th>'
+                 '<th width="120">周均</th>'
+                 '<th>详情页面</th>'
+                 '</tr>')
         end = '</table></td></tr></table></body></html>'
         cc = 'kgdc-dev@baidu.com'
 
