@@ -295,12 +295,12 @@ class Reminder(object):
         :return:
         """
         tr = ('<tr>'
-            '<td align="center">%s</td>'
-            '<td align="center">%s</td>'
-            '<td align="center">%s</td>'
-            '<td align="center">%s</td>'
-            '<td align="center">%s</td>'
-            '<td align="center">%s</td>'
+            '<td style="text-align:center;">%s</td>'
+            '<td style="text-align:center;">%s</td>'
+            '<td style="text-align:center;">%s</td>'
+            '<td style="text-align:center;">%s</td>'
+            '<td style="text-align:center;">%s</td>'
+            '<td style="text-align:center;">%s</td>'
             '<td ><a href="%s">%s</a></td>'
             '</tr>') % (json_str['name'], json_str['this_value'],
                         json_str['last_value'], json_str['diff_rate'],
