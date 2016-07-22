@@ -366,7 +366,7 @@ class Reminder(object):
             index_list = []
             for index in indexes:
                 tr += self.get_row(index)
-                index_list.append(index['indicator'])
+                index_list.append(index['name'])
             index_str = ''
             for index_unicode in index_list:
                 j += 1
