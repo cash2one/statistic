@@ -334,10 +334,10 @@ class Reminder(object):
 
         logger = logging.getLogger("email")
         i = 0
-        j = 0
         for user, indexes in self.email_data.items():
             email_addr = '%s@baidu.com' % user
             tr = ''
+            j = 0
             index_list = []
             for index in indexes:
                 tr += self.get_row(index)
