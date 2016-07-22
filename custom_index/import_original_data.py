@@ -58,7 +58,7 @@ def save_index(path, task, date):
 
     # added by xulei12@baidu.com 2016.07.18 订阅提醒
     remind = reminder.Reminder(task=task, date=date, mongo_db=original_data, indicators=indicators)
-    remind.send_remind_email()
+    remind.run()
     # add ended
 
 

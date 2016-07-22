@@ -41,28 +41,42 @@ class Reminder(object):
         self.email_data = {}
         self.indicator_source2name_map = {}
         self.indicator_name2source_map = {}
+        self.page_id2name = {}
         self.subscribe = subscribe_db.Subscribe(self.indicators, task.sub_project_id)
-        self._get_indicators()
         self.info = self.subscribe.info
+        self._get_page_info()
+        self._get_indicators()
 
     def _get_indicators(self):
         db = mysql_db.BaseMysqlDb()
         sql = "select `source_name`,`name` from rawdata_indicator where sub_project_id=%s" % self.task.sub_project_id
         db.cur.execute(sql)
+        logging.debug("sql:\n%s" % sql)
         for item in db.cur.fetchall():
             self.indicator_source2name_map[item[0]] = item[1]
             self.indicator_name2source_map[item[1]] = item[0]
+
+    def _get_page_info(self):
+        db = mysql_db.BaseMysqlDb()
+        sql = "select `id`,`name` from perform_page where page_group_id in " \
+              "(select id from perform_page_group where sub_project_id=%s) and mark_del=0" % self.task.sub_project_id
+        db.cur.execute(sql)
+        logging.debug("sql:\n%s" % sql)
+        for item in db.cur.fetchall():
+            self.page_id2name[item[0]] = item[1]
+        logging.debug(self.page_id2name)
 
     def arrange_by_indicator_and_page(self):
         """
         indicator + page 唯一确定一个订阅信息。把拉平的数据,把用户信息整理合并成list
         page与dimension一一对应。
+        此处会过滤掉已经删除的page对应的订阅信息
         入口数据格式为
         [{
             'indicator': 'pv',
             'dimension': {'product': 'all_shoubai', 'os': '总体'},
-            'user': 'xulei12'
-            , 'page': 6
+            'user': 'xulei12',
+            'page': 6
         }, {
             'indicator': 'session_num',
             'dimension': {'product': 'all_shoubai', 'os': '总体'},
@@ -84,18 +98,21 @@ class Reminder(object):
         [{
             "indicator": "pv",
             "page": 6,
+            "page_name": "xxx-xxx",  # 此处是page_group的name加上page的name
             "dimension": {"product": "all_shoubai", "os": "总体"},
             "name": "pv",
             "user": ["xulei12"]
         }, {
             "indicator": "session_num",
             "page": 6,
+            "page_name": "xxx-xxx",  # 此处是page_group的name加上page的name
             "dimension": {"product": "all_shoubai", "os": "总体"},
             "name": "Session数量",
             "user": ["xulei12", "liuyangang"]
         }, {
             "indicator": "session_num",
             "page": 15,
+            "page_name": "xxx-xxx",  # 此处是page_group的name加上page的name
             "dimension": {"product": "emotion_all", "os": "安卓"},
             "name": "Session数量",
             "user": ["xulei12"]
@@ -104,6 +121,13 @@ class Reminder(object):
         ret = []
         info = self.info
         for item in info:
+            page_name = self.page_id2name.get(item["page"])
+            logging.debug("page_id=%s, page_name=%s" % (item["page"], page_name))
+            if page_name:
+                item["page_name"] = page_name
+            else:
+                logging.debug("过滤订阅: %s" % item["indicator"])
+                continue
             query = {
                 "indicator": item["indicator"],
                 "page": item["page"]
@@ -199,8 +223,9 @@ class Reminder(object):
                 query_ret.append(one_query)
             email_msg = {
                 "indicator": item["indicator"],
+                "name": item["name"],
                 "page": item["page"],
-                "page_name": "",
+                "page_name": item["page_name"],
                 "link": "http://kgdc.baidu.com/perform/%s" % item["page"]
             }
             if self.task.period["type"] == "weekly":
@@ -211,7 +236,7 @@ class Reminder(object):
                 find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": last_week_date})
                 email_msg["last_value"] = find_ret.get("@value", "-")
                 # 获取周同比
-                email_msg["diff_rate"] = base.get_diff_rate(email_msg["this_value"], email_msg["last_value"], 4)
+                email_msg["diff_rate"] = base.get_diff_rate(email_msg["this_value"], email_msg["last_value"], 2)
                 # 其他为空
                 email_msg["week_diff_rate"] = "-"
                 email_msg["week_avg"] = "-"
@@ -223,11 +248,11 @@ class Reminder(object):
                 find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": yesterday})
                 email_msg["last_value"] = find_ret.get("@value", "-")
                 # 获取天同比
-                email_msg["diff_rate"] = base.get_diff_rate(email_msg["this_value"], email_msg["last_value"], 4)
+                email_msg["diff_rate"] = base.get_diff_rate(email_msg["this_value"], email_msg["last_value"], 2)
                 # 获取周环比
                 find_ret = base.json_list_find(query_ret, {"@index": item["indicator"], "@create": last_week_date})
                 last_week_value = find_ret.get("@value", "-")
-                email_msg["week_diff_rate"] = base.get_diff_rate(email_msg["this_value"], last_week_value, 4)
+                email_msg["week_diff_rate"] = base.get_diff_rate(email_msg["this_value"], last_week_value, 2)
                 # 计算周均值
                 total = base.json_list_sum_by(query_ret, "@value")
                 if not total or len(query_ret) == 0:
@@ -276,11 +301,11 @@ class Reminder(object):
             '<td align="center">%s</td>'
             '<td align="center">%s</td>'
             '<td align="center">%s</td>'
-            '<td ><a href="%s">页面</a></td>'
-            '</tr>') % (json_str['indicator'], json_str['this_value'],
+            '<td ><a href="%s">%s</a></td>'
+            '</tr>') % (json_str['name'], json_str['this_value'],
                         json_str['last_value'], json_str['diff_rate'],
                         json_str['week_diff_rate'], json_str['week_avg'],
-                        json_str['link'])
+                        json_str['link'], json_str["page_name"])
         return tr
 
     def send_remind_email(self):
@@ -350,7 +375,7 @@ class Reminder(object):
                 index_str += index_unicode.encode('utf-8') + ';'
             title = u'订阅指标【%s】有更新' % index_str
             text = head + table + tr + end
-            tools.send_email(email_addr, title.encode('utf-8'), text.encode('utf-8'), True)
+            tools.send_email(email_addr, title.encode('utf-8'), text.encode('utf-8'), True, cc=cc)
             logger.info('send email to user %s :\n%s' % (user, text))
 
     def run(self):
@@ -372,7 +397,7 @@ def test():
     indicators = ["pv", "session_num", "first_week_retention", "dumi_dau",
                   "first_week_dumi_retention", "unsub_today", "stimulate_install_today", "alive_sub_all",
                   "active_sub_all", "alive_user_all", "alive_sub_today", "alive_user_today", "new_user_today",
-                  "sub_update_today", "sms_push_today"]
+                  "sub_update_today", "sms_push_today", "dau"]
     remind = Reminder(task=task, date=date, mongo_db=original_data, indicators=indicators)
     logging.debug(json.dumps(remind.indicator_source2name_map, ensure_ascii=False))
     logging.debug(json.dumps(remind.indicator_name2source_map, ensure_ascii=False))
