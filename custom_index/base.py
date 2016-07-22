@@ -121,10 +121,10 @@ def get_diff_rate(new_data, old_data, ndigits=None):
         return "-"
     if not new_data or not old_data:
         return "-"
-    ret = (new_data - old_data) / old_data
+    ret = (new_data - old_data)*100 / old_data
     if ndigits:
         ret = round(ret, ndigits)
-    return str(ret)
+    return str(ret) + "%"
 
 
 def json_list_find(json_list, query, find_all=False):
@@ -176,16 +176,3 @@ def json_list_sum_by(json_list, key):
         except:
             continue
     return ret
-
-
-def json_list_sort_by(json_list, indentity):
-    """
-    类似前端的接口_.sortBy
-
-    :param json_list: 输入的json格式list，要排序的列表
-    :param indentity: 排序关键字 json 格式
-                    {"key": 1}  表示按照字段key升序排序，
-                    {"key": -1} 表示按照字段key降序排序
-    :return:
-    """
-    pass

@@ -80,6 +80,7 @@ def init_log(log_path=None, level=logging.INFO, when="midnight", backup=7,
         handler = logging.handlers.TimedRotatingFileHandler(os.path.join(dir_name, "email.log"),
                                                             when=when,
                                                             backupCount=backup)
+        handler.setFormatter(formatter)
         email_logger.addHandler(handler)
         # add ended 订阅特性
 
