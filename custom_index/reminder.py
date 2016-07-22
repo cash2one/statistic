@@ -30,6 +30,8 @@ from lib import tools
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+logger = logging.getLogger("email")
+logger.setLevel(logging.DEBUG)
 
 
 class Reminder(object):
@@ -49,9 +51,9 @@ class Reminder(object):
 
     def _get_indicators(self):
         db = mysql_db.BaseMysqlDb()
-        sql = "select `source_name`,`name` from rawdata_indicator where sub_project_id=%s" % self.task.sub_project_id
+        sql = "select `source_name`,`name` from rawdata_indicator where sub_project_id=%s and mark_del=0" % self.task.sub_project_id
         db.cur.execute(sql)
-        logging.debug("sql:\n%s" % sql)
+        logger.debug("sql:\n%s" % sql)
         for item in db.cur.fetchall():
             self.indicator_source2name_map[item[0]] = item[1]
             self.indicator_name2source_map[item[1]] = item[0]
@@ -61,10 +63,10 @@ class Reminder(object):
         sql = "select `id`,`name` from perform_page where page_group_id in " \
               "(select id from perform_page_group where sub_project_id=%s) and mark_del=0" % self.task.sub_project_id
         db.cur.execute(sql)
-        logging.debug("sql:\n%s" % sql)
+        logger.debug("sql:\n%s" % sql)
         for item in db.cur.fetchall():
             self.page_id2name[item[0]] = item[1]
-        logging.debug(self.page_id2name)
+        logger.debug(self.page_id2name)
 
     def arrange_by_indicator_and_page(self):
         """
@@ -120,19 +122,24 @@ class Reminder(object):
         """
         ret = []
         info = self.info
+        logger.debug("input len=%s" % len(self.info))
+        logger.debug("input of arrange_by_indicator_and_page\n%s" % self.info)
         for item in info:
             page_name = self.page_id2name.get(item["page"])
-            logging.debug("page_id=%s, page_name=%s" % (item["page"], page_name))
+            logger.debug("page_id=%s, page_name=%s" % (item["page"], page_name))
             if page_name:
                 item["page_name"] = page_name
             else:
-                logging.debug("过滤订阅: %s" % item["indicator"])
+                logger.debug("过滤订阅: %s" % item["indicator"])
                 continue
             query = {
                 "indicator": item["indicator"],
                 "page": item["page"]
             }
             query_ret = base.json_list_find(ret, query)
+            logger.debug("ret is: \n%s" % ret)
+            logger.debug("query is \n%s" % json.dumps(query, ensure_ascii=False))
+            logger.debug("query_set is:\n %s" % json.dumps(query_ret, ensure_ascii=False))
             # 已经有了，则合并
             if query_ret:
                 query_ret["user"].append(item["user"])
@@ -142,6 +149,8 @@ class Reminder(object):
                 item["name"] = self.indicator_source2name_map[item["indicator"]]
                 ret.append(copy.deepcopy(item))
         self.info = ret
+        logger.debug("output len=%s" % len(self.info))
+        logger.debug("output of arrange_by_indicator_and_page\n%s" % self.info)
 
     def calculate_value(self):
         """
@@ -216,7 +225,7 @@ class Reminder(object):
                 "@subProject": self.task.sub_project_id
             }
             query.update(item["dimension"])
-            logging.debug("query is :\n%s" % json.dumps(query, ensure_ascii=False))
+            logger.debug("query is :\n%s" % json.dumps(query, ensure_ascii=False))
             query_ret = []
             for one_query in self.db.find(query):
                 del one_query["_id"]
@@ -262,7 +271,7 @@ class Reminder(object):
             else:
                 pass
             item["email_msg"] = email_msg
-            logging.debug("info is: \n%s" % json.dumps(item, ensure_ascii=False))
+            logger.debug("info is: \n%s" % json.dumps(item, ensure_ascii=False))
 
     def arrange_by_user(self):
         """
@@ -276,7 +285,7 @@ class Reminder(object):
         info = self.info
         for item in info:
             user_list = list(set(user_list + item["user"]))
-        logging.debug("all user is :\n%s" % user_list)
+        logger.debug("all user is :\n%s" % user_list)
 
         for user in user_list:
             user_data = []
@@ -285,7 +294,7 @@ class Reminder(object):
                     user_data.append(item["email_msg"])
             data.update({user: user_data})
         self.email_data = data
-        logging.debug("data to send function is:\n%s" % json.dumps(data, ensure_ascii=False))
+        logger.debug("data to send function is:\n%s" % json.dumps(data, ensure_ascii=False))
 
     @staticmethod
     def get_row(json_str):

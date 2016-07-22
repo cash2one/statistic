@@ -41,7 +41,8 @@ class Subscribe(mysql_db.BaseMysqlDb):
         for item in indicators:
             query += "'%s'," % item
         query = "(" + query[0:-1] + ")"
-        sql = "select `indicator`,`user`,`page`,`dimension` from %s where sub_project_id=%s and indicator in %s" %\
+        sql = "select `indicator`,`user`,`page`,`dimension` from %s" \
+              " where sub_project_id=%s and indicator in %s and mark_del=0" %\
               (self.table_name, sub_project_id, query)
         logging.debug(sql)
         self.cur.execute(sql)
