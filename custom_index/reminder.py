@@ -26,6 +26,7 @@ import base
 import subscribe_db
 from lib import mysql_db
 from lib import tools
+from jinja2 import Environment, PackageLoader
 
 import sys
 
@@ -306,13 +307,13 @@ class Reminder(object):
         """
         tr = (
                  '<tr>'
-                 '<td>%s</td>'
-                 '<td>%s</td>'
-                 '<td>%s</td>'
-                 '<td>%s</td>'
-                 '<td>%s</td>'
-                 '<td>%s</td>'
-                 '<td><a href="%s">%s</a></td>'
+                 '<td align="center">%s</td>'
+                 '<td align="center">%s</td>'
+                 '<td align="center">%s</td>'
+                 '<td align="center">%s</td>'
+                 '<td align="center">%s</td>'
+                 '<td align="center">%s</td>'
+                 '<td align="center"><a href="%s">%s</a></td>'
                  '</tr>') % (json_str['name'], json_str['this_value'],
                              json_str['last_value'], json_str['diff_rate'],
                              json_str['week_diff_rate'], json_str['week_avg'],
@@ -349,61 +350,29 @@ class Reminder(object):
         }
         :return: 发送成功的邮件数量
         """
-        head = (
-                '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/'
-                'xhtml1-transitional.dtd">'
-                '<html xmlns="http://www.w3.org/1999/xhtml">'
-                '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>KGDC订阅通知'
-                '</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/></head>'
-                '<body style="margin: 0; padding: 0;">')
-
-        table1 = ('<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">'
-                 '<tr><td><table align="center" border="1" cellpadding="0" cellspacing="0"'
-                 ' width="900" style="border-collapse: collapse;">'
-                 '<tr>'
-                 '<th align="center">指标</th>'
-                 '<th width="120" align="center">今日/本周</th>'
-                 '<th width="120" align="center">昨日/上周</th>'
-                 '<th width="120" align="center">日/周环比</th>'
-                 '<th width="120" align="center">周同比</th>'
-                 '<th width="120" align="center">周均</th>'
-                 '<th align="center">详情页面</th>'
-                 '</tr>')
-        table = ('<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">'
-                 '<tr><td><table align="center" border="1" cellpadding="0" cellspacing="0"'
-                 ' width="900" style="border-collapse: collapse;">'
-                 '<tr>'
-                 '<th>指标</th>'
-                 '<th width="120">今日/本周</th>'
-                 '<th width="120">昨日/上周</th>'
-                 '<th width="120">日/周环比</th>'
-                 '<th width="120">周同比</th>'
-                 '<th width="120">周均</th>'
-                 '<th>详情页面</th>'
-                 '</tr>')
-        end = '</table></td></tr></table></body></html>'
         cc = 'kgdc-dev@baidu.com'
+        env = Environment(loader=PackageLoader('custom_index', 'templates'))
 
         logger = logging.getLogger("email")
         i = 0
         for user, indexes in self.email_data.items():
             email_addr = '%s@baidu.com' % user
-            tr = ''
+            tr = []
             j = 0
             index_list = []
             for index in indexes:
-                tr += self.get_row(index)
+                tr.append(self.get_row(index))
                 index_list.append(index['name'])
             index_str = ''
-            for index_unicode in index_list:
+            for index_unicode in list(set(index_list)):
                 j += 1
                 if j > 4:
                     break
                 index_str += index_unicode.encode('utf-8') + ';'
             title = u'订阅指标【%s】有更新' % index_str
-            text = head + table + tr + end
-            tools.send_email(email_addr, title.encode('utf-8'), text.encode('utf-8'), True, cc=cc)
-            logger.info('send email to user %s :\n%s' % (user, text))
+            template = env.get_template('reminder.html')
+            tools.send_email(email_addr, title.encode('utf-8'), template.render(rows=tr).encode('utf-8'), True, cc=cc)
+            logger.info('send email to user %s :\n%s' % (user, template.render(rows=tr).encode('utf-8')))
 
     def run(self):
         self.arrange_by_indicator_and_page()
