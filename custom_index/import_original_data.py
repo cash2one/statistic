@@ -22,6 +22,7 @@ import datetime
 import base
 import task_db
 import data_db
+import reminder
 from lib import tools
 from lib import error
 
@@ -34,6 +35,9 @@ def save_index(path, task, date):
     original_data = data_db.OriginalData()
     original_data.remove(system_key)
     fp = open(path)
+    # added by xulei12@baidu.com 2016.07.18 订阅提醒
+    indicators = []
+    # add ended
     for line in fp:
         line = line.rstrip("\r\n").decode("utf-8")
         try:
@@ -44,9 +48,18 @@ def save_index(path, task, date):
             json_line.update(system_key)
             try:
                 original_data.insert(json_line)
+                # added by xulei12@baidu.com 2016.07.18 订阅提醒
+                if json_line["@index"] not in indicators:
+                    indicators.append(json_line["@index"])
+                # add ended
             except:
                 tools.log("%s" % json_line)
                 raise
+
+    # added by xulei12@baidu.com 2016.07.18 订阅提醒
+    remind = reminder.Reminder(task=task, date=date, mongo_db=original_data, indicators=indicators)
+    remind.run()
+    # add ended
 
 
 def get_summary_date(task_id, date):

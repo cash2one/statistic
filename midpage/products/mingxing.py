@@ -20,7 +20,7 @@ def average(results):
 
 
 def map_results(results):
-    ret = {};
+    ret = {}
     for result in results:
         if ret.get(result['baiduid']) is None:
             ret[result['baiduid']] = []
@@ -36,7 +36,7 @@ def group_values_time(values):
     i = 1
     for value in values:
         if start_time is None:
-            #print "group%s:%s" % (i, value)
+            # print "group%s:%s" % (i, value)
             start_time = value
         elif (value - start_time) > 1800:
             if end_time is not None:
@@ -46,9 +46,9 @@ def group_values_time(values):
             start_time = value
             end_time = None
             i += 1
-            #print "group%s:%s" % (i, value)
+            # print "group%s:%s" % (i, value)
         else:
-            #print "group%s:%s" % (i, value)
+            # print "group%s:%s" % (i, value)
             end_time = value
     if start_time and end_time:
         ret.append(end_time - start_time)
@@ -58,6 +58,11 @@ def group_values_time(values):
 
 
 def group_values_rounds(values):
+    """
+
+    :param values:
+    :return:
+    """
     values.sort()
     ret = []
     start_time = None
@@ -79,14 +84,23 @@ def group_values_rounds(values):
 
 
 def average_interaction_time(results):
+    """
+    session平均交互时间
+    :param results:
+    :return:
+    """
     results = map_results(results)
     for key, values in results.items():
-        #print "key:%s" % key
         results[key] = group_values_time(values)
     return average(results)
 
 
 def average_interaction_rounds(results):
+    """
+    session平均交互轮数
+    :param results:
+    :return:
+    """
     results = map_results(results)
     for key, values in results.items():
         results[key] = group_values_rounds(values)
