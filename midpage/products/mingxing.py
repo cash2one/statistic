@@ -109,7 +109,8 @@ def average_interaction_rounds(results):
 
 class Product(base.CRMMidpageProduct):
     default_query = {
-        'source': 'mingxing'
+        'source': 'qianxun',
+        'query.cat': 'dumi_mingxing',
     }
 
     index_map = { #example，具体类需要复写
