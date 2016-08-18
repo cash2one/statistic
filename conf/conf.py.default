@@ -29,10 +29,10 @@ else:
     DB_PASSWORD = "521aladdin"
     DB_NAME = "mvs_platform"
 
-    MONGO_HOST = "cq01-testing-ps7163.cq01.baidu.com"
+    MONGO_HOST = "cp01-psqa-wd01-y2016.cp01.baidu.com"
     MONGO_PORT = 27017
     MONGO_DB = "kgdcdb"
 
-    MONGO_FRONT_HOST = "cp01-psqa-wd01-y2016.cp01.baidu.com"
+    MONGO_FRONT_HOST = "cq01-testing-ps7163.cq01.baidu.com"
     MONGO_FRONT_PORT = 27017
     MONGO_FRONT_DB = "kgdcfont"
