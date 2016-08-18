@@ -16,7 +16,6 @@ class BaseMongoLogDb(object):
         self.db = self.conn[self.DB_NAME]
         self.collection = self.db[self.COLLECTION_NAME]
 
-    #@staticmethod
     def _get_connect(self):
         conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, connect=False)
         return conn
