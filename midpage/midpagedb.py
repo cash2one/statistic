@@ -84,7 +84,8 @@ class DateLogDb(object):
             count = item['count']
         return count
 
-
+'''
+垃圾代码，暂时屏蔽
 class FrontMongoDb(object):
     """
     用于推送数据到kgdc前台展现数据库，
@@ -115,3 +116,4 @@ class FrontMongoDb(object):
         else:
             self.collection_origin.insert_one(data)
             self.collection_summary.insert_one(data)
+'''
