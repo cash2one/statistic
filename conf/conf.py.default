@@ -18,7 +18,10 @@ if DEVELOPING is True:
     MONGO_HOST = "cq01-kgdc-dev-db.epc.baidu.com"
     MONGO_PORT = 27017
     MONGO_DB = "kgdcdb"
-    MONGO_FONT_DB = "kgdcfont"
+
+    MONGO_FRONT_HOST = "cq01-kgdc-dev-db.epc.baidu.com"
+    MONGO_FRONT_PORT = 27017
+    MONGO_FRONT_DB = "kgdcfont"
 else:
     DB_HOST = "cp01-testing-ps7164.cp01.baidu.com"
     DB_PORT = 3306
@@ -29,4 +32,7 @@ else:
     MONGO_HOST = "cq01-testing-ps7163.cq01.baidu.com"
     MONGO_PORT = 27017
     MONGO_DB = "kgdcdb"
-    MONGO_FONT_DB = "kgdcfont"
+
+    MONGO_FRONT_HOST = "cp01-psqa-wd01-y2016.cp01.baidu.com"
+    MONGO_FRONT_PORT = 27017
+    MONGO_FRONT_DB = "kgdcfont"
