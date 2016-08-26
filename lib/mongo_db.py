@@ -8,6 +8,7 @@ class BaseMongoLogDb(object):
     DB_HOST = conf.MONGO_HOST
     DB_PORT = conf.MONGO_PORT
     DB_NAME = conf.MONGO_DB
+    DB_REPL = conf.MONGO_REPL
 
     COLLECTION_NAME = ""
 
@@ -17,7 +18,7 @@ class BaseMongoLogDb(object):
         self.collection = self.db[self.COLLECTION_NAME]
 
     def _get_connect(self):
-        conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, connect=False)
+        conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, replicaset=self.DB_REPL, connect=False)
         return conn
 
     def close(self):

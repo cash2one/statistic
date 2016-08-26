@@ -30,8 +30,9 @@ else:
     DB_NAME = "mvs_platform"
 
     MONGO_HOST = "cp01-psqa-wd01-y2016.cp01.baidu.com"
-    MONGO_PORT = 27017
+    MONGO_PORT = 27108
     MONGO_DB = "kgdcdb"
+    MONGO_REPL = "mongokgb"
 
     MONGO_FRONT_HOST = "cq01-testing-ps7163.cq01.baidu.com"
     MONGO_FRONT_PORT = 27017
