@@ -18,7 +18,10 @@ class BaseMongoLogDb(object):
         self.collection = self.db[self.COLLECTION_NAME]
 
     def _get_connect(self):
-        conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, replicaset=self.DB_REPL, connect=False)
+        if conf.DEVELOPING:
+            conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, connect=False)
+        else:
+            conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, replicaset=self.DB_REPL, connect=False)
         return conn
 
     def close(self):
@@ -58,3 +61,7 @@ class BaseMongoFontDb(BaseMongoLogDb):
     DB_HOST = conf.MONGO_FRONT_HOST
     DB_PORT = conf.MONGO_FRONT_PORT
     DB_NAME = conf.MONGO_FRONT_DB
+
+    def _get_connect(self):
+        conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, connect=False)
+        return conn
