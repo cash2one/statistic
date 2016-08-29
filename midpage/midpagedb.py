@@ -26,13 +26,23 @@ class DateLogDb(object):
 
     def __init__(self):
         self.collection_name = 'datelog_%s' % self.date
-        self.conn = pymongo.MongoClient(conf.MONGO_HOST, conf.MONGO_PORT)
+        self.conn = self._get_connect()
         self.db = self.conn[conf.MONGO_DB]
         self.collection = self.db[self.collection_name]
 
     @classmethod
     def set_date(cls, date):
         cls.date = date
+
+    def _get_connect(self):
+        if conf.DEVELOPING:
+            conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, connect=False)
+        else:
+            conn = pymongo.MongoReplicaSetClient(self.DB_HOST,
+                                                 replicaset=self.DB_REPL,
+                                                 read_preference=conf.MONGO_SET_READPREF,
+                                                 connect=False)
+        return conn
 
     def close(self):
         if self.conn:

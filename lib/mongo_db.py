@@ -21,7 +21,10 @@ class BaseMongoLogDb(object):
         if conf.DEVELOPING:
             conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, connect=False)
         else:
-            conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, replicaset=self.DB_REPL, connect=False)
+            conn = pymongo.MongoReplicaSetClient(self.DB_HOST,
+                                                 replicaset=self.DB_REPL,
+                                                 read_preference=conf.MONGO_SET_READPREF,
+                                                 connect=False)
         return conn
 
     def close(self):
