@@ -32,7 +32,7 @@ else:
 
     # for replica set
     MONGO_HOST = "cp01-qa-qa-share165.cp01.baidu.com:27018,cq01-testing-ps7163.cq01.baidu.com:27018,cp01-psqa-wd01-y2016.cp01.baidu.com:27018"
-    MONGO_SET_READPREF = pymongo.ReadPreference.SECONDARY_REFERENCE
+    MONGO_SET_READPREF = pymongo.ReadPreference.SECONDARY_PREFERRED
     MONGO_DB = "kgdcdb"
     MONGO_REPL = "mongokgb"
 

@@ -36,10 +36,10 @@ class DateLogDb(object):
 
     def _get_connect(self):
         if conf.DEVELOPING:
-            conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, connect=False)
+            conn = pymongo.MongoClient(conf.MONGO_HOST, conf.MONGO_PORT, connect=False)
         else:
-            conn = pymongo.MongoReplicaSetClient(self.DB_HOST,
-                                                 replicaset=self.DB_REPL,
+            conn = pymongo.MongoReplicaSetClient(conf.MONGO_HOST,
+                                                 replicaset=conf.MONGO_REPL,
                                                  read_preference=conf.MONGO_SET_READPREF,
                                                  connect=False)
         return conn
