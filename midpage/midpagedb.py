@@ -15,6 +15,7 @@ Comment:
 """
 # 标准库
 import pymongo
+import time
 # 第三方库
 
 # 自有库
@@ -59,10 +60,20 @@ class DateLogDb(object):
         return self.collection
 
     def insert_log(self, logs):
-        if type(logs) == list:
-            self.collection.insert_many(logs)
-        else:
-            self.collection.insert_one(logs)
+        try:
+            if type(logs) == list:
+                self.collection.insert_many(logs)
+            else:
+                self.collection.insert_one(logs)
+        except Exception, e:
+            time.sleep(10)
+            try:
+                if type(logs) == list:
+                    self.collection.insert_many(logs)
+                else:
+                    self.collection.insert_one(logs)
+            except Exception, e:
+                pass
 
     def create(self):
         self.collection.ensure_index('source')
