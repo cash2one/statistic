@@ -152,7 +152,7 @@ class Reminder(object):
                     item["name"] = self.indicator_source2name_map[item["indicator"]]
                     ret.append(copy.deepcopy(item))
                 except:
-                    logger.exception()
+                    logger.exception(u"报警指标未在指标列表中找到")
                     continue
         self.info = ret
         logger.debug("output len=%s" % len(self.info))
