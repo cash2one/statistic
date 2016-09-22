@@ -33,7 +33,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 logger = logging.getLogger("email")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 class Reminder(object):
@@ -147,9 +147,13 @@ class Reminder(object):
                 query_ret["user"].append(item["user"])
             # 否则user字段转换成list
             else:
-                item["user"] = [item["user"]]
-                item["name"] = self.indicator_source2name_map[item["indicator"]]
-                ret.append(copy.deepcopy(item))
+                try:
+                    item["user"] = [item["user"]]
+                    item["name"] = self.indicator_source2name_map[item["indicator"]]
+                    ret.append(copy.deepcopy(item))
+                except:
+                    logger.exception()
+                    continue
         self.info = ret
         logger.debug("output len=%s" % len(self.info))
         logger.debug("output of arrange_by_indicator_and_page\n%s" % self.info)
