@@ -48,11 +48,12 @@ class Command(BaseCommand):
             assert date_format
 
     def handle(self, task_id, date, time_span=None, ftp=None, *args):
-        u"""params:
-    task_id 导入任务id
-    date  %Y%m%d格式日期
-    time_span 导入的时间区间,格式 14:22-15:30 可选
-    ftp 下载数据的地址，可选
+        u"""
+        params:
+            task_id 导入任务id
+            date  %Y%m%d格式日期
+            time_span 导入的时间区间,格式 14:22-15:30 可选
+            ftp 下载数据的地址，可选
         """
         if time_span:
             time_span = time_span.split("-")

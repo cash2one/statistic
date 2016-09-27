@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>【KGDC指标报警】【{{ project.project_name }}-{{ project.sub_project_name }}】的指标“{{ indicator.name }}”超限</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body style="margin: 0; padding: 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr><td>
+        <table align="center" border="1" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
+            <tr>
+                <th colspan="4">指标信息</th>
+            </tr><tr>
+                <th width="100">指标名</th>
+                <td>{{ indicator.name }}</td>
+                <th width="100">指标id</th>
+                <td>{{ indicator.id }}</td>
+            </tr>
+            <tr>
+                <th width="100">维度</th>
+                <td colspan="3">{{ indicator.dimension }}</td>
+            </tr>
+            <tr>
+                <th width="100">项目名</th>
+                <td>{{ project.project_name }}</td>
+                <th width="100">子项目名</th>
+                <td>{{ project.sub_project_name }}</td>
+            </tr>
+            <tr>
+                <th width="100">指标值</th>
+                <td>{{ indicator.value }}</td>
+                <th width="100">产生时间</th>
+                <td>{{ indicator.create }}</td>
+            </tr>
+            <tr>
+                <th width="100">详情</th>
+                <td colspan="3">
+                    <a href="kgdc.baidu.com/perform/{{project.page_id}}/">kgdc.baidu.com/perform/{{project.page_id}}/</a>
+                </td>
+            </tr>
+        </table>
+    </td></tr>
+    <tr><td style="padding-top:40px;">
+        <table align="center" border="1" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
+            <tr>
+                <th>报警内容</th>
+            </tr>
+            {% for item in alarm.condition %}
+            {% if item.alarm %}
+            {% if item.type == "relative" %}
+            {% if item.percent %}
+            <tr>
+                <td><font color="red">与{{item.time.num}}{{item.time.unit_name}}前的指标相比，差值{{item.operator}}{{item.value*100}}%</font></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td><font color="red">与{{item.time.num}}{{item.time.unit_name}}前的指标相比，差值{{item.operator}}{{item.value}}</font></td>
+            </tr>
+            {% endif %}
+            {% elif item.type == "absolute" %}
+            {% if item.percent %}
+            <tr>
+                <td><font color="red">当前绝对值{{item.operator}}{{item.value*100}}%</font></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td><font color="red">当前绝对值{{item.operator}}{{item.value}}</font></td>
+            </tr>
+            {% endif %}
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </table>
+    </td></tr>
+    <tr><td style="padding-top:40px;">
+        <table align="center" border="1" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
+            <tr>
+                <th colspan="6">报警策略</th>
+            </tr>
+            <tr>
+                <th width="100">条件关系</th>
+                {% if alarm.logic == "and" %}
+                <td colspan="5">and</td>
+                {% elif alarm.logic == "or" %}
+                <td colspan="5">or</td>
+                {% endif %}
+            </tr>
+            <tr></tr>
+            {% for item in alarm.condition %}
+            <tr>
+                <th width="100">序号</th>
+                <td colspan="2">{{ loop.index }}</td>
+                <th width="100">是否报警</th>
+                {% if item.alarm %}
+                <td colspan="2"><font color="red">报警</font></td>
+                {% elif item.alarm == false %}
+                <td colspan="2">不报警</td>
+                {% else %}
+                <td colspan="2">未检测</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <th width="100">计算方式</th>
+                {% if item.type == "relative" %}
+                <td>相对值</td>
+                {% elif item.type == "absolute" %}
+                <td>绝对值</td>
+                {% endif %}
+                {% if item.percent %}
+                <th width="100">百分比</th>
+                <td>是</td>
+                <th width="100">阈值</th>
+                <td>{{ item.value*100 }}%</td>
+                {% else %}
+                <th width="100">百分比</th>
+                <td>否</td>
+                <th width="100">阈值</th>
+                <td>{{ item.value }}</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <th width="100">规则</th>
+                <td>{{ item.operator }}</td>
+                {% if item.type == "relative" %}
+                <th width="100">num</th>
+                <td>{{ item.time.num }}</td>
+                <th width="100">unit</th>
+                <td>{{ item.time.unit }}</td>
+                {% else %}
+                <th width="100"></th>
+                <td></td>
+                <th width="100"></th>
+                <td></td>
+                {% endif %}
+            </tr>
+            {% if item.type == "relative" %}
+            <tr>
+                <th width="100">取值时间</th>
+                <td>{{ item.last_time }}</td>
+                <th width="100">指标值</th>
+                <td>{{ item.last_value }}</td>
+                <th width="100">相对值</th>
+                {% if item.percent %}
+                <td>{{ item.diff_value*100 }}%</td>
+                {% else %}
+                <td>{{ item.diff_value }}</td>
+                {% endif %}
+            </tr>
+            {% endif %}
+            <tr></tr>
+            {% endfor %}
+        </table>
+    </td></tr>
+    </table>
+</body>
+</html>

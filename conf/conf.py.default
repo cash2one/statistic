@@ -19,10 +19,16 @@ if DEVELOPING is True:
     MONGO_HOST = "cq01-kgdc-dev-db.epc.baidu.com"
     MONGO_PORT = 27017
     MONGO_DB = "kgdcdb"
+    MONGO_REPL = "mongokgb"
 
     MONGO_FRONT_HOST = "cq01-kgdc-dev-db.epc.baidu.com"
     MONGO_FRONT_PORT = 27017
     MONGO_FRONT_DB = "kgdcfont"
+
+    # redis
+    REDIS_HOST = "cp01-kgb-xulei12.epc.baidu.com"
+    REDIS_PORT = 6379
+    REDIS_DB = 0
 else:
     DB_HOST = "cp01-testing-ps7164.cp01.baidu.com"
     DB_PORT = 3306
@@ -40,3 +46,8 @@ else:
     MONGO_FRONT_HOST = "cq01-testing-ps7163.cq01.baidu.com"
     MONGO_FRONT_PORT = 27017
     MONGO_FRONT_DB = "kgdcfont"
+
+    # redis
+    REDIS_HOST = "cq01-testing-ps7163.cq01.baidu.com"
+    REDIS_PORT = 6379
+    REDIS_DB = 0

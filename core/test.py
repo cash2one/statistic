@@ -19,10 +19,9 @@ import importlib
 
 # 自有库
 from lib import tools
-import task_db
+import custom_index.task_db
 
 
-def main(module_name):
-    module_name = "custom_index." + module_name
-    module = importlib.import_module(module_name)
+def main(pack_name, module_name):
+    module = importlib.import_module(pack_name+"."+module_name)
     module.test()

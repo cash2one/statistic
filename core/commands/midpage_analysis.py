@@ -36,9 +36,10 @@ class Command(BaseCommand):
         assert date_format
 
     def handle(self, date, sources=None, *args):
-        u"""params:
-    date  %Y%m%d格式日期
-    sources 分来源进行统计，逗号分隔，可选，默认全部
+        u"""
+        params:
+            date  %Y%m%d格式日期
+            sources 分来源进行统计，逗号分隔，可选，默认全部
         """
         analysis.main(date, sources)
 

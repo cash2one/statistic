@@ -31,11 +31,12 @@ class Command(BaseCommand):
         assert args[2] in ["this", "last", "next", "init"]  
 
     def handle(self, mode="next", *args):
-        u"""mode:
-    this  创建本月的数据库
-    last  创建上月的数据库
-    next  默认值，创建下月的数据库
-    init  初始化，创建所有表和本月的表
+        u"""
+        mode:
+            this  创建本月的数据库
+            last  创建上月的数据库
+            next  默认值，创建下月的数据库
+            init  初始化，创建所有表和本月的表
         """    
         createdb.create(mode)
 

@@ -38,10 +38,11 @@ class Command(BaseCommand):
         assert date_format
 
     def handle(self, task_id, date, ftp=None, *args):
-        u"""params:
-    task_id 导入任务id
-    date  %Y%m%d格式日期
-    ftp 下载数据的地址，可选
+        u"""
+        params:
+            task_id 导入任务id
+            date  %Y%m%d格式日期
+            ftp 下载数据的地址，可选
         """
         import_original_data.main(task_id, date, ftp)
 
