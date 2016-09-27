@@ -20,13 +20,13 @@ import copy
 import datetime
 import logging
 # 第三方库
+from jinja2 import Environment, PackageLoader
 
 # 自有库
 import base
 import subscribe_db
 from lib import mysql_db
 from lib import tools
-from jinja2 import Environment, PackageLoader
 
 import sys
 

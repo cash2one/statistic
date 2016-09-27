@@ -13,20 +13,21 @@ Date   : 2016-7-5
 Comment:
 """
 # 标准库
-import time
 # 第三方库
 
 # 自有库
+from core import test
 from core.management.base import BaseCommand
-from custom_index import test
 
 
 class Command(BaseCommand):
     def assert_argv(self, *args):
-        assert len(args) >= 3
+        assert len(args) >= 4
 
-    def handle(self, module_name, *args):
+    def handle(self, pack_name, module_name, *args):
         u"""
+        测试代码命令。
+        python main.py test {pack_name} {module_name}
         """
-        test.main(module_name)
+        test.main(pack_name, module_name)
 

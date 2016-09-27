@@ -36,9 +36,10 @@ class Command(BaseCommand):
         assert date_format
 
     def handle(self, date, products=None, *args):
-        u"""params:
-    date  %Y%m%d格式日期
-    products  产品名，英文逗号分隔
+        u"""
+        params:
+            date  %Y%m%d格式日期
+            products  产品名，英文逗号分隔
         """
         if products:
             products = products.split(",")
