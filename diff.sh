@@ -36,3 +36,6 @@ echo "完成。传送到本地"
 
 sz -be old.zip new.zip
 rm old.zip new.zip
+
+echo "还原到dev分支"
+git checkout dev

@@ -53,7 +53,7 @@ class KgdcRedis(object):
         获取监控项结果
         :return: 监控项结果数据，格式待定
         """
-        unicode_value = self.rc.blpop(self.key_setting, timeout=0)
+        unicode_value = self.rc.blpop(self.key_setting, timeout=60)
         if unicode_value is not None:
             unicode_value = unicode_value[1]
             logger.info(unicode_value)
