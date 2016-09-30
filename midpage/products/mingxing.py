@@ -3,7 +3,7 @@ import os
 
 from midpage import base
 
-source = 'mingxing'
+source = 'qianxun'
 
 
 def average(results):
@@ -109,7 +109,8 @@ def average_interaction_rounds(results):
 
 class Product(base.CRMMidpageProduct):
     default_query = {
-        'source': 'mingxing'
+        'source': source,
+        'query.cat': 'dumi_mingxing',
     }
 
     index_map = { #example，具体类需要复写

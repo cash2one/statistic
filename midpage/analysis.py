@@ -46,12 +46,12 @@ LOG_DATAS = {
         'nj03-mco-wise272.nj03.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/nj03-mco-wise272.nj03.baidu.com/access_%s.log',
         'nj03-mco-wise274.nj03.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/nj03-mco-wise274.nj03.baidu.com/access_%s.log',
     },
-    'mingxing': {
-        'nj02-kgb-haiou1.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou1.nj02/star_tongji_%s.log',
-        'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/star_tongji_%s.log',
-        'st01-kgb-haiou1.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou1.st01/star_tongji_%s.log',
-        'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/star_tongji_%s.log',
-    },
+    #'mingxing': {
+    #    'nj02-kgb-haiou1.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou1.nj02/star_tongji_%s.log',
+    #    'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/star_tongji_%s.log',
+    #    'st01-kgb-haiou1.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou1.st01/star_tongji_%s.log',
+    #    'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/star_tongji_%s.log',
+    #},
     'qianxun_test': {
         #'access_log': 'ftp://cp01-rdqa04-dev111.cp01.baidu.com/home/users/wangyuntian/work/dumi-data/temp.log.%s',
     },
