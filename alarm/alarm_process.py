@@ -333,7 +333,7 @@ def alert_user(alarm_set):
     db = lib.mysql_db.BaseMysqlDb()
     # indicator 字段
     sql = "select `source_name`, `name` from `rawdata_indicator`" \
-          " where `sub_project_id`=%s and `source_name`='%s' and mark_del=0"\
+          " where `sub_project_id`=%s and `source_name`='%s' and `permit_subproject`.`mark_del`=0"\
           % (alarm_set["@subProject"], alarm_set["monitor"]["@index"])
     db.cur.execute(sql)
     data = db.cur.fetchone()
@@ -354,7 +354,8 @@ def alert_user(alarm_set):
     sql = "select `permit_project`.`name`, `permit_subproject`.`name`" \
           " from `permit_subproject` inner join `permit_project`" \
           " on `permit_project`.`id`=`permit_subproject`.`project_id`" \
-          " where `permit_subproject`.`id`=%s and mark_del=0" % alarm_set["@subProject"]
+          " where `permit_subproject`.`id`=%s" % alarm_set["@subProject"]
+    logging.info(sql)
     db.cur.execute(sql)
     data = db.cur.fetchone()
     if data:
@@ -369,7 +370,7 @@ def alert_user(alarm_set):
     sql = "select perform_page.id" \
           " from perform_page inner join perform_page_group" \
           " on perform_page.page_group_id=perform_page_group.id" \
-          " where perform_page_group.sub_project_id=%s and mark_del=0" % alarm_set["@subProject"]
+          " where perform_page_group.sub_project_id=%s and perform_page_group.mark_del=0" % alarm_set["@subProject"]
     db.cur.execute(sql)
     data = db.cur.fetchone()
     if data:
