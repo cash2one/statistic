@@ -7,7 +7,7 @@ Desktop.ini
 *.py[cod]
 *.so
 *.egg
-*.egg-info
+*.egg-infogit
 dist
 build
 
@@ -22,10 +22,10 @@ data
 
 #vim .swp
 *.swp
-
+*.un~
 
 #log
-*.class
+*.classgit
 *.log
 *nohup.out
 
