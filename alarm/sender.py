@@ -27,7 +27,7 @@ def send_remind_email(alarm_set):
     cc = 'kgdc-dev@baidu.com'
     env = jinja2.Environment(loader=jinja2.PackageLoader("alarm", 'templates'))
 
-    if "user_list" in alarm_set["alert"]:
+    if "receiver" in alarm_set["alert"]:
         user_list = alarm_set["alert"]["receiver"].split(";")
     else:
         user_list = []
@@ -39,6 +39,7 @@ def send_remind_email(alarm_set):
     user_list += group_list
 
     if not user_list:
+        logging.warning("receiver and receive_group is empty")
         return
     email_list = []
     for item in user_list:
