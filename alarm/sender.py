@@ -27,7 +27,7 @@ def send_remind_email(alarm_set):
     cc = 'kgdc-dev@baidu.com'
     env = jinja2.Environment(loader=jinja2.PackageLoader("alarm", 'templates'))
 
-    if "user_list" in alarm_set["alert"]:
+    if "receiver" in alarm_set["alert"]:
         user_list = alarm_set["alert"]["receiver"].split(";")
     else:
         user_list = []
@@ -39,6 +39,7 @@ def send_remind_email(alarm_set):
     user_list += group_list
 
     if not user_list:
+        logging.warning("receiver and receive_group is empty")
         return
     email_list = []
     for item in user_list:
@@ -54,12 +55,16 @@ def send_remind_email(alarm_set):
     if conf.DEVELOPING:
         title += "【测试环境】"
     template = env.get_template('alarm_email.html')
-    body = template.render(monitor=alarm_set["monitor"],
-                           project=alarm_set["project"],
-                           indicator=alarm_set["indicator"],
-                           condition=alarm_set["alarm"]["condition"],
-                           alarm=alarm_set["alarm"])
-    lib.tools.send_email(email_address, title, body, True, cc=cc)
+    try:
+        body = template.render(monitor=alarm_set["monitor"],
+                               project=alarm_set["project"],
+                               indicator=alarm_set["indicator"],
+                               condition=alarm_set["alarm"]["condition"],
+                               alarm=alarm_set["alarm"])
+        lib.tools.send_email(email_address, title, body, True, cc=cc)
+    except:
+        logging.error(alarm_set)
+        logging.exception("发送邮件错误")
     logging.info('send email to user %s :\n%s' % (email_address, body))
 
 

@@ -39,10 +39,14 @@ def main():
     # 无尽等待，无消息为阻塞态
     while 1:
         alarm_item = rs.pop_alarm()
+        if not alarm_item:
+            continue
         try:
             alarm_set = json.loads(alarm_item)
             alarm_check(alarm_set)
         except:
+            logging.error("the type of alarm_set is %s" % type(alarm_item))
+            logging.error(alarm_item)
             logging.exception(u"处理失败")
 
 
@@ -281,14 +285,15 @@ def judge_relative(condition, alarm_set):
                 value = alarm_set["@value"]-last_data["@value"]
             # 计算完后，调用绝对判断的逻辑
             ret = judge_absolute(condition, value)
+            update_json = {
+                "alarm": False,
+                "last_value": last_data["@value"],
+                "last_time": last_data["@create"],
+                "diff_value": value,
+            }
             if ret:
-                update_json = {
-                    "alarm": True,
-                    "last_value": last_data["@value"],
-                    "last_time": last_data["@create"],
-                    "diff_value": value,
-                }
-                condition.update(update_json)
+                update_json["alarm"] = True
+            condition.update(update_json)
             return ret
         else:
             logging.warning("query no result\n%s" % json.dumps(query, ensure_ascii=False))
@@ -333,8 +338,9 @@ def alert_user(alarm_set):
     db = lib.mysql_db.BaseMysqlDb()
     # indicator 字段
     sql = "select `source_name`, `name` from `rawdata_indicator`" \
-          " where `sub_project_id`=%s and `source_name`='%s' and `permit_subproject`.`mark_del`=0"\
+          " where `sub_project_id`=%s and `source_name`='%s' and `mark_del`=0"\
           % (alarm_set["@subProject"], alarm_set["monitor"]["@index"])
+    logging.info(sql)
     db.cur.execute(sql)
     data = db.cur.fetchone()
     dimension = alarm_set["monitor"].copy()
@@ -372,6 +378,7 @@ def alert_user(alarm_set):
           " on perform_page.page_group_id=perform_page_group.id" \
           " where perform_page_group.sub_project_id=%s and perform_page_group.mark_del=0"\
           % alarm_set["@subProject"]
+    logging.info(sql)
     db.cur.execute(sql)
     data = db.cur.fetchone()
     if data:
@@ -379,6 +386,7 @@ def alert_user(alarm_set):
 
     # email发送分支
     if "email" in alarm_set["alert"]["channel"]:
+        logging.info("sending email")
         sender.send_remind_email(alarm_set)
 
 
