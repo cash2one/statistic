@@ -333,7 +333,7 @@ def alert_user(alarm_set):
     db = lib.mysql_db.BaseMysqlDb()
     # indicator 字段
     sql = "select `source_name`, `name` from `rawdata_indicator`" \
-          " where `sub_project_id`=%s and `source_name`='%s' and `permit_subproject`.`mark_del`=0"\
+          " where `sub_project_id`=%s and `source_name`='%s' and mark_del`=0"\
           % (alarm_set["@subProject"], alarm_set["monitor"]["@index"])
     db.cur.execute(sql)
     data = db.cur.fetchone()
