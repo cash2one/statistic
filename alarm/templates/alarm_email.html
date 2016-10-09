@@ -6,17 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
 <body style="margin: 0; padding: 0;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr><td>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr><td>
         <table align="center" border="1" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
             <tr>
                 <th colspan="4">指标信息</th>
             </tr><tr>
-                <th width="100">指标名</th>
-                <td>{{ indicator.name }}</td>
-                <th width="100">指标id</th>
-                <td>{{ indicator.id }}</td>
-            </tr>
+            <th width="100">指标名</th>
+            <td>{{ indicator.name }}</td>
+            <th width="100">指标id</th>
+            <td>{{ indicator.id }}</td>
+        </tr>
             <tr>
                 <th width="100">维度</th>
                 <td colspan="3">{{ indicator.dimension }}</td>
@@ -136,15 +136,24 @@
             </tr>
             {% if item.type == "relative" %}
             <tr>
-                <th width="100">取值时间</th>
-                <td>{{ item.last_time }}</td>
-                <th width="100">指标值</th>
-                <td>{{ item.last_value }}</td>
-                <th width="100">相对值</th>
-                {% if item.percent %}
-                <td>{{ item.diff_value*100 }}%</td>
+                {% if alarm in item %}
+                    <th width="100">取值时间</th>
+                    <td>{{ item.last_time }}</td>
+                    <th width="100">指标值</th>
+                    <td>{{ item.last_value }}</td>
+                    <th width="100">相对值</th>
+                    {% if item.percent %}
+                    <td>{{ item.diff_value*100 }}%</td>
+                    {% else %}
+                    <td>{{ item.diff_value }}</td>
+                    {% endif %}
                 {% else %}
-                <td>{{ item.diff_value }}</td>
+                    <th width="100">取值时间</th>
+                    <td>-</td>
+                    <th width="100">指标值</th>
+                    <td>-</td>
+                    <th width="100">相对值</th>
+                    <td>-</td>
                 {% endif %}
             </tr>
             {% endif %}
@@ -152,6 +161,6 @@
             {% endfor %}
         </table>
     </td></tr>
-    </table>
+</table>
 </body>
 </html>

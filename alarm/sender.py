@@ -55,12 +55,12 @@ def send_remind_email(alarm_set):
     if conf.DEVELOPING:
         title += "【测试环境】"
     template = env.get_template('alarm_email.html')
-    body = template.render(monitor=alarm_set["monitor"],
-                           project=alarm_set["project"],
-                           indicator=alarm_set["indicator"],
-                           condition=alarm_set["alarm"]["condition"],
-                           alarm=alarm_set["alarm"])
     try:
+        body = template.render(monitor=alarm_set["monitor"],
+                               project=alarm_set["project"],
+                               indicator=alarm_set["indicator"],
+                               condition=alarm_set["alarm"]["condition"],
+                               alarm=alarm_set["alarm"])
         lib.tools.send_email(email_address, title, body, True, cc=cc)
     except:
         logging.error(alarm_set)

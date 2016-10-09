@@ -285,14 +285,15 @@ def judge_relative(condition, alarm_set):
                 value = alarm_set["@value"]-last_data["@value"]
             # 计算完后，调用绝对判断的逻辑
             ret = judge_absolute(condition, value)
+            update_json = {
+                "alarm": False,
+                "last_value": last_data["@value"],
+                "last_time": last_data["@create"],
+                "diff_value": value,
+            }
             if ret:
-                update_json = {
-                    "alarm": True,
-                    "last_value": last_data["@value"],
-                    "last_time": last_data["@create"],
-                    "diff_value": value,
-                }
-                condition.update(update_json)
+                update_json["alarm"] = True
+            condition.update(update_json)
             return ret
         else:
             logging.warning("query no result\n%s" % json.dumps(query, ensure_ascii=False))
