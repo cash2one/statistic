@@ -39,6 +39,8 @@ def main():
     # 无尽等待，无消息为阻塞态
     while 1:
         alarm_item = rs.pop_alarm()
+        if not alarm_item:
+            continue
         try:
             alarm_set = json.loads(alarm_item)
             alarm_check(alarm_set)
