@@ -136,7 +136,7 @@
             </tr>
             {% if item.type == "relative" %}
             <tr>
-                {% if alarm in item %}
+                {% if "alarm" in item %}
                     <th width="100">取值时间</th>
                     <td>{{ item.last_time }}</td>
                     <th width="100">指标值</th>
