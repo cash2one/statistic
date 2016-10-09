@@ -43,7 +43,8 @@ def main():
             alarm_set = json.loads(alarm_item)
             alarm_check(alarm_set)
         except:
-            logging.info(alarm_item)
+            logging.error("the type of alarm_set is %s" % type(alarm_item))
+            logging.error(alarm_item)
             logging.exception(u"处理失败")
 
 
