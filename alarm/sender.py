@@ -60,7 +60,11 @@ def send_remind_email(alarm_set):
                            indicator=alarm_set["indicator"],
                            condition=alarm_set["alarm"]["condition"],
                            alarm=alarm_set["alarm"])
-    lib.tools.send_email(email_address, title, body, True, cc=cc)
+    try:
+        lib.tools.send_email(email_address, title, body, True, cc=cc)
+    except:
+        logging.error(alarm_set)
+        logging.exception("发送邮件错误")
     logging.info('send email to user %s :\n%s' % (email_address, body))
 
 
