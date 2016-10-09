@@ -53,7 +53,7 @@ def send_remind_email(alarm_set):
                alarm_set["project"]["sub_project_name"],
                alarm_set["indicator"]["name"])
     if conf.DEVELOPING:
-        title += "【测试环境】"
+        title += u"【测试环境】"
     template = env.get_template('alarm_email.html')
     try:
         body = template.render(monitor=alarm_set["monitor"],
@@ -70,9 +70,11 @@ def send_remind_email(alarm_set):
 
 def test():
     alert = {
-        "channel": ["sms", "hi", "email"],
-        "receiver": "xulei12",
-        "receiver_group": "",
+        "alert": {
+            "channel": ["sms", "hi", "email"],
+            "receiver": "xulei12",
+            "receiver_group": "",
+        },
         "monitor": {
 
         },
@@ -114,8 +116,8 @@ def test():
                     "num": 3,
                 },
                 "last_time": "2016-09-22 12:00",
-                "last_value": 80,
-                "diff_value": 0.323,
+                "last_value": 0.00000111122312308457,
+                "diff_value": 0.000000123412345623112231,
                 "alarm": True
             }, {
                 "type": "relative",
@@ -127,8 +129,8 @@ def test():
                     "num": 1,
                 },
                 "last_time": "2016-09-22 12:00",
-                "last_value": 80,
-                "diff_value": 0.323,
+                "last_value": 0.0982111122312308457,
+                "diff_value": 0.00123412345623112231,
                 "alarm": True
             }, {
                 "type": "absolute",
