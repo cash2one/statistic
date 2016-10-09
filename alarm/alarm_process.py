@@ -370,7 +370,8 @@ def alert_user(alarm_set):
     sql = "select perform_page.id" \
           " from perform_page inner join perform_page_group" \
           " on perform_page.page_group_id=perform_page_group.id" \
-          " where perform_page_group.sub_project_id=%s and perform_page_group.mark_del=0" % alarm_set["@subProject"]
+          " where perform_page_group.sub_project_id=%s and perform_page_group.mark_del=0"\
+          % alarm_set["@subProject"]
     db.cur.execute(sql)
     data = db.cur.fetchone()
     if data:
