@@ -28,6 +28,31 @@ def get_commands():
         return []
 
 
+def get_commands_info():
+    u"""
+    获取提示信息
+    xulei12@baidu.com
+    2016.9.23
+    :return:
+    """
+    core_dir = os.path.join(conf.BASE_DIR, 'core')
+    command_dir = os.path.join(core_dir, 'commands')
+    ret = ""
+    try:
+        file_list = os.listdir(command_dir)
+        file_list.sort()
+        for command in file_list:
+            if not command.startswith('_') and command.endswith('.py'):
+                try:
+                    module = import_module('core.commands.%s' % command[0:-3])
+                    ret += command[0:-3] + "\n" + module.Command.handle.func_doc+"\n\n"
+                except:
+                    continue
+    except OSError:
+        return []
+    return ret
+
+
 def load_command_class(name):
     u"""
     从commands中读取Command类
@@ -47,8 +72,7 @@ class ManagementUtility(object):
         """
         Returns the script's main help text, as a string.
         """
-        names = get_commands()
-        names = ["\t" + name for name in names]
+        names = get_commands_info()
 
         usage = [
             "Usage: %s subcommand [args]" % self.prog_name,
@@ -58,11 +82,10 @@ class ManagementUtility(object):
             "",
             "Type '%s help <subcommand>' for help on a specific subcommand." % self.prog_name,
             "",
-            "Available subcommands:",
+            "Available subcommands:\n\n",
         ]
-        usage.extend(names)
 
-        return '\n'.join(usage)
+        return '\n'.join(usage)+names
 
     def fetch_command(self, subcommand):
         """

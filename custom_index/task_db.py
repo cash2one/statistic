@@ -96,22 +96,41 @@ class CustomIndexTask(mysql_db.BaseMysqlDb):
         raise error.Error("unknown period type")
 
     def if_run_now(self):
+        """
+        时效性任务判断
+        :return: -1 大于00:00小于首次运行时间
+                  0  不运行
+                  1  大于首次运行时间，运行
+        """
         # 为时效性任务
         if self.task_type != "timely":
-            return False
+            return 0
 
         # 统一换算为分钟数
-        ts_now = int(time.time()/60)
-        # 计算首次运行的ts分钟
+        now_ts = int(time.time()/60)
+        # 计算今天凌晨的ts分钟
         today = datetime.date.today()
-        first_time = str(today)+" "+self.period["first"]
-        first_time = time.strptime(first_time, "%Y-%m-%d %H:%M")
-        first_ts = int(time.mktime(first_time)/60)
-        # 现在时间大于首次运行时间
-        if ts_now >= first_ts:
-            if (ts_now-first_ts) % (self.period["interval"]) == 0:
-                return True
-        return False
+        # added by xulei12@baidu.com 2016.7.18 当指标延迟导入，可能每天最后的指标无法导入
+        today_ts = int(time.mktime(today.timetuple())/60)
+        # added ended
+        # 计算今天、昨天首次运行的ts
+        first_ts = int(base.merge_date_time2ts(str(today), self.period["first"])/60)
+        yesterday = today - datetime.timedelta(days=1)
+        yesterday_first_ts = int(base.merge_date_time2ts(str(yesterday), self.period["first"])/60)
+
+        # added by xulei12@baidu.com 2016.7.18 当指标延迟导入，可能每天最后的指标无法导入
+        # 当前时间小于首次运行时间，而且大于今天凌晨。则按照昨天的首次时间计算运行间隔
+        if today_ts <= now_ts < first_ts:
+            if (now_ts - yesterday_first_ts) % (self.period["interval"]) == 0:
+                return -1
+        # added ended
+        # 现在时间大于首次运行时间，则按照今天的计算间隔
+        elif now_ts >= first_ts:
+            if (now_ts - first_ts) % (self.period["interval"]) == 0:
+                return 1
+        else:
+            pass
+        return 0
 
     @classmethod
     def get_routine_tasks_by_hour(cls, hour):

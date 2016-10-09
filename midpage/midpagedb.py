@@ -15,6 +15,7 @@ Comment:
 """
 # 标准库
 import pymongo
+import time
 # 第三方库
 
 # 自有库
@@ -26,13 +27,23 @@ class DateLogDb(object):
 
     def __init__(self):
         self.collection_name = 'datelog_%s' % self.date
-        self.conn = pymongo.MongoClient(conf.MONGO_HOST, conf.MONGO_PORT)
+        self.conn = self._get_connect()
         self.db = self.conn[conf.MONGO_DB]
         self.collection = self.db[self.collection_name]
 
     @classmethod
     def set_date(cls, date):
         cls.date = date
+
+    def _get_connect(self):
+        if conf.DEVELOPING:
+            conn = pymongo.MongoClient(conf.MONGO_HOST, conf.MONGO_PORT, connect=False)
+        else:
+            conn = pymongo.MongoReplicaSetClient(conf.MONGO_HOST,
+                                                 replicaset=conf.MONGO_REPL,
+                                                 read_preference=conf.MONGO_SET_READPREF,
+                                                 connect=False)
+        return conn
 
     def close(self):
         if self.conn:
@@ -49,10 +60,20 @@ class DateLogDb(object):
         return self.collection
 
     def insert_log(self, logs):
-        if type(logs) == list:
-            self.collection.insert_many(logs)
-        else:
-            self.collection.insert_one(logs)
+        try:
+            if type(logs) == list:
+                self.collection.insert_many(logs)
+            else:
+                self.collection.insert_one(logs)
+        except Exception, e:
+            time.sleep(10)
+            try:
+                if type(logs) == list:
+                    self.collection.insert_many(logs)
+                else:
+                    self.collection.insert_one(logs)
+            except Exception, e:
+                pass
 
     def create(self):
         self.collection.ensure_index('source')
@@ -84,7 +105,8 @@ class DateLogDb(object):
             count = item['count']
         return count
 
-
+'''
+垃圾代码，暂时屏蔽
 class FrontMongoDb(object):
     """
     用于推送数据到kgdc前台展现数据库，
@@ -115,3 +137,4 @@ class FrontMongoDb(object):
         else:
             self.collection_origin.insert_one(data)
             self.collection_summary.insert_one(data)
+'''

@@ -36,8 +36,9 @@ class Command(BaseCommand):
         assert date_format
 
     def handle(self, date, *args):
-        u"""params:
-        date  %Y%m%d格式日期
+        u"""
+        params:
+            date  %Y%m%d格式日期
         """    
         spo_quality_import.main(date)
 

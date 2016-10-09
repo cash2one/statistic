@@ -1,5 +1,6 @@
 # coding=utf-8
 import os
+import pymongo
 
 DEVELOPING = True
 
@@ -18,7 +19,16 @@ if DEVELOPING is True:
     MONGO_HOST = "cq01-kgdc-dev-db.epc.baidu.com"
     MONGO_PORT = 27017
     MONGO_DB = "kgdcdb"
-    MONGO_FONT_DB = "kgdcfont"
+    MONGO_REPL = "mongokgb"
+
+    MONGO_FRONT_HOST = "cq01-kgdc-dev-db.epc.baidu.com"
+    MONGO_FRONT_PORT = 27017
+    MONGO_FRONT_DB = "kgdcfont"
+
+    # redis
+    REDIS_HOST = "cp01-kgb-xulei12.epc.baidu.com"
+    REDIS_PORT = 6379
+    REDIS_DB = 0
 else:
     DB_HOST = "cp01-testing-ps7164.cp01.baidu.com"
     DB_PORT = 3306
@@ -26,7 +36,18 @@ else:
     DB_PASSWORD = "521aladdin"
     DB_NAME = "mvs_platform"
 
-    MONGO_HOST = "cq01-testing-ps7163.cq01.baidu.com"
-    MONGO_PORT = 27017
+    # for replica set
+    MONGO_HOST = "cp01-qa-qa-share165.cp01.baidu.com:27018,cq01-testing-ps7163.cq01.baidu.com:27018,cp01-psqa-wd01-y2016.cp01.baidu.com:27018"
+    MONGO_SET_READPREF = pymongo.ReadPreference.SECONDARY_PREFERRED
     MONGO_DB = "kgdcdb"
-    MONGO_FONT_DB = "kgdcfont"
+    MONGO_REPL = "mongokgb"
+    MONGO_PORT = 27017
+
+    MONGO_FRONT_HOST = "cq01-testing-ps7163.cq01.baidu.com"
+    MONGO_FRONT_PORT = 27017
+    MONGO_FRONT_DB = "kgdcfont"
+
+    # redis
+    REDIS_HOST = "cq01-testing-ps7163.cq01.baidu.com"
+    REDIS_PORT = 6379
+    REDIS_DB = 0

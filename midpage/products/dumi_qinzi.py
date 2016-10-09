@@ -6,13 +6,12 @@ from midpage import base
 source = 'qianxun'
 
 
-
 class Product(base.CRMMidpageProduct):
     default_query = {
         'source': 'qianxun',
     }
 
-    index_map = { #example，具体类需要复写
+    index_map = {  # example，具体类需要复写
         u'定制页pv': {
             'query': {
                 'query.cat': 'dumi_qinzi_rss',

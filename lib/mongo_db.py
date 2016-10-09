@@ -5,7 +5,11 @@ from conf import conf
 
 
 class BaseMongoLogDb(object):
+    DB_HOST = conf.MONGO_HOST
+    DB_PORT = conf.MONGO_PORT
     DB_NAME = conf.MONGO_DB
+    DB_REPL = conf.MONGO_REPL
+
     COLLECTION_NAME = ""
 
     def __init__(self):
@@ -13,9 +17,14 @@ class BaseMongoLogDb(object):
         self.db = self.conn[self.DB_NAME]
         self.collection = self.db[self.COLLECTION_NAME]
 
-    @staticmethod
-    def _get_connect():
-        conn = pymongo.MongoClient(conf.MONGO_HOST, conf.MONGO_PORT, connect=False)
+    def _get_connect(self):
+        if conf.DEVELOPING:
+            conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, connect=False)
+        else:
+            conn = pymongo.MongoReplicaSetClient(self.DB_HOST,
+                                                 replicaset=self.DB_REPL,
+                                                 read_preference=conf.MONGO_SET_READPREF,
+                                                 connect=False)
         return conn
 
     def close(self):
@@ -52,4 +61,10 @@ class BaseMongoLogDb(object):
 
 
 class BaseMongoFontDb(BaseMongoLogDb):
-    DB_NAME = conf.MONGO_FONT_DB
+    DB_HOST = conf.MONGO_FRONT_HOST
+    DB_PORT = conf.MONGO_FRONT_PORT
+    DB_NAME = conf.MONGO_FRONT_DB
+
+    def _get_connect(self):
+        conn = pymongo.MongoClient(self.DB_HOST, self.DB_PORT, connect=False)
+        return conn

@@ -39,9 +39,10 @@ class Command(BaseCommand):
         assert date_format
 
     def handle(self, task_id, date, *args):
-        u"""params:
-    task_id 导入任务id
-    date  %Y%m%d格式日期
+        u"""
+        params:
+            task_id 导入任务id
+            date  %Y%m%d格式日期
         """
         output_original_data.main(task_id, date)
 

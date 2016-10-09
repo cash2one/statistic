@@ -55,6 +55,21 @@ def merge_date_time(str_date, str_time):
     return str_date + " " + str_time
 
 
+def merge_date_time2ts(str_date, str_time):
+    """
+    将2016-07-18与15:33合并成ts  1468827180.0
+    xulei12@baidu.com
+    2016.07.18
+    :param str_date: 2016-07-18
+    :param str_time: 15:33
+    :return:1468827180.0
+    """
+    time_str = str_date + " " + str_time
+    time_obj = time.strptime(time_str, "%Y-%m-%d %H:%M")
+    time_ts = time.mktime(time_obj)
+    return time_ts
+
+
 def date_time_str2utc(str_date, str_time):
     """
     将2016-07-06 05:00 这样的北京时间，转换为utc时间格式    2016-07-05 21:00
@@ -88,4 +103,76 @@ def utc_str2date_time(utc):
         utc = time.strptime(utc, "%Y-%m-%d %H:%M:%S")
         utc = datetime.datetime(utc.tm_year, utc.tm_mon, utc.tm_mday, utc.tm_hour, utc.tm_min)
     ret = utc + datetime.timedelta(hours=8)
+    return ret
+
+
+def get_diff_rate(new_data, old_data, ndigits=None):
+    """
+    计算差异百分比。统一成字符串输出格式
+    :param new_data:
+    :param old_data:
+    :param ndigits:
+    :return:
+    """
+    try:
+        new_data = float(new_data)
+        old_data = float(old_data)
+    except Exception as e:
+        return "-"
+    if not new_data or not old_data:
+        return "-"
+    ret = (new_data - old_data)*100 / old_data
+    if ndigits:
+        ret = round(ret, ndigits)
+    return str(ret) + "%"
+
+
+def json_list_find(json_list, query, find_all=False):
+    """
+    类似前端的_.find接口，从json_list中找到符合条件query的项
+    xulei12@baidu.com 2016-07-18
+    :param json_list:  [{},{}]
+    :param query: {}
+    :param find_all: false-只查找一个，true-查找所有
+    :return:
+    """
+    if not isinstance(json_list, list):
+        return {}
+
+    ret = []
+    for item in json_list:
+        if json_match(item, query):
+            ret.append(item)
+            if not find_all:
+                return item
+    return ret if find_all else {}
+
+
+def json_match(data, query):
+    """
+    判断date是否符合query的要求
+    xulei12@baidu.com 2016-07-18
+    :param data:
+    :param query:
+    :return:
+    """
+    for (key, value) in query.items():
+        if data[key] != value:
+            return False
+    return True
+
+
+def json_list_sum_by(json_list, key):
+    """
+    类似前端接口 sumBy， 将key字段的所有值求和
+    :param json_list:
+    :param query:
+    :return:
+    """
+    ret = 0
+    for item in json_list:
+        try:
+            ret += float(item[key])
+        except:
+            continue
     return ret

@@ -41,13 +41,17 @@ LOG_DATAS = {
         'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/access_%s.log',
         'nj02-kgb-haiou1.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou1.nj02/access_%s.log',
         'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/access_%s.log',
+        'bjyz-dumi-midpage0.bjyz.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/bjyz-dumi-midpage0.bjyz.baidu.com/access_%s.log',
+        'bjyz-dumi-midpage1.bjyz.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/bjyz-dumi-midpage1.bjyz.baidu.com/access_%s.log',
+        'nj03-mco-wise272.nj03.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/nj03-mco-wise272.nj03.baidu.com/access_%s.log',
+        'nj03-mco-wise274.nj03.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/nj03-mco-wise274.nj03.baidu.com/access_%s.log',
     },
-    'mingxing': {
-        'nj02-kgb-haiou1.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou1.nj02/star_tongji_%s.log',
-        'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/star_tongji_%s.log',
-        'st01-kgb-haiou1.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou1.st01/star_tongji_%s.log',
-        'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/star_tongji_%s.log',
-    },
+    #'mingxing': {
+    #    'nj02-kgb-haiou1.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou1.nj02/star_tongji_%s.log',
+    #    'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/star_tongji_%s.log',
+    #    'st01-kgb-haiou1.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou1.st01/star_tongji_%s.log',
+    #    'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com:/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/star_tongji_%s.log',
+    #},
     'qianxun_test': {
         #'access_log': 'ftp://cp01-rdqa04-dev111.cp01.baidu.com/home/users/wangyuntian/work/dumi-data/temp.log.%s',
     },
@@ -192,13 +196,13 @@ def parse_request(request, ret):
     if len(ret['url']) > 1024:
         raise error.ParseLineError('url too long:%s' % ret['url'])
     ret['query'] = parse_query(request.query)
-    int_fields = ['image_num', 'review_num', 'tuangou_num']
-    for field in int_fields:
-        if field in ret['query']:
+
+    for field in ret['query']:
+        if field.endswith('_num'):
             try:
                 ret['query'][field] = int(ret['query'][field])
             except:
-                pass
+                raise error.ParseLineError('[%s]query int error:%s' % (field, ret['query'][field]))
     if 'duration' in ret['query']:
         try:
             ret['query']['duration'] = float(ret['query']['duration'])
@@ -245,13 +249,7 @@ def parse_cookie(cookie, ret):
 def analysis_qianxun(match, ret):
     request = match.group("request")
     parse_request(request, ret)
-    number_keys = ["review_num", "image_num", "tuangou_num"]
-    for number_key in number_keys:
-        if number_key in ret["query"]:
-            try:
-                ret["query"][number_key] = int(ret["query"][number_key])
-            except:
-                pass
+
     user_agent = match.group("user_agent")
     ret["user_agent"] = user_agent
     parse_user_agent(user_agent, ret)

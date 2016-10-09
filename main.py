@@ -12,6 +12,9 @@ File   : main.py
 Authors: yangxiaotong@baidu.com
 Date   : 2015-12-20
 Comment:
+
+Date   : 2016-09-30
+Comment: 迁移到icode
 """
 # 标准库
 import sys
