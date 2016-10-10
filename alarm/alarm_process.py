@@ -166,7 +166,15 @@ def alarm_check(alarm_set):
             "@subProject": alarm_set["@subProject"],
             "monitor": alarm_set["monitor"]
         }
-        db.update(query=query, data=alarm_set, upsert=False)
+        # 更新新的报警配置。之前的alarm_set被污染了。无奈
+        data = {
+            "@subProject": alarm_set["@subProject"],
+            "create": alarm_set["create"],
+            "monitor": alarm_set["monitor"],
+            "alarm": alarm_set["alarm"],
+            "alert": alarm_set["alert"]
+        }
+        db.update(query=query, data=data, upsert=False)
         return True
     else:
         logging.info("no need to alert")
