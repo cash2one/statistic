@@ -25,6 +25,7 @@ import lib.mysql_db
 import core.kgdc_redis
 import custom_index.data_db
 import sender
+import alarm_db
 
 
 def main():
@@ -124,9 +125,9 @@ def alarm_check(alarm_set):
         return False
 
     # 判断上次告警时间。如果相隔过近<1h，本次不判断，直接退出
+    ts = int(time.time())
     if "last_alert_time" in alert:
         last_alert_time = int(alert["last_alert_time"])
-        ts = int(time.time())
         if ts - last_alert_time < 3600:
             logging.warning("离上次告警时间小于1h，不报警")
             logging.warning("last_alert_time: %s , ts: %s" % (last_alert_time, ts))
@@ -158,6 +159,14 @@ def alarm_check(alarm_set):
     if alarm_flag:
         logging.warning("need alert user")
         alert_user(alarm_set)
+        # 更新告警时间
+        alert["last_alert_time"] = ts
+        db = alarm_db.AlarmSetDb()
+        query = {
+            "@subProject": alarm_set["@subProject"],
+            "monitor": alarm_set["monitor"]
+        }
+        db.update(query=query, data=alarm_set, upsert=False)
         return True
     else:
         logging.info("no need to alert")
