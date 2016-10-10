@@ -143,7 +143,7 @@
                     <td>{{ item.last_value }}</td>
                     <th width="100">相对值</th>
                     {% if item.percent %}
-                    <td>{{ item.diff_value*100 }}%</td>
+                    <td>{{ "%.2f"|format(item.diff_value*100) }}%</td>
                     {% else %}
                     <td>{{ item.diff_value }}</td>
                     {% endif %}
