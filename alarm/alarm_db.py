@@ -22,4 +22,7 @@ import lib.mongo_db
 
 
 class AlarmSetDb(lib.mongo_db.BaseMongoFontDb):
+    """
+    指标报警设置库
+    """
     COLLECTION_NAME = "alarm_set"
