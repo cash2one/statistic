@@ -31,6 +31,42 @@ def main():
     u"""
     指标报警处理主入口。
     常驻进程，死循环。
+    从redis获取到的数据格式如下：
+    {
+        '@subProject': 13,
+        monitor: {
+            '@index': 'erka',
+            a: 'ios',
+            b: 'NA'
+        },
+        alarm: {
+            logic: 'and',
+            condition: [{
+                type: 'relative',
+                percent: true,
+                operator: '<',
+                value: -0.5,
+                time: {
+                    unit: 'day',
+                    num: 1
+                }
+            }, {
+                type: 'absolute',
+                operator: '<',
+                value: 100
+            }]
+        },
+        alert: {
+            channel: ['sms', 'hi', 'email'],
+            receiver: 'xulei12;yangxiaotong',
+            receiver_group: 'psqa-kgb',
+            last_alert_time: 1234567
+        },
+        @value: xxxx,
+        @create: xxxx xx:xx
+    };
+    mongo中存储数据结构不包括@value与@create
+    此处数据结构没设计好，之前没有考虑到处理会写入mongo，污染了数据，后面还得拆
     :return:
     """
     rs = core.kgdc_redis.KgdcRedis()
@@ -70,6 +106,7 @@ def alarm_check(alarm_set):
 
     # 避免反复写多级key，带来可能的笔误。最多写一级字符串key
     alarm = alarm_set["alarm"]
+    alert = alarm_set["alert"]
 
     # alarm中必须key及合法性检查
     if "logic" not in alarm:
@@ -85,6 +122,15 @@ def alarm_check(alarm_set):
     if len(conditions) == 0:
         logging.warning("condition's len is 0")
         return False
+
+    # 判断上次告警时间。如果相隔过近<1h，本次不判断，直接退出
+    if "last_alert_time" in alert:
+        last_alert_time = int(alert["last_alert_time"])
+        ts = int(time.time())
+        if ts - last_alert_time < 3600:
+            logging.warning("离上次告警时间小于1h，不报警")
+            logging.warning("last_alert_time: %s , ts: %s" % (last_alert_time, ts))
+            return False
 
     # 是否报警的标记
     alarm_flag = False
