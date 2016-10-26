@@ -63,6 +63,11 @@ def timely_data_process(json_data):
 
 
 def api_process(json_data):
+    """
+    api推送过来数据处理流程
+    :param json_data:
+    :return:
+    """
     create = json_data["@create"]
     # 时间格式校验。必须为 年-月-日 时:分:秒 或者不带秒的格式
     # 最后统一转换为不带秒的格式
