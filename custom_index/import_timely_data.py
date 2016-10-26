@@ -24,6 +24,8 @@ import task_db
 import data_db
 from lib import tools
 from lib import error
+import timely_data_process
+
 
 MUST_KEYS = ["@index", "@value", "@time"]
 
@@ -40,7 +42,7 @@ def save_index(path, task, date, time_span=None):
     sub_project = task.sub_project_id
     system_key = {"@task": task.id, "@subProject": sub_project}
     timely_data = data_db.TimelyData()
-    timely_data_latest = data_db.TimelyDateLatest()
+    sub_project_alarm_set = timely_data_process.get_alarm_set_by_sub_project(sub_project)
     # 清空数据流程，手动任务会进入该流程
     if time_span and len(time_span) >= 2:
         # 构造清空的query
@@ -56,6 +58,7 @@ def save_index(path, task, date, time_span=None):
             json_line = json.loads(line)
         except:
             logging.error("json error:%s" % line)
+            continue
         if base.check_line(json_line, MUST_KEYS):
             # 指定了时间段，会对数据进行时间段内进行过滤
             if time_span and len(time_span) >= 2:
@@ -75,20 +78,9 @@ def save_index(path, task, date, time_span=None):
                 raise
 
             # 更新最新指标值库
-            update_query = {"@subProject": sub_project, "@index": json_line["@index"]}
-            try:
-                ret = timely_data_latest.find(update_query)
-                ret = list(ret)
-                # 之前没有该指标，就直接插入
-                if len(ret) == 0:
-                    timely_data_latest.insert(json_line)
-                # 否则，如果已存储指标比现在的旧，更新
-                else:
-                    update_query["@create"] = {"$lte": json_line["@create"]}
-                    timely_data_latest.update(update_query, json_line, False)
-            except:
-                logging.warning("write to timely_data_latest error,\n%s" % json_line)
-                raise
+            timely_data_process.update_latest_data(json_line)
+            # 报警配置
+            timely_data_process.push_alarm_data(json_line, sub_project_alarm_set)
 
 
 def run(task_id, date, time_span=None, replace_ftp=None):
