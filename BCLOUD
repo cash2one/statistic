@@ -1,0 +1,1 @@
+BUILD_SUBMITTER  -x -m  baidu/kgdc/kgdc-statist -c "cd baidu/kgdc/kgdc-statist && sh build.sh" -u ./
