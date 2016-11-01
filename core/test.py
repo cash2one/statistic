@@ -23,6 +23,13 @@ import custom_index.task_db
 
 
 def main(pack_name, module_name, function_name):
+    """
+
+    :param pack_name:
+    :param module_name:
+    :param function_name:
+    :return:
+    """
     module = importlib.import_module(pack_name+"."+module_name)
     if not function_name:
         module.test()

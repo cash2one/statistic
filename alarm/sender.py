@@ -75,6 +75,11 @@ def send_remind_email(alarm_set):
 
 
 def send_by_hermes(alarm_set):
+    """
+    通告平台发送方式
+    :param alarm_set:
+    :return:
+    """
     alert_list = []
     desc_list = []
     for item in alarm_set["alarm"]["condition"]:
@@ -122,6 +127,11 @@ def send_by_hermes(alarm_set):
 
 
 def calculate_desc_one(condition):
+    """
+    描述语句生成
+    :param condition:
+    :return:
+    """
     desc = u""
     name_map = {
         "minute": u"分钟",
@@ -133,10 +143,10 @@ def calculate_desc_one(condition):
         if condition["type"] == "relative":
             if condition["time"]["unit"] in name_map:
                 condition["time"]["unit"] = name_map[condition["time"]["unit"]]
-            desc += u"相对值比%s%s前%s"\
-                   % (condition["time"]["num"], condition["time"]["unit"], condition["operator"])
+            desc += u"相对值比%s%s前%s" % (
+                condition["time"]["num"], condition["time"]["unit"], condition["operator"])
             if condition["percent"]:
-                desc += str(condition["value"]*100) + "%"
+                desc += str(condition["value"] * 100) + "%"
             else:
                 desc += str(condition["value"])
         else:
@@ -145,6 +155,10 @@ def calculate_desc_one(condition):
 
 
 def test_calculate_desc_one():
+    """
+    测试程序
+    :return:
+    """
     conditions = [{
         "type": "relative",
         "percent": False,

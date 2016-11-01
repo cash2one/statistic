@@ -74,7 +74,8 @@ def send(alert_list):
     }
     try:
         logging.info(json.dumps(post_data, ensure_ascii=False))
-        r = urllib2.urlopen(base_url, data=json.dumps(post_data, ensure_ascii=False).encode("utf-8"))
+        r = urllib2.urlopen(url=base_url,
+                            data=json.dumps(post_data, ensure_ascii=False).encode("utf-8"))
         ret = json.loads(r.read())
         logging.info(ret)
         if ret["code"] == '1000':
