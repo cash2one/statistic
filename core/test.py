@@ -22,6 +22,11 @@ from lib import tools
 import custom_index.task_db
 
 
-def main(pack_name, module_name):
+def main(pack_name, module_name, function_name):
     module = importlib.import_module(pack_name+"."+module_name)
-    module.test()
+    if not function_name:
+        module.test()
+    else:
+        print module
+        func = vars(module)[function_name]
+        func()

@@ -26,6 +26,7 @@ import core.kgdc_redis
 import custom_index.data_db
 import sender
 import alarm_db
+import conf.conf as conf
 
 
 def main():
@@ -124,9 +125,9 @@ def alarm_check(alarm_set):
         logging.warning("condition's len is 0")
         return False
 
-    # 判断上次告警时间。如果相隔过近<1h，本次不判断，直接退出
+    # 判断上次告警时间。如果相隔过近<1h，本次不判断，直接退出, 线下调试模式不限制，方便调试
     ts = int(time.time())
-    if "last_alert_time" in alert:
+    if "last_alert_time" in alert and not conf.DEVELOPING:
         last_alert_time = int(alert["last_alert_time"])
         if ts - last_alert_time < 3600:
             logging.warning("离上次告警时间小于1h，不报警")
@@ -363,7 +364,7 @@ def judge_relative(condition, alarm_set):
             return False
     except:
         logging.exception("query error")
-        logging.info("query= %s" % json.dumps(query,ensure_ascii=False))
+        logging.info("query= %s" % json.dumps(query, ensure_ascii=False))
 
 
 def alert_user(alarm_set):
@@ -451,6 +452,9 @@ def alert_user(alarm_set):
     if "email" in alarm_set["alert"]["channel"]:
         logging.info("sending email")
         sender.send_remind_email(alarm_set)
+    if "hi" in alarm_set["alert"]["channel"] or "sms" in alarm_set["alert"]["channel"]:
+        logging.info("sending hi or sms")
+        sender.send_by_hermes(alarm_set)
 
 
 def test_main(alarm_item):
