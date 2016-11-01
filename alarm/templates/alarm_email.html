@@ -36,7 +36,8 @@
             <tr>
                 <th width="100">详情</th>
                 <td colspan="3">
-                    <a href="kgdc.baidu.com/perform/{{project.page_id}}/">kgdc.baidu.com/perform/{{project.page_id}}/</a>
+                    <a href="kgdc.baidu.com/perform/{{project.page_id}}/">
+                        kgdc.baidu.com/perform/{{project.page_id}}/</a>
                 </td>
             </tr>
         </table>
@@ -51,21 +52,21 @@
             {% if item.type == "relative" %}
             {% if item.percent %}
             <tr>
-                <td><font color="red">与{{item.time.num}}{{item.time.unit_name}}前的指标相比，差值{{item.operator}}{{item.value*100}}%</font></td>
+                <td><font color="red">相对值比{{item.time.num}}{{item.time.unit_name}}前{{item.operator}}{{item.value*100}}%</font></td>
             </tr>
             {% else %}
             <tr>
-                <td><font color="red">与{{item.time.num}}{{item.time.unit_name}}前的指标相比，差值{{item.operator}}{{item.value}}</font></td>
+                <td><font color="red">相对值比{{item.time.num}}{{item.time.unit_name}}前{{item.operator}}{{item.value}}</font></td>
             </tr>
             {% endif %}
             {% elif item.type == "absolute" %}
             {% if item.percent %}
             <tr>
-                <td><font color="red">当前绝对值{{item.operator}}{{item.value*100}}%</font></td>
+                <td><font color="red">绝对值{{item.operator}}{{item.value*100}}%</font></td>
             </tr>
             {% else %}
             <tr>
-                <td><font color="red">当前绝对值{{item.operator}}{{item.value}}</font></td>
+                <td><font color="red">绝对值{{item.operator}}{{item.value}}</font></td>
             </tr>
             {% endif %}
             {% endif %}

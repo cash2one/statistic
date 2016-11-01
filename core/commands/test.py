@@ -24,10 +24,9 @@ class Command(BaseCommand):
     def assert_argv(self, *args):
         assert len(args) >= 4
 
-    def handle(self, pack_name, module_name, *args):
+    def handle(self, pack_name, module_name, function_name, *args):
         u"""
         测试代码命令。
-        python main.py test {pack_name} {module_name}
+        python main.py test {pack_name} {module_name} {function_name}
         """
-        test.main(pack_name, module_name)
-
+        test.main(pack_name, module_name, function_name)
