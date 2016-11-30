@@ -37,10 +37,10 @@ import statist
 
 LOG_DATAS = {
     'qianxun': {
-        'st01-kgb-haiou1.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/st01-kgb-haiou1.st01/access_%s.log',
-        'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/access_%s.log',
-        'nj02-kgb-haiou1.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou1.nj02/access_%s.log',
-        'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/access_%s.log',
+        # 'st01-kgb-haiou1.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/st01-kgb-haiou1.st01/access_%s.log',
+        # 'st01-kgb-haiou2.st01': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/st01-kgb-haiou2.st01/access_%s.log',
+        # 'nj02-kgb-haiou1.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou1.nj02/access_%s.log',
+        # 'nj02-kgb-haiou2.nj02': 'ftp://nj02-wd-kg14.nj02.baidu.com/home/work/seagull/online_statistics/original_log/nj02-kgb-haiou2.nj02/access_%s.log',
         'bjyz-dumi-midpage0.bjyz.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/bjyz-dumi-midpage0.bjyz.baidu.com/access_%s.log',
         'bjyz-dumi-midpage1.bjyz.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/bjyz-dumi-midpage1.bjyz.baidu.com/access_%s.log',
         'nj03-mco-wise272.nj03.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/nj03-mco-wise272.nj03.baidu.com/access_%s.log',
@@ -74,7 +74,7 @@ REG_MAP = {
     # 'mingxing': MINGXING_REG,
 }
 
-BAIDUID_REG = re.compile(r"BAIDUID=(?P<id>.+?);")
+BAIDUID_REG = re.compile(r"BAIDUID=(?P<id>.+?)(;|$)")
 IOS_REG = re.compile(r"(?i)Mac OS X")
 ANDROID_REG = re.compile(r"(?i)android")
 NA_REG = re.compile(r"(xiaodurobot|dueriosapp|duerandroidapp)")
@@ -102,14 +102,17 @@ def get_data(date, sources=None):
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
         for file_name, log_ftp in log_dict.items():
-            file_name = os.path.join(log_dir, file_name)
-            if '%s' in log_ftp:
-                log_ftp = log_ftp % date
-            tools.wget(log_ftp, file_name, False)
-            files.append({
-                "source": source,
-                "file_name": file_name,
-            })
+            try:
+                file_name = os.path.join(log_dir, file_name)
+                if '%s' in log_ftp:
+                    log_ftp = log_ftp % date
+                tools.wget(log_ftp, file_name, False)
+                files.append({
+                    "source": source,
+                    "file_name": file_name,
+                })
+            except Exception as e:
+                continue
     return files
 
 
