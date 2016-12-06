@@ -36,6 +36,14 @@ class TimelyDateLatest(mongo_db.BaseMongoFontDb):
     COLLECTION_NAME = "timely_data_latest"
 
 
+class UserPortrait(mongo_db.BaseMongoFontDb):
+    COLLECTION_NAME = "user_portrait"
+
+
+class UserPath(mongo_db.BaseMongoFontDb):
+    COLLECTION_NAME = "user_path"
+
+
 class DetailData(mongo_db.BaseMongoFontDb):
     def __init__(self, date):
         month = date[:-2]
