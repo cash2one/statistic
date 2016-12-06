@@ -44,6 +44,8 @@ def run_routine_task(hour):
                 tools.run_main_cmd("custom_summary_import", [task.id, date])
         elif task.task_type == "detail":
             tools.run_main_cmd("custom_detail_import", [task.id, date])
+        else:
+            tools.run_main_cmd("other_import", [task.id, date])
 
 
 def main():
