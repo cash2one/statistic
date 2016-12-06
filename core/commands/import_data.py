@@ -29,6 +29,10 @@ class Command(BaseCommand):
     汇总数据导入方式，命令行处理
     """
     def assert_argv(self, *args):
+        """
+        :param args:
+        :return:
+        """
         assert len(args) >= 4
         try:
             task_id = int(args[2])
