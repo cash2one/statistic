@@ -25,6 +25,9 @@ from custom_index import import_data
 
 
 class Command(BaseCommand):
+    """
+    汇总数据导入方式，命令行处理
+    """
     def assert_argv(self, *args):
         assert len(args) >= 4
         try:
@@ -41,7 +44,7 @@ class Command(BaseCommand):
         assert date_format
 
     def handle(self, task_id, date, ftp=None, *args):
-        u"""
+        """
         汇总其他数据导入方式。目前包括的任务类型有：
             user_portrait 用户画像
             user_path     用户路径分析

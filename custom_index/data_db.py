@@ -37,10 +37,16 @@ class TimelyDateLatest(mongo_db.BaseMongoFontDb):
 
 
 class UserPortrait(mongo_db.BaseMongoFontDb):
+    """
+    mongodb数据库，用户画像表
+    """
     COLLECTION_NAME = "user_portrait"
 
 
 class UserPath(mongo_db.BaseMongoFontDb):
+    """
+    mongodb数据库，用户lujing 表
+    """
     COLLECTION_NAME = "user_path"
 
 
