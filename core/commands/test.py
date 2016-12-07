@@ -27,6 +27,6 @@ class Command(BaseCommand):
     def handle(self, pack_name, module_name, function_name, *args):
         u"""
         测试代码命令。
-        python main.py test {pack_name} {module_name} {function_name}
+        python main.py test {pack_name} {module_name} {function_name} {参数}
         """
-        test.main(pack_name, module_name, function_name)
+        test.main(pack_name, module_name, function_name, *args)

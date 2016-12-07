@@ -29,6 +29,9 @@ if DEVELOPING is True:
     REDIS_HOST = "cp01-kgb-xulei12.epc.baidu.com"
     REDIS_PORT = 6379
     REDIS_DB = 0
+
+    # query engine 配置, path配置到bin上一层
+    QUERY_ENGINE_PATH = "/home/work/queryengine/queryengine-client-2.1.7-online/queryengine"
 else:
     DB_HOST = "cp01-testing-ps7164.cp01.baidu.com"
     DB_PORT = 3306
@@ -51,3 +54,6 @@ else:
     REDIS_HOST = "cq01-testing-ps7163.cq01.baidu.com"
     REDIS_PORT = 6379
     REDIS_DB = 0
+
+    # query engine 配置, path配置到bin上一层
+    QUERY_ENGINE_PATH = "/home/work/queryengine/queryengine-client-2.1.7-online/queryengine"
