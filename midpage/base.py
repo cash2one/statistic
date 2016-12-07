@@ -250,17 +250,17 @@ class CRMMidpageProduct(object):
         :param index_map:
         :return:
         """
-        module_name = self.__module__.split(".")[-1]
-        path = os.path.join(conf.OUTPUT_DIR, "uidlist/%s" % module_name)
-        if not os.path.exists(path):
-            os.makedirs(path)
-        filename = os.path.join(path, "%s.txt" % self.date)
+        # 根据product名字，创建文件夹，并返回路径
+        path = self._get_path()
+        filename = os.path.join(path, "baiduid.txt")
         uidlist = open(filename, "w+")
+        obuff = []
         for result in self.log_collection.find(index_map[key]["query"], {"baiduid": 1, "_id": 0}):
-            results = str(result)
-            uid = results.split(":")[1].split("'")[1]
-            uidlist.write(uid)
-            uidlist.write("\n")
+            if result["baiduid"]:
+                if result["baiduid"] not in obuff:
+                    uidlist.write(result["baiduid"])
+                    uidlist.write("\n")
+                    obuff.append(result["baiduid"])
         uidlist.close()
 
     def _statist(self, key, value_map, index_map):
