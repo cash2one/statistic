@@ -242,6 +242,23 @@ class CRMMidpageProduct(object):
         results = self.log_collection.find(index_map[key]["query"], index_map[key].get("fields"))
         value_map[key] = index_map[key]["local"](results)
 
+    def _get_baiduid_statist(self, key, value_map, index_map):
+        module_name = self.__module__.split(".")[-1]
+        path = os.path.join(conf.OUTPUT_DIR, "uidlist/%s" % module_name)
+        if not os.path.exists(path):
+            os.makedirs(path)
+        filename = os.path.join(path, "%s.txt" % self.date)
+        uidlist = open(filename, "w+")
+        for result in self.log_collection.find(index_map[key]["query"], {"baiduid": 1, "_id": 0}):
+            results = str(result)
+            uid = results.split(":")[1].split("'")[1]
+            uidlist.write(uid)
+            uidlist.write("\n")
+        uidlist.close()
+
+
+
+
     def _statist(self, key, value_map, index_map):
         u"""
         统计类型总入口，具体各个类型的统计走_[type name]_statist方法

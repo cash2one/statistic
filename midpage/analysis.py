@@ -55,6 +55,20 @@ LOG_DATAS = {
     'qianxun_test': {
         #'access_log': 'ftp://cp01-rdqa04-dev111.cp01.baidu.com/home/users/wangyuntian/work/dumi-data/temp.log.%s',
     },
+    # 'baidu_dictionary': {
+    #     'baidu_dictionary.filename': 'ftp://cp01-xiongyue.epc.baidu.com/home/work/data/xiongyue'
+    # },
+    'baidu_hanyu': {
+        'cq01-kg-search0.cq01': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search0.cq01',
+        'bjyz-kg-web0.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web0.bjyz',
+        'bjyz-kg-web1.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web1.bjyz',
+        'bjyz-kg-web2.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web2.bjyz',
+        'bjyz-kg-web3.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web3.bjyz',
+        'nj02-kg-web0.nj02': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web0.nj02',
+        'nj02-kg-web1.nj02': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web1.nj02',
+        'nj02-kg-web2.nj02': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web2.nj02',
+        'nj02-kg-web3.nj02': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web3.nj02'
+    }
 }
 
 
@@ -74,7 +88,7 @@ REG_MAP = {
     # 'mingxing': MINGXING_REG,
 }
 
-BAIDUID_REG = re.compile(r"BAIDUID=(?P<id>.+?)(;|$)")
+BAIDUID_REG = re.compile(r"BAIDUID=(?P<id>.+?):(.*=\d*)(;|$)")
 IOS_REG = re.compile(r"(?i)Mac OS X")
 ANDROID_REG = re.compile(r"(?i)android")
 NA_REG = re.compile(r"(xiaodurobot|dueriosapp|duerandroidapp)")
