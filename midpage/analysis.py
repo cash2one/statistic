@@ -55,9 +55,9 @@ LOG_DATAS = {
     'qianxun_test': {
         #'access_log': 'ftp://cp01-rdqa04-dev111.cp01.baidu.com/home/users/wangyuntian/work/dumi-data/temp.log.%s',
     },
-    # 'baidu_dictionary': {
-    #     'baidu_dictionary.filename': 'ftp://cp01-xiongyue.epc.baidu.com/home/work/data/xiongyue'
-    # },
+    'baidu_dictionary': {
+        'baidu_dictionary.filename': 'ftp://cp01-xiongyue.epc.baidu.com/home/work/data/xiongyue'
+    },
     'baidu_hanyu': {
         'cq01-kg-search0.cq01': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search0.cq01',
         'bjyz-kg-web0.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web0.bjyz',
@@ -85,6 +85,7 @@ MINGXING_REG = re.compile(r"^(?P<ip>[0-9\.]+) (.*) (.*) (?P<time>\[.+\]) "
 REG_MAP = {
     'qianxun': BASE_REG,
     'mingxing': BASE_REG,
+
     # 'mingxing': MINGXING_REG,
 }
 
@@ -405,3 +406,12 @@ def main(date, sources=None):
     statist.main(date, sources=sources)
     # 删除分割的文件
     del_spilt_files(spilt_file)
+
+
+def test():
+    """
+    测试
+    :return:
+    """
+    line = '183.49.122.252 - - [06/Dec/2016:20:01:54 +0800] "GET /static/asset" 400 0 "-" "-" "-" 0.034 0114459466 183.49.122.252 10.205.56.23 - hanyu.baidu.com "-"   01144594660389598474120620 1481025714.459'
+    print analysis_line(line, "baidu_hanyu")
