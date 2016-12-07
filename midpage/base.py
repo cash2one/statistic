@@ -243,6 +243,13 @@ class CRMMidpageProduct(object):
         value_map[key] = index_map[key]["local"](results)
 
     def _get_baiduid_statist(self, key, value_map, index_map):
+        """
+        获取百度uid函数
+        :param key:
+        :param value_map:
+        :param index_map:
+        :return:
+        """
         module_name = self.__module__.split(".")[-1]
         path = os.path.join(conf.OUTPUT_DIR, "uidlist/%s" % module_name)
         if not os.path.exists(path):
@@ -255,9 +262,6 @@ class CRMMidpageProduct(object):
             uidlist.write(uid)
             uidlist.write("\n")
         uidlist.close()
-
-
-
 
     def _statist(self, key, value_map, index_map):
         u"""
