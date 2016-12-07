@@ -22,9 +22,9 @@ from core.management.base import BaseCommand
 
 class Command(BaseCommand):
     def assert_argv(self, *args):
-        assert len(args) >= 4
+        assert len(args) >= 3
 
-    def handle(self, pack_name, module_name, function_name, *args):
+    def handle(self, pack_name, module_name, function_name=None, *args):
         u"""
         测试代码命令。
         python main.py test {pack_name} {module_name} [{function_name} {参数}]

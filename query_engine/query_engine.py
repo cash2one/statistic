@@ -31,5 +31,6 @@ def main(date, baiduid, product, *args):
     :param args:
     :return:
     """
-    qe = os.path.join(conf.QUERY_ENGINE_PATH, "bin/queryengine")
-    print qe
+    sql = os.path.join(conf.BASE_DIR, "query_engine", "product", "%s.sql" % product)
+    cmd = "cd %s;./bin/queryengine --hivevar date=%s -f %s" % (conf.QUERY_ENGINE_PATH, date, sql)
+    os.system(cmd)
