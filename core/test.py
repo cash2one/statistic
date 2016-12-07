@@ -22,7 +22,7 @@ from lib import tools
 import custom_index.task_db
 
 
-def main(pack_name, module_name, function_name):
+def main(pack_name, module_name, function_name, *args):
     """
 
     :param pack_name:
@@ -36,4 +36,4 @@ def main(pack_name, module_name, function_name):
     else:
         print module
         func = vars(module)[function_name]
-        func()
+        func(*args)
