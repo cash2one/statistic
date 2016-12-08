@@ -263,6 +263,53 @@ class CRMMidpageProduct(object):
                     obuff.append(result["baiduid"])
         uidlist.close()
 
+    def _user_path_statist(self, key, value_map, index_map):
+        """
+        分析用户路径函数，举例
+        {
+            "user_path": {
+                "query": {},
+                "target_list": [
+                    "/zici/s",
+                    "/shici/s",
+                    "shici/detail",
+                    "/s"],
+                "type": "user_path",
+                "no_group": True    //该字段表示，分组配置不生效
+            }
+        },
+        :param key: 指标名
+        :param value_map: 存储指标结果，此处不用
+        :param index_map: 指标配置
+        :return:
+        """
+        path = self._get_path()
+        file_name = os.path.join(path, "user_path.txt")
+        fp = open(file_name, "w+")
+        target_list = index_map[key]["target_list"]
+        query = index_map[key]["query"]
+        one_target = target_list[0]
+        self.get_one_path(query, one_target)
+
+    def get_one_path(self, query, target):
+        """
+        获取一个目标的路径
+        :param query:
+        :param target:
+        :return:
+        """
+        tmp_q = copy.deepcopy(query)
+        tmp_q["url"] = target
+        obj = [
+            {"$match": tmp_q},
+            {"$group": {"_id": "$referr", "count": {"$sum": 1}}}
+        ]
+        value = list(self.log_collection.aggregate(obj))
+        print len(value)
+        print query
+        for item in value:
+            print item
+
     def _statist(self, key, value_map, index_map):
         u"""
         统计类型总入口，具体各个类型的统计走_[type name]_statist方法
@@ -324,14 +371,30 @@ class CRMMidpageProduct(object):
         for key in keys:
             value = index_map[key]
             if "query" in value:
-                value["query"].update(match)
-                value["query"].update(default_query)
+                # no_group 字段表示该指标不受分组控制
+                if value.get("no_group"):
+                    value["query"].update(default_query)
+                else:
+                    value["query"].update(match)
+                    value["query"].update(default_query)
 
         value_map = {}
         # 开始计算指标
         for key in keys:
             value = index_map[key]
-            self._statist(key, value_map, index_map)
+            # 不受分组控制标签单独控制
+            if value.get("no_group"):
+                # 已经执行过就直接跳过，不再执行
+                if self.index_map[key].get("has_executed"):
+                    continue
+                # 否则执行，并置标志位
+                else:
+                    self._statist(key, value_map, index_map)
+                    self.index_map[key]["has_executed"] = True
+            # 不受分组控制的直接执行
+            else:
+                self._statist(key, value_map, index_map)
+
         return value_map
 
     def _iter_groups(self, layer=0):
