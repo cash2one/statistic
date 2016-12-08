@@ -18,14 +18,12 @@ user_path:     用户路径分析
 # 标准库
 import json
 import logging
-import datetime
 # 第三方库
 
 # 自有库
 import base
 import task_db
 import data_db
-import reminder
 from lib import tools
 from lib import error
 
