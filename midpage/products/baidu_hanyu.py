@@ -20,6 +20,7 @@ class Product(base.CRMMidpageProduct):
         u'uidlist': {
             'query': {},
             'type': 'get_baiduid',
+            "no_group": "no_group"
         }
 
     }
