@@ -290,6 +290,13 @@ class CRMMidpageProduct(object):
         print query, destination_url
 
     def get_path_recursion(self, loops, query, target_list):
+        """
+        递归获取用户路径分析。
+        :param loops:
+        :param query:
+        :param target_list:
+        :return:
+        """
         if self.loops >= loops or not target_list:
             return
         self.loops += 1
