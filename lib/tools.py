@@ -139,7 +139,7 @@ def clear_files(path, day):
     if not os.path.isdir(path):
         return
     logging.info("clear_files: %s days ago in %s " % (day, path))
-    clear_ts = time.time() - day*24*60*60
+    clear_ts = time.time() - day * 24 * 60 * 60
     for f in os.listdir(path):
         f_path = os.path.join(path, f)
         if os.path.getmtime(f_path) < clear_ts:
