@@ -22,7 +22,7 @@ from lib import tools
 import custom_index.task_db
 
 
-def main(pack_name, module_name, function_name, *args):
+def main(module_name, function_name, *args):
     """
 
     :param pack_name:
@@ -30,7 +30,7 @@ def main(pack_name, module_name, function_name, *args):
     :param function_name:
     :return:
     """
-    module = importlib.import_module(pack_name+"."+module_name)
+    module = importlib.import_module(module_name)
     if not function_name:
         module.test()
     else:

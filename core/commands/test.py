@@ -24,10 +24,12 @@ class Command(BaseCommand):
     def assert_argv(self, *args):
         assert len(args) >= 3
 
-    def handle(self, pack_name, module_name, function_name=None, *args):
+    def handle(self, module_name, function_name=None, *args):
         """
         测试代码命令。
-        python main.py test {pack_name} {module_name} [{function_name} {参数}]
-        如果不带function_name, 则自动执行module里的 test()
+        python main.py test {module_name} [{function_name} {参数}]
+        如果不带function_name, 则自动执行module里的 test(), 例如:
+          python main.py test lib.tools
+          python main.py test lib.tools clear_files /home/work/temp 30
         """
-        test.main(pack_name, module_name, function_name, *args)
+        test.main(module_name, function_name, *args)
