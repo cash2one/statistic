@@ -27,10 +27,9 @@ import data_db
 from lib import tools
 from lib import error
 
-# key为支持的任务类型
-MUST_KEYS = {
+KEY_MAP = {
     "user_portrait": ["@index", "@value"],
-    "user_path": ["source", "target", "value"]
+    "user_path": ["@index", "source", "target", "value"]
 }
 
 # mongodb索引
@@ -54,7 +53,7 @@ def save_index(path, task, date):
             json_line = json.loads(line)
         except:
             logging.error("json error:%s" % line)
-        if base.check_line(json_line, MUST_KEYS[task.task_type]):
+        if base.check_line(json_line, KEY_MAP[task.task_type]):
             json_line.update(system_key)
             try:
                 db.insert(json_line)
@@ -68,7 +67,7 @@ def run(task_id, date, replace_ftp=None):
     task_id = int(task_id)
     task = task_db.CustomIndexTask(task_id)
     # 任务类型判断。
-    if task.task_type not in MUST_KEYS.keys():
+    if task.task_type not in KEY_MAP.keys():
         logging.fatal('task type is %s' % task.task_type)
         exit(-1)
     # 若启动时输入了ftp地址则覆盖任务默认地址
