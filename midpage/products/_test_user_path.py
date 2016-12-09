@@ -1,28 +1,23 @@
 # coding=utf-8
 """
-百度汉语产品
+测试产品
 """
 import os
 
 from midpage import base
 
-source = 'baidu_hanyu'
+source = 'baidu_dictionary'
 
 
 class Product(base.CRMMidpageProduct):
     """
-    获得百度汉语的百度ID list
+    测试用
     """
     default_query = {
         'source': 'baidu_hanyu',
     }
 
     index_map = {
-        'uidlist': {
-            'query': {},
-            'type': 'get_baiduid',
-            "no_group": True
-        },
         "user_path": {
             "query": {},
             "type": "user_path",
@@ -30,13 +25,11 @@ class Product(base.CRMMidpageProduct):
             # "no_group": True
         }
     }
-
     groups = [{
         "attribute": "index_group",
         "type": "index",
         "key": "@index",
     }]
-
     index_group = [{
         "name": "/zici/s",
         "query": {"url": "/zici/s"},

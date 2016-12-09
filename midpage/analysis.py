@@ -21,6 +21,7 @@ import os
 import re
 import json
 import time
+import shutil
 import logging
 import urlparse
 from multiprocessing import Process, Pool
@@ -55,9 +56,9 @@ LOG_DATAS = {
     'qianxun_test': {
         #'access_log': 'ftp://cp01-rdqa04-dev111.cp01.baidu.com/home/users/wangyuntian/work/dumi-data/temp.log.%s',
     },
-    'baidu_dictionary': {
-        'baidu_dictionary.filename': 'ftp://cp01-xiongyue.epc.baidu.com/home/work/data/xiongyue'
-    },
+    # 'baidu_dictionary': {
+    #     'baidu_dictionary.filename': 'ftp://cp01-xiongyue.epc.baidu.com/home/work/data/xiongyue'
+    # },
     'baidu_hanyu': {
         'cq01-kg-search0.cq01': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search0.cq01',
         'bjyz-kg-web0.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web0.bjyz',
@@ -109,7 +110,11 @@ def get_data(date, sources=None):
     :return:
     """
     files = []
-    midpage_dir = os.path.join(conf.DATA_DIR, "midpage/%s" % date)
+    # 清理过期超过30天的文件
+    root_path = os.path.join(conf.DATA_DIR, "midpage")
+    tools.clear_files(root_path, 7)
+    # 获取数据
+    midpage_dir = os.path.join(root_path, date)
     for source, log_dict in LOG_DATAS.items():
         if sources and source not in sources:
             continue
@@ -328,7 +333,7 @@ def analysis_line(line, source):
         #     analysis_mingxing(match, ret)
     except error.ParseLineError as e:
         logging.info("[ParseLineError]%s" % e.message)
-        logging.info("[ERROR LOG][%s]%s" % (source, line))
+        # logging.info("[ERROR LOG][%s]%s" % (source, line))
         return
     return ret
 

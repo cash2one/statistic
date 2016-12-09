@@ -29,6 +29,9 @@ class DateLogDb(object):
         self.collection_name = 'datelog_%s' % self.date
         self.conn = self._get_connect()
         self.db = self.conn[conf.MONGO_DB]
+        # 此处改为按月分db
+        # self.db_name = "db_%s" % self.date[0:-2]
+        # self.db = self.conn[self.db_name]
         self.collection = self.db[self.collection_name]
 
     @classmethod
@@ -78,6 +81,7 @@ class DateLogDb(object):
     def create(self):
         self.collection.ensure_index('source')
         self.collection.ensure_index('url')
+        self.collection.ensure_index('referr')
         self.collection.ensure_index('query.cat')
         self.collection.create_index([('query.act', pymongo.ASCENDING),
                                                 ('query.cat', pymongo.ASCENDING)])

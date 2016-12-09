@@ -22,6 +22,7 @@ import logging
 # 第三方库
 from bson.code import Code
 # 自有库
+import lib.tools
 from conf import conf
 from midpage import midpagedb
 
@@ -145,10 +146,10 @@ class CRMMidpageProduct(object):
         "query": {},
     }, {
         "name": "ios",
-        "query": {"os":"ios"},
+        "query": {"os": "ios"},
     }, {
         "name": "android",
-        "query": {"os":"android"},
+        "query": {"os": "android"},
     }]
 
     file_group = [{
@@ -156,10 +157,10 @@ class CRMMidpageProduct(object):
         "query": {},
     }, {
         "name": "NA",
-        "query": {"client":"NA"},
+        "query": {"client": "NA"},
     }, {
         "name": "MB",
-        "query": {"client":"MB"},
+        "query": {"client": "MB"},
     }]
 
     # 计算完成的所有指标，最后会按照index_order中的顺序写入文件
@@ -170,13 +171,14 @@ class CRMMidpageProduct(object):
         self.date = date
         self.log_db = midpagedb.DateLogDb()
         self.log_collection = self.log_db.get_collection()
+        self.user_path = []
 
     def _percent_statist(self, key, value_map, index_map):
         self._statist(index_map[key]["numerator"], value_map, index_map)
         self._statist(index_map[key]["denominator"], value_map, index_map)
         numerator = value_map[index_map[key]["numerator"]]
         denominator = value_map[index_map[key]["denominator"]]
-        value_map[key] = float(numerator)/denominator if denominator else 0
+        value_map[key] = float(numerator) / denominator if denominator else 0
 
     def _add_statist(self, key, value_map, index_map):
         if type(index_map[key]["index"]) == types.StringType:
@@ -267,13 +269,8 @@ class CRMMidpageProduct(object):
         """
         分析用户路径函数，举例
         {
-            "user_path": {
+            "/zici/s": {
                 "query": {},
-                "target_list": [
-                    "/zici/s",
-                    "/shici/s",
-                    "shici/detail",
-                    "/s"],
                 "type": "user_path",
                 "no_group": True    //该字段表示，分组配置不生效
             }
@@ -283,13 +280,36 @@ class CRMMidpageProduct(object):
         :param index_map: 指标配置
         :return:
         """
-        path = self._get_path()
-        file_name = os.path.join(path, "user_path.txt")
-        fp = open(file_name, "w+")
-        target_list = index_map[key]["target_list"]
+        destination_url = index_map[key]["query"]["url"]
         query = index_map[key]["query"]
-        one_target = target_list[0]
-        self.get_one_path(query, one_target)
+        self.loops = 0
+        self.target_source = dict()
+        # 记录当前在计算属于哪一个转换页面的路径
+        self.destination_url = destination_url
+        self.get_path_recursion(index_map[key]["loops"], query, [destination_url])
+        print query, destination_url
+
+    def get_path_recursion(self, loops, query, target_list):
+        """
+        递归获取用户路径分析。
+        :param loops:
+        :param query:
+        :param target_list:
+        :return:
+        """
+        if self.loops >= loops or not target_list:
+            return
+        self.loops += 1
+
+        local_source = set()
+        for one_target in target_list:
+            if one_target in self.target_source:
+                continue
+            self.target_source[one_target] = target_list
+            source_set = self.get_one_path(query, one_target)
+            local_source.update(source_set)
+        # local_source -= self.source_set
+        self.get_path_recursion(loops, query, local_source)
 
     def get_one_path(self, query, target):
         """
@@ -305,10 +325,46 @@ class CRMMidpageProduct(object):
             {"$group": {"_id": "$referr", "count": {"$sum": 1}}}
         ]
         value = list(self.log_collection.aggregate(obj))
-        print len(value)
-        print query
+        source_set = set()
+        other = 0
+        direct = 0
         for item in value:
-            print item
+            # 直接访问
+            if not item["_id"] or item["_id"] == "-":
+                direct += item["count"]
+            # 访问量小或者其他分辨不出的来源
+            elif item["count"] < 100:
+                other += item["count"]
+            # 死循环去除。防止 A流向b，b又流向a这种图
+            elif item["_id"] in self.target_source[target]:
+                continue
+            else:
+                # 记录计算过的节点对应图。 { target:[source1, source2]}
+                self.target_source[target].append(item["_id"])
+                # 防止重复计算某一节点的。记录计算过的节点
+                source_set.add(item["_id"])
+                # 记录结果
+                self.user_path.append({
+                    "@index": self.destination_url,
+                    "source": item["_id"],
+                    "target": target,
+                    "value": item["count"]
+                })
+        if direct:
+            self.user_path.append({
+                "@index": self.destination_url,
+                "source": u"直接访问",
+                "target": target,
+                "value": direct
+            })
+        if other:
+            self.user_path.append({
+                "@index": self.destination_url,
+                "source": "other",
+                "target": target,
+                "value": other
+            })
+        return source_set
 
     def _statist(self, key, value_map, index_map):
         u"""
@@ -364,7 +420,7 @@ class CRMMidpageProduct(object):
             keys = index_map.keys()
         else:
             try:
-                index_map = {key:index_map[key] for key in keys}
+                index_map = {key: index_map[key] for key in keys}
             except KeyError as e:
                 logging.info("[ERROR]index not exists:%s" % e.message)
         # 补充分组条件
@@ -554,6 +610,13 @@ class CRMMidpageProduct(object):
             for row in result:
                 fp.write(json.dumps(row, ensure_ascii=False).encode("utf-8"))
                 fp.write("\n")
+        # 存储用户画像文件
+        if self.user_path:
+            file_name = os.path.join(path, "user_path_%s.txt" % self.date)
+            with open(file_name, "w") as fp:
+                for row in self.user_path:
+                    fp.write(json.dumps(row, ensure_ascii=False).encode("utf-8"))
+                    fp.write("\n")
 
     def format_index_for_mongo(self, index_json, group):
         """

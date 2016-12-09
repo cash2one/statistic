@@ -16,6 +16,7 @@ Comment:
 import os
 import sys
 import time
+import shutil
 import logging
 import traceback
 # 第三方库
@@ -78,7 +79,8 @@ def wget(url, path, replace=True):
         else:
             logging.info("remove...")
             os.remove(path)
-    cmd = "wget -q -O %s %s" % (path, url)
+    # cmd = "wget -q -O %s %s" % (path, url)
+    cmd = "wget -O %s %s" % (path, url)
     logging.info(cmd)
     code = os.system(cmd)
     if code != 0:
@@ -118,3 +120,32 @@ def run_main_cmd(cmd, args=None):
               (base_dir, python_cmd, cmd, args)
     logging.info(cmd_str)
     os.system(cmd_str)
+
+
+def clear_files(path, day):
+    """
+    清除超期文件。不会进行递归判断。
+    只删除该目录下的超期文件，和超期文件夹。
+    判断时间为修改时间。
+    xulei12@baidu.com
+    2016-12-09
+    :param path:路径
+    :param day: 删除几天前的。避免误操作。最少删除1天前的。
+    :return:
+    """
+    day = float(day)
+    if day <= 1:
+        return
+    if not os.path.isdir(path):
+        return
+    logging.info("clear_files: %s days ago in %s " % (day, path))
+    clear_ts = time.time() - day * 24 * 60 * 60
+    for f in os.listdir(path):
+        f_path = os.path.join(path, f)
+        if os.path.getmtime(f_path) < clear_ts:
+            if os.path.isfile(f_path):
+                logging.info("delete file: %s" % f_path)
+                os.remove(f_path)
+            if os.path.isdir(f_path):
+                logging.info("delete path: %s" % f_path)
+                shutil.rmtree(f_path, True)
