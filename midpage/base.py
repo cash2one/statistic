@@ -257,12 +257,14 @@ class CRMMidpageProduct(object):
         filename = os.path.join(path, "baiduid.txt")
         uidlist = open(filename, "w+")
         obuff = []
-        for result in self.log_collection.find(index_map[key]["query"], {"baiduid": 1, "_id": 0}):
+        cursor=self.log_collection.find(index_map[key]["query"], {"baiduid": 1, "_id": 0}, no_cursor_timeout=True)
+        for result in cursor:
             if result["baiduid"]:
                 if result["baiduid"] not in obuff:
                     uidlist.write(result["baiduid"])
                     uidlist.write("\n")
                     obuff.append(result["baiduid"])
+        cursor.close()
         uidlist.close()
 
     def _user_path_statist(self, key, value_map, index_map):
@@ -324,7 +326,7 @@ class CRMMidpageProduct(object):
             {"$match": tmp_q},
             {"$group": {"_id": "$referr", "count": {"$sum": 1}}}
         ]
-        value = list(self.log_collection.aggregate(obj))
+        value = list(self.log_collection.aggregate(obj, allowDiskUse=True))
         source_set = set()
         other = 0
         direct = 0
