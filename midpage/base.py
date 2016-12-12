@@ -257,7 +257,9 @@ class CRMMidpageProduct(object):
         filename = os.path.join(path, "baiduid.txt")
         uidlist = open(filename, "w+")
         obuff = []
-        cursor=self.log_collection.find(index_map[key]["query"], {"baiduid": 1, "_id": 0}, no_cursor_timeout=True)
+        cursor=self.log_collection.find(index_map[key]["query"],
+                {"baiduid": 1, "_id": 0},
+                no_cursor_timeout=True)
         for result in cursor:
             if result["baiduid"]:
                 if result["baiduid"] not in obuff:
