@@ -28,10 +28,10 @@ class DateLogDb(object):
     def __init__(self):
         self.collection_name = 'datelog_%s' % self.date
         self.conn = self._get_connect()
-        self.db = self.conn[conf.MONGO_DB]
+        # self.db = self.conn[conf.MONGO_DB]
         # 此处改为按月分db
-        # self.db_name = "db_%s" % self.date[0:-2]
-        # self.db = self.conn[self.db_name]
+        self.db_name = "db_%s" % self.date[0:-2]
+        self.db = self.conn[self.db_name]
         self.collection = self.db[self.collection_name]
 
     @classmethod
