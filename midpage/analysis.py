@@ -61,6 +61,7 @@ LOG_DATAS = {
     # },
     'baidu_hanyu': {
         'cq01-kg-search0.cq01': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search0.cq01',
+        'cq01-kg-search1.cq01': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search1.cq01',
         'bjyz-kg-web0.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web0.bjyz',
         'bjyz-kg-web1.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web1.bjyz',
         'bjyz-kg-web2.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web2.bjyz',
@@ -72,6 +73,8 @@ LOG_DATAS = {
     }
 }
 
+# NEED_USER_PATH = ["baidu_hanyu"]
+NEED_USER_PATH = []
 
 BASE_REG = re.compile(r"^([0-9\.]+) (.*) (.*) (?P<time>\[.+\]) "
                       r"\"(?P<request>.*)\" (?P<status_code>[0-9]{3}) (\d+) "
@@ -150,10 +153,11 @@ def spilt_files(files):
         line_count = 0
         path_file = os.path.split(file_name)
         print path_file[0], path_file[1]
-        fw = open(path_file[0]+'/part'+str(index)+'-'+path_file[1], 'w')
+        path = os.path.join(path_file[0], "%s_part%02d" % (path_file[1], index))
+        fw = open(path, 'w')
         spilt_file.append({
                 "source": source,
-                "file_name": path_file[0]+'/part'+str(index)+'-'+path_file[1],
+                "file_name": path,
             })
         for line in open(file_name, 'r'):
             fw.write(line)
@@ -163,10 +167,11 @@ def spilt_files(files):
                 fw.close()
                 index += 1
                 line_count = 0
-                fw = open(path_file[0]+'/part'+str(index)+'-'+path_file[1], 'w')
+                path = os.path.join(path_file[0], "%s_part%02d" % (path_file[1], index))
+                fw = open(path, 'w')
                 spilt_file.append({
                     "source": source,
-                    "file_name": path_file[0]+'/part'+str(index)+'-'+path_file[1],
+                    "file_name": path,
                 })
         fw.close()
     return spilt_file
@@ -338,6 +343,25 @@ def analysis_line(line, source):
     return ret
 
 
+def need_to_filter(line, source):
+    """
+    判断某一行解析后，是否需要被过滤掉不入库
+    :param line:
+    :param source:
+    :return:
+    """
+    # 无用url静态资源信息过滤
+    url_suffixes = [".js", ".css", ".gif", ".png", ".jpg", ".jpeg", ".tiff", ".php"]
+    for url_suffix in url_suffixes:
+        if line["url"].endswith(url_suffix):
+            return True
+    # spider无用请求过滤
+    spider_agent = "Baiduspider"
+    if spider_agent in line["user_agent"]:
+        return True
+    return False
+
+
 def process_file(source, file_name):
     """
     解析完的数据保存至mongodb
@@ -346,15 +370,27 @@ def process_file(source, file_name):
     :return:
     """
     db = midpagedb.DateLogDb()
+    collection = db.get_collection()
     error_num = 0
     log_num = 0
     logs = []
+    user_path = dict()
+    need_user_path = source in NEED_USER_PATH
     for line in iter_file(file_name):
             # 分析一行
         log_line = analysis_line(line, source)
         if log_line:
+            if need_to_filter(log_line, source):
+                continue
             logs.append(log_line)
             log_num += 1
+            # 为统计用户路径用
+            if need_user_path:
+                url = log_line["url"]
+                referr = log_line["referr"] if log_line["referr"] else "-"
+                user_path.setdefault(url, dict())
+                user_path[url].setdefault(referr, 0)
+                user_path[url][referr] += 1
         else:
             error_num += 1
         # 500行写一次mongo
@@ -363,6 +399,18 @@ def process_file(source, file_name):
             logs = []
     if logs:
         db.insert_log(logs)
+    if need_user_path:
+        for url in user_path:
+            for referr in user_path[url]:
+                one_path = {
+                    "source": "user_path_" + source,
+                    "url": url,
+                    "referr": referr,
+                }
+                collection.update(one_path,
+                                  {"$inc": {"@value": user_path[url][referr]}},
+                                  upsert=True)
+        user_path.clear()
     logging.info("log num:%s" % log_num)
     logging.info("error log num:%s" % error_num)
 
@@ -399,6 +447,9 @@ def main(date, sources=None):
     midpagedb.DateLogDb.set_date(date)
     # 清空现有数据库
     clear_db(sources)
+    # 清空统计用户路径数据
+    user_path_sources = ["user_path_" + source for source in sources]
+    clear_db(user_path_sources)
     # 根据LOG_DATAS的配置，wget下数据，返回格式 [{"source": xxx, "file_name": xxx},{……}]
     files = get_data(date, sources)
     # 对数据文件分割  大小1000000行 大约1G

@@ -26,7 +26,7 @@ class DateLogDb(object):
     date = ''
 
     def __init__(self):
-        self.collection_name = 'datelog_%s' % self.date
+        self.collection_name = 'tbl_%s' % self.date[-2:]
         self.conn = self._get_connect()
         # self.db = self.conn[conf.MONGO_DB]
         # 此处改为按月分db
