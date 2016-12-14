@@ -73,8 +73,12 @@ LOG_DATAS = {
     }
 }
 
+# 需要进行用户路径的计算资源
 # NEED_USER_PATH = ["baidu_hanyu"]
 NEED_USER_PATH = []
+
+# 需要过滤掉静态文件信息的资源
+NEED_FILTER = ["baidu_hanyu"]
 
 BASE_REG = re.compile(r"^([0-9\.]+) (.*) (.*) (?P<time>\[.+\]) "
                       r"\"(?P<request>.*)\" (?P<status_code>[0-9]{3}) (\d+) "
@@ -350,15 +354,16 @@ def need_to_filter(line, source):
     :param source:
     :return:
     """
-    # 无用url静态资源信息过滤
-    url_suffixes = [".js", ".css", ".gif", ".png", ".jpg", ".jpeg", ".tiff", ".php"]
-    for url_suffix in url_suffixes:
-        if line["url"].endswith(url_suffix):
+    if source in NEED_FILTER:
+        # 无用url静态资源信息过滤
+        url_suffixes = [".js", ".css", ".gif", ".png", ".jpg", ".jpeg", ".tiff", ".php"]
+        for url_suffix in url_suffixes:
+            if line["url"].endswith(url_suffix):
+                return True
+        # spider无用请求过滤
+        spider_agent = "Baiduspider"
+        if spider_agent in line["user_agent"]:
             return True
-    # spider无用请求过滤
-    spider_agent = "Baiduspider"
-    if spider_agent in line["user_agent"]:
-        return True
     return False
 
 
@@ -448,8 +453,9 @@ def main(date, sources=None):
     # 清空现有数据库
     clear_db(sources)
     # 清空统计用户路径数据
-    user_path_sources = ["user_path_" + source for source in sources]
-    clear_db(user_path_sources)
+    if sources:
+        user_path_sources = ["user_path_" + source for source in sources]
+        clear_db(user_path_sources)
     # 根据LOG_DATAS的配置，wget下数据，返回格式 [{"source": xxx, "file_name": xxx},{……}]
     files = get_data(date, sources)
     # 对数据文件分割  大小1000000行 大约1G
