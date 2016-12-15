@@ -101,4 +101,8 @@ def reducer(k, vs):
 
 
 def reducer_cleanup():
+    """
+    
+    :return:
+    """
     pass
