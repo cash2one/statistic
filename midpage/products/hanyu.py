@@ -14,7 +14,7 @@ class Product(base.CRMMidpageProduct):
     获得百度汉语的百度ID list
     """
     default_query = {
-        'source': 'baidu_hanyu',
+        'source': 'hanyu',
     }
 
     index_map = {
