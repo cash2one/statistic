@@ -265,7 +265,7 @@ def save_user_path(user_path_file):
 
 def run_hadoop(hadoop_remote_dir, date):
     """
-
+    执行hadoop程序。统计计算。
     :param hadoop_remote_dir:
     :param date:
     :return:
