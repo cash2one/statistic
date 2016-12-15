@@ -32,26 +32,50 @@ import statist
 
 LOG_DATAS = {
     'qianxun': {
-        'qianxun.01': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/bjyz-dumi-midpage0.bjyz.baidu.com/access_%s.log',
-        'qianxun.02': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/bjyz-dumi-midpage1.bjyz.baidu.com/access_%s.log',
-        # 'bjyz-dumi-midpage0.bjyz.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/bjyz-dumi-midpage0.bjyz.baidu.com/access_%s.log',
-        # 'bjyz-dumi-midpage1.bjyz.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/bjyz-dumi-midpage1.bjyz.baidu.com/access_%s.log',
-        # 'nj03-mco-wise272.nj03.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/nj03-mco-wise272.nj03.baidu.com/access_%s.log',
-        # 'nj03-mco-wise274.nj03.baidu.com': 'ftp://cq01-testing-ps7165.cq01.baidu.com/home/work/dumi_online_access_log/nj03-mco-wise274.nj03.baidu.com/access_%s.log',
+        'bjyz-dumi-midpage0.bjyz.baidu.com':
+            'ftp://cq01-testing-ps7165.cq01.baidu.com'
+            '/home/work/dumi_online_access_log/bjyz-dumi-midpage0.bjyz.baidu.com/access_%s.log',
+        'bjyz-dumi-midpage1.bjyz.baidu.com':
+            'ftp://cq01-testing-ps7165.cq01.baidu.com'
+            '/home/work/dumi_online_access_log/bjyz-dumi-midpage1.bjyz.baidu.com/access_%s.log',
+        'nj03-mco-wise272.nj03.baidu.com':
+            'ftp://cq01-testing-ps7165.cq01.baidu.com'
+            '/home/work/dumi_online_access_log/nj03-mco-wise272.nj03.baidu.com/access_%s.log',
+        'nj03-mco-wise274.nj03.baidu.com':
+            'ftp://cq01-testing-ps7165.cq01.baidu.com'
+            '/home/work/dumi_online_access_log/nj03-mco-wise274.nj03.baidu.com/access_%s.log',
     },
     'hanyu': {
-        "hanyu.01": "ftp",
-        "hanyu.02": "ftp",
-        # 'cq01-kg-search0.cq01': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search0.cq01',
-        # 'cq01-kg-search1.cq01': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search1.cq01',
-        # 'bjyz-kg-web0.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web0.bjyz',
-        # 'bjyz-kg-web1.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web1.bjyz',
-        # 'bjyz-kg-web2.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web2.bjyz',
-        # 'bjyz-kg-web3.bjyz': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web3.bjyz',
-        # 'nj02-kg-web0.nj02': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web0.nj02',
-        # 'nj02-kg-web1.nj02': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web1.nj02',
-        # 'nj02-kg-web2.nj02': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web2.nj02',
-        # 'nj02-kg-web3.nj02': 'ftp://yq01-kg-diaoyan13.yq01.baidu.com/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web3.nj02'
+        'cq01-kg-search0.cq01':
+            'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
+            '/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search0.cq01',
+        'cq01-kg-search1.cq01':
+            'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
+            '/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search1.cq01',
+        'bjyz-kg-web0.bjyz':
+            'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
+            '/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web0.bjyz',
+        'bjyz-kg-web1.bjyz':
+            'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
+            '/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web1.bjyz',
+        'bjyz-kg-web2.bjyz':
+            'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
+            '/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web2.bjyz',
+        'bjyz-kg-web3.bjyz':
+            'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
+            '/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web3.bjyz',
+        'nj02-kg-web0.nj02':
+            'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
+            '/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web0.nj02',
+        'nj02-kg-web1.nj02':
+            'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
+            '/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web1.nj02',
+        'nj02-kg-web2.nj02':
+            'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
+            '/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web2.nj02',
+        'nj02-kg-web3.nj02':
+            'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
+            '/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web3.nj02'
     }
 }
 

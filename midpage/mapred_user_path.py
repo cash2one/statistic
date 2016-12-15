@@ -27,10 +27,20 @@ SOURCE = sys.argv[1]
 
 
 def mapper_setup():
+    """
+
+    :return:
+    """
     return True
 
 
 def mapper(k, v):
+    """
+
+    :param k:
+    :param v:
+    :return:
+    """
     v = v.strip()
     try:
         line = json.loads(v)
@@ -45,15 +55,28 @@ def mapper(k, v):
 
 
 def mapper_cleanup():
+    """
+
+    :return:
+    """
     pass
 
 
 def reducer_setup():
+    """
+
+    :return:
+    """
     return True
 
 
 def reducer(k, vs):
-    ret = []
+    """
+
+    :param k:
+    :param vs:
+    :return:
+    """
     counts = dict()
     logging.error(k)
     for v in vs:

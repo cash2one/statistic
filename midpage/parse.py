@@ -51,12 +51,17 @@ MB_REG = re.compile(r"baiduboxapp")
 
 
 class ParseLineError(Exception):
-    u"""错误的行，会被略过
+    """错误的行，会被略过
     """
     pass
 
 
 def parse_query(query):
+    """
+    解析query
+    :param query:
+    :return:
+    """
     query = query.encode('utf-8')
     query = urlparse.parse_qs(query)
     try:
@@ -72,6 +77,12 @@ def parse_query(query):
 
 
 def parse_request(request, ret):
+    """
+    解析request
+    :param request:
+    :param ret:
+    :return:
+    """
     request = request.split()
     if len(request) == 3:
         request = request[1]
@@ -111,6 +122,12 @@ def parse_request(request, ret):
 
 
 def parse_user_agent(user_agent, ret):
+    """
+    判断用户设备
+    :param user_agent:
+    :param ret:
+    :return:
+    """
     if IOS_REG.search(user_agent):
         ret["os"] = "ios"
     elif ANDROID_REG.search(user_agent):
@@ -126,6 +143,12 @@ def parse_user_agent(user_agent, ret):
 
 
 def parse_cookie(cookie, ret):
+    """
+    解析cookie
+    :param cookie:
+    :param ret:
+    :return:
+    """
     bdid = BAIDUID_REG.search(cookie)
     if bdid:
         ret["baiduid"] = bdid.group("id")
@@ -134,6 +157,12 @@ def parse_cookie(cookie, ret):
 
 
 def analysis_qianxun(match, ret):
+    """
+    主要解析入口
+    :param match:
+    :param ret:
+    :return:
+    """
     request = match.group("request")
     parse_request(request, ret)
 
@@ -155,6 +184,12 @@ def analysis_qianxun(match, ret):
 
 
 def analysis_mingxing(match, ret):
+    """
+    明星解析入口。暂时废弃不用
+    :param match:
+    :param ret:
+    :return:
+    """
     request = match.group("request")
     parse_request(request, ret)
     user_agent = match.group("user_agent")
@@ -221,5 +256,22 @@ def analysis_line(line, source):
 
 
 def test():
-    line = '117.185.18.145 - - [13/Dec/2016:23:59:56 +0800] "GET /dumi/gaokao_search?province=%E5%AE%89%E5%BE%BD&majorType=%E7%90%86%E7%A7%91&score=650&targetObject=major&collegeName=%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6&from=ala-dumi-will HTTP/1.1" 200 4329 "http://duer.baidu.com/midpage/gaokao_search?targetObject=college&score=650&province=%E5%AE%89%E5%BE%BD&majorType=%E7%90%86%E7%A7%91&from=ala-dumi-will&page=0&anchor=%E4%BF%9D%E5%BA%95&json=0" "BIDUPSID=F073A1918C33C30327C2EB43E4A1A1BB; BAIDUID=F073A1918C33C30327C2EB43E4A1A1BB:FG=1; H_WISE_SIDS=107502_100616_100121_109786_112044_100101_104381_103550_111979_110004_113483_110710_112200_112136_111286_113932_113547_110011_113568_111549_113566_111325_112107_111927_112212_110654_107313_111939_112134_110031_111216_110085" "Mozilla/5.0 (Linux; U; Android 4.4.4; zh-cn; A31c Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko)Version/4.0 Chrome/37.0.0.0 MQQBrowser/7.1 Mobile Safari/537.36" 0.462 3596424245 117.185.18.145 10.143.242.16 unix:/home/work/odp/var/php-cgi.sock duer.baidu.com "183.162.34.118, 117.185.18.145" odp newapp 35964242450284331786121323 1481644796.885'
+    """
+    测试代码
+    :return:
+    """
+    line = '117.185.18.145 - - [13/Dec/2016:23:59:56 +0800] "GET /dumi/gaokao_search?province=' \
+           '%E5%AE%89%E5%BE%BD&majorType=%E7%90%86%E7%A7%91&score=650&targetObject=major' \
+           '&collegeName=%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6&from=ala-dumi-will HTTP/1.1"' \
+           ' 200 4329 "http://duer.baidu.com/midpage/gaokao_search?targetObject=college&score=650' \
+           '&province=%E5%AE%89%E5%BE%BD&majorType=%E7%90%86%E7%A7%91&from=ala-dumi-will&page=0' \
+           '&anchor=%E4%BF%9D%E5%BA%95&json=0" "BIDUPSID=F073A1918C33C30327C2EB43E4A1A1BB;' \
+           ' BAIDUID=F073A1918C33C30327C2EB43E4A1A1BB:FG=1; H_WISE_SIDS=107502_100616_100121_' \
+           '109786_112044_100101_104381_103550_111979_110004_113483_110710_112200_112136_111286_' \
+           '113932_113547_110011_113568_111549_113566_111325_112107_111927_112212_110654_107313_' \
+           '111939_112134_110031_111216_110085" "Mozilla/5.0 (Linux; U; Android 4.4.4; zh-cn;' \
+           ' A31c Build/KTU84P) AppleWebKit/537.36 (KHTML, like Gecko)Version/4.0 Chrome/' \
+           '37.0.0.0 MQQBrowser/7.1 Mobile Safari/537.36" 0.462 3596424245' \
+           ' 117.185.18.145 10.143.242.16 unix:/home/work/odp/var/php-cgi.sock duer.baidu.com' \
+           ' "183.162.34.118, 117.185.18.145" odp newapp 35964242450284331786121323 1481644796.885'
     print analysis_line(line, "qianxun")
