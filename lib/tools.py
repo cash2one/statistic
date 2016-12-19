@@ -80,11 +80,14 @@ def wget(url, path, replace=True):
             logging.info("remove...")
             os.remove(path)
     # cmd = "wget -q -O %s %s" % (path, url)
-    cmd = "wget -O %s %s" % (path, url)
+    cmd = "wget -q -O %s %s" % (path, url)
     logging.info(cmd)
     code = os.system(cmd)
     if code != 0:
         logging.info("wget error:%d" % code)
+        cmd = "rm -rf %s" % url
+        logging.info(cmd)
+        os.system(cmd)
         raise error.DownloadError(u"wget error")
 
 

@@ -144,7 +144,7 @@ def spilt_files(files):
         print path_file[0], path_file[1]
         path = os.path.join(path_file[0], "%s_part%02d" % (path_file[1], index))
         # 用于输出到hadoop的本地路径
-        out_path = os.path.join(path_file[0], "%s.%s_part%02d" % (source, path_file[1], index))
+        out_path = os.path.join(path_file[0], "%s_part%02d.%s" % (path_file[1], index, source))
         fw = open(path, 'w')
         spilt_file.append({
             "source": source,
@@ -160,7 +160,7 @@ def spilt_files(files):
                 index += 1
                 line_count = 0
                 path = os.path.join(path_file[0], "%s_part%02d" % (path_file[1], index))
-                out_path = os.path.join(path_file[0], "out", "%s_part%02d" % (path_file[1], index))
+                out_path = os.path.join(path_file[0], "%s_part%02d.%s" % (path_file[1], index, source))
                 fw = open(path, 'w')
                 spilt_file.append({
                     "source": source,
@@ -324,7 +324,7 @@ def main(date, sources=None):
     if sources:
         sources = sources.split(',')
     else:
-        sources = None
+        sources = LOG_DATAS.keys()
     # 设置mongo日期，在statist里面还会再设置一次
     midpagedb.DateLogDb.set_date(date)
     # 清空现有数据库
