@@ -252,22 +252,23 @@ class CRMMidpageProduct(object):
         :param index_map:
         :return:
         """
-        # 根据product名字，创建文件夹，并返回路径
+        # 根据product名字，创建文件夹，并返回路径\
+        logging.info("getting baiduid list")
         path = self._get_path()
+
         filename = os.path.join(path, "baiduid.txt")
-        uidlist = open(filename, "w+")
-        obuff = []
-        cursor=self.log_collection.find(index_map[key]["query"],
-                {"baiduid": 1, "_id": 0},
-                no_cursor_timeout=True)
+        fp = open(filename, "w+")
+        logging.info("postion: %s" % filename)
+
+        query = copy.deepcopy(index_map[key]["query"])
+        query["source"] = "_baiduid_" + query["source"]
+
+        pipeline = [{"$match": query},
+                    {"$group": {'_id': "$baiduid", 'count': {'$sum': 1}}}]
+        cursor = self.log_collection.aggregate(pipeline, allowDiskUse=True)
         for result in cursor:
-            if result["baiduid"]:
-                if result["baiduid"] not in obuff:
-                    uidlist.write(result["baiduid"])
-                    uidlist.write("\n")
-                    obuff.append(result["baiduid"])
-        cursor.close()
-        uidlist.close()
+            fp.write(result["_id"] + "\n")
+        fp.close()
 
     def _user_path_statist(self, key, value_map, index_map):
         """

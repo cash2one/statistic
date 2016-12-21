@@ -86,17 +86,20 @@ class HadoopBase(object):
         :return:
         """
         counts = dict()
+        uid_list = set()
         for line in self._reducer_in():
             try:
                 line = line.strip()
                 kv = line.split("\t")
                 value = json.loads(kv[1])
+                if "baiduid" in value and value["baiduid"]:
+                    uid_list.add(value["baiduid"])
                 url = value["url"]
                 referr = value["referr"]
                 counts.setdefault(url, dict())
                 counts[url].setdefault(referr, 0)
                 counts[url][referr] += 1
-                self._emit(kv[0], kv[1])
+                # self._emit(kv[0], kv[1])
             except Exception as e:
                 continue
 
@@ -109,6 +112,13 @@ class HadoopBase(object):
                                    url,
                                    referr,
                                    counts[url][referr]))
+        if uid_list:
+            uid_list = list(uid_list)
+            uid_list.sort()
+            for item in uid_list:
+                self._emit("_uid",
+                           '{"source": "%s", "baiduid": "%s"}' % (
+                               "_baiduid_" + self.source, item))
 
     def run(self):
         """

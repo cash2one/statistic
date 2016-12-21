@@ -41,7 +41,8 @@ def save_mapred_to_db(file_path):
     """
     db = midpagedb.DateLogDb()
     logs = []
-    all_nums = 0
+    path_nums = 0
+    uid_nums = 0
     error_nums = 0
     cached_nums = 0
     with open(file_path) as fp:
@@ -50,10 +51,13 @@ def save_mapred_to_db(file_path):
                 line = line.split("\t")
                 line_log = json.loads(line[1])
                 logs.append(line_log)
+                if line[0] == "_uid":
+                    uid_nums += 1
+                else:
+                    path_nums += 1
                 cached_nums += 1
                 if cached_nums > 500:
                     db.insert_log(logs)
-                    all_nums += cached_nums
                     logs = []
                     cached_nums = 0
             except Exception as e:
@@ -61,9 +65,8 @@ def save_mapred_to_db(file_path):
                 continue
         if cached_nums:
             db.insert_log(logs)
-            all_nums += cached_nums
     file_name = os.path.split(file_path)[1]
-    ret = {"file": file_name, "ok": all_nums, "error": error_nums}
+    ret = {"file": file_name, "path": path_nums, "uid": uid_nums, "error": error_nums}
     print ret
     return ret
 
