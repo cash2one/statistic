@@ -108,10 +108,6 @@ def run_mapred(source, in_path, date):
     else:
         os.makedirs(local_hadoop_path)
 
-    # # 如果有文件先删除
-    # cmd = "rm -rf %s" % local_hadoop_path
-    logging.info(cmd)
-    os.system(cmd)
     # 下载文件
     cmd = conf.HADOOP_BIN + " fs -get %s %s" % (out_path, local_hadoop_path)
     logging.info(cmd)
