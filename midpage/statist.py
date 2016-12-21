@@ -26,11 +26,19 @@ from conf import conf
 import midpagedb
 
 
-def get_products():
+def get_products(hadoop=None):
+    """
+
+    :param hadoop: 带次标记，标记获取所有“_hadoop_"抬头的任务
+    :return:
+    """
     products_dir = os.path.join(conf.BASE_DIR, "midpage/products")
     products = os.listdir(products_dir)
     products = [product for product in products if product.endswith('.py')]
-    products = [product.split(".")[0] for product in products if not product.startswith("_")]
+    if hadoop:
+        products = [product.split(".")[0] for product in products if product.startswith("_hadoop_")]
+    else:
+        products = [product.split(".")[0] for product in products if not product.startswith("_")]
     return products
 
 
@@ -50,10 +58,14 @@ def main(date, products=None, sources=None):
     if products:
         if type(products) != list:
             products = [products]
+        # 为hadoop时做特殊处理
+        if products[0] == "hadoop":
+            products = get_products(hadoop=True)
     # 或者跑所有midpage/products 下所有非'_'开头的产品
     else:
         products = get_products()
 
+    print products
     for product in products:
         logging.info('[INFO]product %s statis start' % product)
         try:

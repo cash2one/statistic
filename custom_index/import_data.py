@@ -34,15 +34,15 @@ KEY_MAP = {
 
 # mongodb索引
 DB_MAP = {
-    "user_portrait": data_db.UserPortrait(),
-    "user_path": data_db.UserPath()
+    "user_portrait": data_db.UserPortrait,
+    "user_path": data_db.UserPath
 }
 
 
 def save_index(path, task, date):
     sub_project = task.sub_project_id
     system_key = {"@task": task.id, "@create": date, "@subProject": sub_project}
-    db = DB_MAP[task.task_type]
+    db = DB_MAP[task.task_type]()
     db.remove(system_key)
     fp = open(path)
 

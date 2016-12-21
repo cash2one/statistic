@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
-sh ./mapred.sh /app/ps/spider/wdmqa/kgdc/20161214/hanyu/input/ \
-/app/ps/spider/wdmqa/kgdc/20161214/hanyu/output/2 \
-hanyu
+sh ./mapred.sh /home/work/hadoop-client/hadoop/bin/hadoop \
+hanyu \
+/app/ps/spider/wdmqa/kgdc/test/20161212/input \
+/app/ps/spider/wdmqa/kgdc/test/20161212/output/4

@@ -285,13 +285,15 @@ class CRMMidpageProduct(object):
         :return:
         """
         destination_url = index_map[key]["query"]["url"]
-        query = index_map[key]["query"]
+        query = copy.deepcopy(index_map[key]["query"])
+        # user_path的source用特定，利用index提高速度
+        query["source"] = "_user_path_" + query["source"]
         self.loops = 0
         self.target_source = dict()
         # 记录当前在计算属于哪一个转换页面的路径
         self.destination_url = destination_url
-        self.get_path_recursion(index_map[key]["loops"], query, [destination_url])
         print query, destination_url
+        self.get_path_recursion(index_map[key]["loops"], query, [destination_url])
 
     def get_path_recursion(self, loops, query, target_list):
         """
@@ -324,35 +326,42 @@ class CRMMidpageProduct(object):
         """
         tmp_q = copy.deepcopy(query)
         tmp_q["url"] = target
-        obj = [
-            {"$match": tmp_q},
-            {"$group": {"_id": "$referr", "count": {"$sum": 1}}}
-        ]
-        value = list(self.log_collection.aggregate(obj, allowDiskUse=True))
+        # obj = [
+        #     {"$match": tmp_q},
+        #     {"$group": {"_id": "$referr", "count": {"$sum": 1}}}
+        # ]
+        value = list(self.log_collection.find(tmp_q,
+                                              {"_id": 0},
+                                              no_cursor_timeout=True))
         source_set = set()
         other = 0
         direct = 0
+        wise_search = 0
         for item in value:
             # 直接访问
-            if not item["_id"] or item["_id"] == "-":
-                direct += item["count"]
+            referr = item["referr"]
+            count = item["value"]
+            if not referr or referr == "-":
+                direct += count
+            # elif "from=" in referr:
+            #     wise_search += count
             # 访问量小或者其他分辨不出的来源
-            elif item["count"] < 100:
-                other += item["count"]
+            elif count < 100:
+                other += count
             # 死循环去除。防止 A流向b，b又流向a这种图
-            elif item["_id"] in self.target_source[target]:
+            elif referr in self.target_source[target]:
                 continue
             else:
                 # 记录计算过的节点对应图。 { target:[source1, source2]}
-                self.target_source[target].append(item["_id"])
+                self.target_source[target].append(referr)
                 # 防止重复计算某一节点的。记录计算过的节点
-                source_set.add(item["_id"])
+                source_set.add(referr)
                 # 记录结果
                 self.user_path.append({
                     "@index": self.destination_url,
-                    "source": item["_id"],
+                    "source": referr,
                     "target": target,
-                    "value": item["count"]
+                    "value": count
                 })
         if direct:
             self.user_path.append({
@@ -360,6 +369,13 @@ class CRMMidpageProduct(object):
                 "source": u"直接访问",
                 "target": target,
                 "value": direct
+            })
+        if wise_search:
+            self.user_path.append({
+                "@index": self.destination_url,
+                "source": u"wise大搜",
+                "target": target,
+                "value": other
             })
         if other:
             self.user_path.append({
@@ -536,7 +552,10 @@ class CRMMidpageProduct(object):
     def _get_path(self):
         date = self.date
         module_name = self.__module__.split(".")[-1]
-        output = os.path.join(conf.OUTPUT_DIR, "midpage/%s/%s" % (module_name, date))
+        module_path = os.path.join(conf.OUTPUT_DIR, "midpage", module_name)
+        # 清理30天前的输出
+        lib.tools.clear_files(module_name, 30)
+        output = os.path.join(module_path, str(date))
         if not os.path.exists(output):
             os.makedirs(output)
         return output
@@ -607,7 +626,10 @@ class CRMMidpageProduct(object):
         # 根据product名字，创建文件夹，并返回路径
         module_name = self.__module__.split(".")[-1]
         path = os.path.join(conf.OUTPUT_DIR, "kgdc/%s" % module_name)
-        if not os.path.exists(path):
+        if os.path.exists(path):
+            # 清理30天之前的产出
+            lib.tools.clear_files(path, 30)
+        else:
             os.makedirs(path)
         file_name = os.path.join(path, "%s.txt" % self.date)
         with open(file_name, "w") as fp:
@@ -616,7 +638,7 @@ class CRMMidpageProduct(object):
                 fp.write("\n")
         # 存储用户画像文件
         if self.user_path:
-            file_name = os.path.join(path, "user_path_%s.txt" % self.date)
+            file_name = os.path.join(path, "%s_user_path.txt" % self.date)
             with open(file_name, "w") as fp:
                 for row in self.user_path:
                     fp.write(json.dumps(row, ensure_ascii=False).encode("utf-8"))

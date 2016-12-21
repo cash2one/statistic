@@ -6,7 +6,7 @@ import os
 
 from midpage import base
 
-source = 'baidu_hanyu'
+source = 'hanyu'
 
 
 class Product(base.CRMMidpageProduct):

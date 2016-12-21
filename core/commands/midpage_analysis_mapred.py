@@ -6,7 +6,7 @@
 """
 文件说明：
 
-File   : midpage_statist.py
+File   : midpage_analysis.py
 
 Authors: yangxiaotong@baidu.com
 Date   : 2016-4-30
@@ -18,7 +18,7 @@ import time
 
 # 自有库
 from core.management.base import BaseCommand
-from midpage import statist
+from midpage import analysis_mapred
 
 
 class Command(BaseCommand):
@@ -35,14 +35,12 @@ class Command(BaseCommand):
             date_format = False
         assert date_format
 
-    def handle(self, date, products=None, *args):
+    def handle(self, date, sources=None, *args):
         u"""
+        用mapred方式分析日志
         params:
             date  %Y%m%d格式日期
-            products  产品名，英文逗号分隔。可为空。
-                      特殊值：hadoop-表示执行所有以"_hadoop_"开头的产品
+            sources 分来源进行统计，逗号分隔，可选，默认全部
         """
-        if products:
-            products = products.split(",")
-        statist.main(date, products)
+        analysis_mapred.main(date, sources)
 

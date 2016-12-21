@@ -16,6 +16,7 @@ hadoop 处理代码。
 计算用户路径数据。
 """
 # 系统库
+import os
 import sys
 import json
 import logging
@@ -28,9 +29,12 @@ SOURCE = sys.argv[1]
 
 def mapper_setup():
     """
-
     :return:
     """
+    current_path = os.path.abspath(os.curdir)
+    current_path = os.path.split(current_path)[0]
+    sys.path.append(current_path)
+    logging.error(current_path)
     return True
 
 
@@ -42,6 +46,8 @@ def mapper(k, v):
     :return:
     """
     v = v.strip()
+    import gogogo
+    gogogo.test()
     try:
         line = json.loads(v)
         out = {
@@ -49,7 +55,7 @@ def mapper(k, v):
             "url": line["url"] if line["url"] else "-",
             "referr": line["referr"] if line["referr"] else "-"
         }
-        emit(line["source"] + out["url"], json.dumps(out, ensure_ascii=False).encode("utf-8"))
+        emit(k, json.dumps(out, ensure_ascii=False).encode("utf-8"))
     except Exception as e:
         logging.error(v)
 
@@ -93,16 +99,13 @@ def reducer(k, vs):
     for source in counts:
         for url in counts[source]:
             for referr in counts[source][url]:
-                emit(k, '{"source": "%s", "url": "%s", "target": "%s", "value": %s}' % (
-                    source,
-                    url,
-                    referr,
-                    counts[source][url][referr]))
+                emit(source + "@" + url,
+                     '{"source": "%s", "url": "%s", "referr": "%s", "value": %s}' % (
+                         source,
+                         url,
+                         referr,
+                         counts[source][url][referr]))
 
 
 def reducer_cleanup():
-    """
-    
-    :return:
-    """
     pass

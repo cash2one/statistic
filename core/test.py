@@ -32,8 +32,9 @@ def main(module_name, function_name, *args):
     """
     module = importlib.import_module(module_name)
     if not function_name:
-        module.test()
+        ret = module.test()
     else:
-        print module
+        # print module
         func = vars(module)[function_name]
-        func(*args)
+        ret = func(*args)
+    print "the return value is :\n%s" % ret

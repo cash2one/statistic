@@ -217,6 +217,8 @@ def need_to_filter(line, source):
     :return:
     """
     if source in NEED_FILTER:
+        if int(line["status_code"]) > 299:
+            return True
         # 无用url静态资源信息过滤
         url_suffixes = [".js", ".css", ".gif", ".png", ".jpg", ".jpeg", ".tiff", ".php"]
         for url_suffix in url_suffixes:

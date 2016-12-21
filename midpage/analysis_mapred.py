@@ -16,6 +16,7 @@ Comment:
 """
 # 系统库
 import os
+import json
 import logging
 from multiprocessing import Process
 # 第三方库
@@ -27,39 +28,8 @@ import midpagedb
 import statist
 
 LOG_DATAS = {
-    # 'hanyu': {
-    #     'cq01-kg-search0.cq01':
-    #         'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
-    #         '/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search0.cq01',
-    #     'cq01-kg-search1.cq01':
-    #         'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
-    #         '/home/disk0/kgdc-log-transfer/data/%s/hanyu/cq01-kg-search1.cq01',
-    #     'bjyz-kg-web0.bjyz':
-    #         'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
-    #         '/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web0.bjyz',
-    #     'bjyz-kg-web1.bjyz':
-    #         'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
-    #         '/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web1.bjyz',
-    #     'bjyz-kg-web2.bjyz':
-    #         'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
-    #         '/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web2.bjyz',
-    #     'bjyz-kg-web3.bjyz':
-    #         'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
-    #         '/home/disk0/kgdc-log-transfer/data/%s/hanyu/bjyz-kg-web3.bjyz',
-    #     'nj02-kg-web0.nj02':
-    #         'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
-    #         '/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web0.nj02',
-    #     'nj02-kg-web1.nj02':
-    #         'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
-    #         '/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web1.nj02',
-    #     'nj02-kg-web2.nj02':
-    #         'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
-    #         '/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web2.nj02',
-    #     'nj02-kg-web3.nj02':
-    #         'ftp://yq01-kg-diaoyan13.yq01.baidu.com'
-    #         '/home/disk0/kgdc-log-transfer/data/%s/hanyu/nj02-kg-web3.nj02'
-    # }
-    "hanyu": "/app/ps/spider/wdmqa/kgdc/20161218/hanyu/input"
+    "hanyu": "/app/ps/spider/wdmqa/kgdc/%s/hanyu/input"
+    # "hanyu": "/app/ps/spider/wdmqa/kgdc/%s/hanyu/input"
 }
 
 
@@ -92,7 +62,10 @@ def save_mapred_to_db(file_path):
         if cached_nums:
             db.insert_log(logs)
             all_nums += cached_nums
-    return {"ok": all_nums, "error": error_nums}
+    file_name = os.path.split(file_path)[1]
+    ret = {"file": file_name, "ok": all_nums, "error": error_nums}
+    print ret
+    return ret
 
 
 def run_mapred(source, in_path, date):
@@ -107,17 +80,22 @@ def run_mapred(source, in_path, date):
     out_path = "/app/ps/spider/wdmqa/kgdc/%s/%s/output" % (date, source)
 
     # 清理output目录
-    cmd = conf.HADOOP_BIN + " fs -mkdir %s" % out_path
+    cmd = conf.HADOOP_BIN + " fs -rmr %s" % out_path
     logging.info(cmd)
     os.system(cmd)
 
     # 执行hadoop任务
     current_dir = os.path.split(os.path.abspath(__file__))[0]
-    cmd = "cd %s; sh ./run_job.sh %s %s %s " % (current_dir, conf.HADOOP_BIN, in_path, out_path)
+    cmd = "cd %s; sh ./run_job.sh %s %s %s %s " % (
+        current_dir,
+        conf.HADOOP_BIN,
+        source,
+        in_path,
+        out_path)
     logging.info(cmd)
     os.system(cmd)
     # 获取hadoop运行结果
-    root_path = os.path.join(conf.DATA_DIR, "midpage")
+    root_path = os.path.join(conf.DATA_DIR, "midpage_hadoop")
     local_hadoop_path = os.path.join(root_path, date, source)
     if os.path.exists(local_hadoop_path):
         # 如果有文件先删除
@@ -125,7 +103,7 @@ def run_mapred(source, in_path, date):
         logging.info(cmd)
         os.system(cmd)
     else:
-        os.mkdir(local_hadoop_path)
+        os.makedirs(local_hadoop_path)
 
     # # 如果有文件先删除
     # cmd = "rm -rf %s" % local_hadoop_path
@@ -137,10 +115,14 @@ def run_mapred(source, in_path, date):
     os.system(cmd)
     # 解析入库
     plist = []
-    for file_path in os.listdir(local_hadoop_path):
-        p = Process(target=save_mapred_to_db, args=(file_path,))
-        plist.append(p)
-        p.start()
+    # hadoop输出目录带个output
+    local_hadoop_path_output = os.path.join(local_hadoop_path, "output")
+    for file_name in os.listdir(local_hadoop_path_output):
+        file_path = os.path.join(local_hadoop_path_output, file_name)
+        if os.path.isfile(file_path):
+            p = Process(target=save_mapred_to_db, args=(file_path,))
+            plist.append(p)
+            p.start()
 
     for p in plist:
         p.join()
@@ -170,12 +152,15 @@ def main(date, sources=None):
     # 跑hadoop任务，统计用户路径数据
     plist = []
     for source in sources:
-        in_path = LOG_DATAS[source],
+        in_path = LOG_DATAS[source]
+        if "%s" in in_path:
+            in_path = in_path % date
         p = Process(target=run_mapred, args=(source, in_path, date))
         plist.append(p)
         p.start()
 
     for p in plist:
         p.join()
-    # 开启全量统计
-    statist.main(date, sources=sources)
+    # # 开启全量统计
+    statist.main(date, "hadoop", sources)
+

@@ -67,6 +67,9 @@ class HadoopBase(object):
                 line = line.strip()
                 line = parse.analysis_line(line, self.source)
                 if line:
+                    if "=" in line["referr"]:
+                        referr = line["referr"].split("/")
+                        line["referr"] = "/" + referr[-1]
                     self._emit(line["url"].encode("utf-8"),
                                json.dumps(line, ensure_ascii=False).encode("utf-8"))
             except Exception as e:
