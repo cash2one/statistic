@@ -24,6 +24,9 @@ import parse
 
 
 class HadoopBase(object):
+    """
+    线上执行hadoop任务的基类
+    """
     def __init__(self, mapred, source):
         """
         初始化
@@ -119,6 +122,9 @@ class HadoopBase(object):
 
 
 class HadoopTest(HadoopBase):
+    """
+    线下测试hadoop任务。模拟hadoop的过程。使用基类的方法
+    """
     def __init__(self, source, input_file, output_file):
         """
 

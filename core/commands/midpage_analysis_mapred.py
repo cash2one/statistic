@@ -22,11 +22,16 @@ from midpage import analysis_mapred
 
 
 class Command(BaseCommand):
-    u"""
+    """
     创建每个月的数据库
     """
 
     def assert_argv(self, *args):
+        """
+
+        :param args:
+        :return:
+        """
         assert len(args) >= 3
         date_format = True
         try:
@@ -36,7 +41,7 @@ class Command(BaseCommand):
         assert date_format
 
     def handle(self, date, sources=None, *args):
-        u"""
+        """
         用mapred方式分析日志
         params:
             date  %Y%m%d格式日期
