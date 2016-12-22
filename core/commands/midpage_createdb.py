@@ -23,11 +23,16 @@ from midpage import midpagedb
 
 
 class Command(BaseCommand):
-    u"""
+    """
     创建每个月的数据库
     """
 
     def assert_argv(self, *args):
+        """
+
+        :param args:
+        :return:
+        """
         assert len(args) >= 3
         date_format = True
         try:
