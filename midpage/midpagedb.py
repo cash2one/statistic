@@ -79,19 +79,19 @@ class DateLogDb(object):
                 pass
 
     def create(self):
+        self.collection.drop()
         self.collection.ensure_index('source')
         self.collection.ensure_index('url')
         self.collection.ensure_index('referr')
         self.collection.ensure_index('query.cat')
         self.collection.create_index([('query.act', pymongo.ASCENDING),
-                                                ('query.cat', pymongo.ASCENDING)])
+                                      ('query.cat', pymongo.ASCENDING)])
 
     def clear(self, sources=None):
         if sources:
             for source in sources:
                 self.collection.remove({'source':source})
         else:
-            self.collection.drop()
             self.create()
 
     def distinct_count(self, field, cons):
@@ -108,6 +108,18 @@ class DateLogDb(object):
         for item in cursor:
             count = item['count']
         return count
+
+
+def createdb(date):
+    """
+
+    :param date:
+    :return:
+    """
+    DateLogDb.set_date(date)
+    # 清空现有数据库
+    db = DateLogDb()
+    db.create()
 
 '''
 垃圾代码，暂时屏蔽
