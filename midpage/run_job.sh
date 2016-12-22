@@ -15,9 +15,9 @@ echo "=======prepare code======="
 CODE_PATH=$(cd "$(dirname "$0")"; pwd)
 set -x
 cd ${CODE_PATH}
-tar -czvf code.tar.gz ./
+tar -czvf ../code.tar.gz ./
 set +x
-CODE_TAR=${CODE_PATH}/code.tar.gz
+CODE_TAR=${CODE_PATH}/../code.tar.gz
 REMOTE_TAR=${REMOTE_CODE}/code.tar.gz
 echo "tar to ${CODE_TAR}"
 
