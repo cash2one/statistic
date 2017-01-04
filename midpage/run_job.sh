@@ -35,19 +35,6 @@ set +x
 
 echo "=======start hadoop job====="
 
-#echo "${HADOOP} streaming
-# -D mapred.job.name="kgdc-hadoop"
-# -D mapred.job.map.capacity=1000
-# -D mapred.map.tasks=100
-# -D mapred.reduce.tasks=10
-# -D mapred.job.priority=VERY_HIGH
-# -cacheArchive /app/ps/spider/wdmqa/kgdc/tool/python2.7.6.tar.gz#python2.7
-# -cacheArchive ${REMOTE_TAR}#code
-# -file ./mapred.sh
-# -mapper \"sh -x mapred.sh map ${SOURCE}\"
-# -reducer \"sh -x mapred.sh reduce ${SOURCE}\"
-# -input ${INPUT}
-# -output ${OUTPUT}"
 set -x
 ${HADOOP} streaming \
  -D mapred.job.name="kgdc-hadoop" \

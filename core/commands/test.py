@@ -25,7 +25,7 @@ class Command(BaseCommand):
         assert len(args) >= 3
 
     def handle(self, module_name, function_name=None, *args):
-        """
+        u"""
         测试代码命令。
         python main.py test {module_name} [{function_name} {参数}]
         如果不带function_name, 则自动执行module里的 test(), 例如:
