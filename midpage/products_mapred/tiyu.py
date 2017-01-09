@@ -19,11 +19,11 @@ Comment:
 
 # 自有库
 try:
-    import base_mapred
+    import base_mapred_local
 except:
-    import midpage.base_mapred as base_mapred
+    import midpage.base_mapred_local as base_mapred_local
 
 
-class Mapred(base_mapred.BaseMapredLocal):
+class Mapred(base_mapred_local.BaseMapredLocal):
     pass
 

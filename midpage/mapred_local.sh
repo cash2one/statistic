@@ -1,24 +1,25 @@
 #!/usr/bin/env bash
 # 该脚本在本地跑
-if [ $# -lt 4 ];then
-    echo "./run_job.sh {hadoop} {source} {input} {output}"
+if [ $# -lt 5 ];then
+    echo "./mapred_local.sh {hadoop} {product} {date} {input} {output}"
     exit 1
 fi
 HADOOP=$1
-SOURCE=$2
-INPUT=$3
-OUTPUT=$4
+PRODUCT=$2
+DATE=$3
+INPUT=$4
+OUTPUT=$5
 
-REMOTE_CODE=/app/ps/spider/wdmqa/kgdc/code/${SOURCE}
+REMOTE_CODE=/app/ps/spider/wdmqa/kgdc/code/
 
 echo "=======prepare code======="
 CODE_PATH=$(cd "$(dirname "$0")"; pwd)
 set -x
 cd ${CODE_PATH}
-tar -czvf ../code.tar.gz ./
+tar -czvf ../${PRODUCT}.tar.gz ./
 set +x
-CODE_TAR=${CODE_PATH}/../code.tar.gz
-REMOTE_TAR=${REMOTE_CODE}/code.tar.gz
+CODE_TAR=${CODE_PATH}/../${PRODUCT}.tar.gz
+REMOTE_TAR=${REMOTE_CODE}/${PRODUCT}.tar.gz
 echo "tar to ${CODE_TAR}"
 
 echo "=======clear remote hadoop path======="
@@ -40,16 +41,15 @@ ${HADOOP} streaming \
  -D mapred.job.name="kgdc-hadoop" \
  -D mapred.job.map.capacity=1000 \
  -D mapred.map.tasks=100 \
- -D mapred.reduce.tasks=20 \
+ -D mapred.reduce.tasks=2 \
  -D mapred.job.priority=VERY_HIGH \
  -cacheArchive /app/ps/spider/wdmqa/kgdc/tool/python2.7.6.tar.gz#python2.7 \
  -cacheArchive ${REMOTE_TAR}#code \
- -file ./mapred_old.sh \
- -mapper "sh -x mapred_old.sh map ${SOURCE}" \
- -reducer "sh -x mapred_old.sh reduce ${SOURCE}" \
+ -file ./mapred.sh \
+ -mapper "sh -x mapred.sh ${DATE} ${PRODUCT} mapper" \
+ -reducer "sh -x mapred.sh ${DATE} ${PRODUCT} reducer" \
  -input ${INPUT} \
  -output ${OUTPUT}
- # -D mapred.task.hce.lib.ld.paths=${HADOOP_HOME}/libhdfs:${HADOOP_HOME}/libhce/lib:${JAVA_HOME}/jre/lib/amd64:${JAVA_HOME}/jre/lib/amd64/native_threads:${JAVA_HOME}/jre/lib/amd64/server:$LD_LIBRARY_PATH:python2.7/so \
 set +x
 echo "=======clear files======="
 set -x

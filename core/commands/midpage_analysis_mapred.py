@@ -23,7 +23,6 @@ from midpage import analysis_mapred
 
 class Command(BaseCommand):
     """
-    创建每个月的数据库
     """
 
     def assert_argv(self, *args):
