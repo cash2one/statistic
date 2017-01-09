@@ -73,6 +73,8 @@ class BaseMapred(object):
             # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
             "mapper": "count",
             "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "kgdc_file",
             "config": {},
             # 该指标对应的维度信息，在下面定义
             "group_name": "default_groups"
@@ -782,7 +784,8 @@ class BaseMapred(object):
             logging.error("@value=%s" % item["@value"])
             for record in self.expand_index(index, item["@value"], item["group_key"]):
                 self.emit_lines += 1
-                self._emit(json.dumps(record, ensure_ascii=False).encode("utf-8"))
+                self._emit(index.encode("utf-8"),
+                           json.dumps(record, ensure_ascii=False).encode("utf-8"))
 
     def reducer(self):
         """

@@ -152,3 +152,13 @@ def clear_files(path, day):
             if os.path.isdir(f_path):
                 logging.info("delete path: %s" % f_path)
                 shutil.rmtree(f_path, True)
+
+
+def check_dir_exist(dir_name):
+    """
+    检查路径，不存在就创建
+    :param dir_name:
+    :return:
+    """
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)

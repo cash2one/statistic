@@ -25,6 +25,7 @@ import base_mapred
 try:
     # 由于本地和hadoop运行的目录不同。
     import conf.conf as conf
+    import lib.tools as tools
     # 指明是在本地运行的部分，还是在远端运行的部分
     LOCAL_RUN = True
 except:
@@ -45,6 +46,44 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         self.product = product
         self.input_dir = os.path.join(self.default_dir, self.date, self.product, "input")
         self.output_dir = os.path.join(self.default_dir, self.date, self.product, "output")
+
+        if LOCAL_RUN:
+            root_path = os.path.join(conf.DATA_DIR, "midpage_hadoop")
+            tools.clear_files(root_path, 7)
+            # 下载到本地文件夹路径, kgdc-statist/data/midpage_hadoop/20170109/
+            self.local_data_dir = os.path.join(root_path, date)
+            tools.check_dir_exist(self.local_data_dir)
+            # kgdc需要的指标文件夹位置. kgdc-statist/output/kgdc_hadoop/hanyu/
+            self.kgdc_file_dir = os.path.join(conf.OUTPUT_DIR, "kgdc_hadoop", self.product)
+            tools.check_dir_exist(self.kgdc_file_dir)
+        self.fp_kgdc = None
+
+    def calculate_index_local(self, line):
+        """
+        完成mapreduce任务后，在本地执行的操作。包括合并或者生成文件等。根据具体函数处理
+        对应配置位于每个指标的字段  "local"
+        :param line: 文本字符串
+        :return:
+        """
+        kv = line.split("\t")
+        index = kv[0]
+        value = kv[1]
+        if index in self.index_map:
+            func = self.get_function(self.index_map[index]["local"])
+            func(value, self.index_map[index])
+
+    def _kgdc_file(self, line, index_item):
+        """
+        生成kgdc需要的指标文件格式
+        :param line:
+        :param index_item:
+        :return:
+        """
+        if not self.fp_kgdc:
+            file_name = os.path.join(self.kgdc_file_dir, "%s.txt" % self.date)
+            logging.info("create file: %s" % file_name)
+            self.fp_kgdc = open(file_name, "w+")
+        self.fp_kgdc.write(line + "\n")
 
     def set_up(self):
         """
@@ -86,6 +125,34 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         生成指标文件，环境清理过程
         :return:
         """
+        data_file_name = os.path.join(self.local_data_dir, self.product + ".data")
+        if os.path.exists(data_file_name):
+            os.remove(data_file_name)
+        cmd = "%s fs -getmerge %s %s" % (
+            conf.HADOOP_BIN,
+            self.output_dir,
+            data_file_name)
+        logging.info(cmd)
+        ret = os.system(cmd)
+        if ret:
+            logging.error(ret)
+            return ret
+
+        all_lines = 0
+        valid_lines = 0
+        error_lines = 0
+        with open(data_file_name) as fp:
+            for line in fp:
+                all_lines += 1
+                try:
+                    line = line.strip()
+                    self.calculate_index_local(line)
+                    valid_lines += 1
+                except:
+                    error_lines += 1
+        logging.error("all_lines: %s" % all_lines)
+        logging.error("valid_lines: %s" % valid_lines)
+        logging.error("error_lines: %s" % error_lines)
         return 0
 
     def run(self):
