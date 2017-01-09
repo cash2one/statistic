@@ -418,13 +418,13 @@ class BaseMapred(object):
             try:
                 line['query']['duration'] = float(line['query']['duration'])
             except:
-                raise
+                raise Exception("duration error")
         if 'extend' in line['query']:
             try:
                 line['query']['extend'] = json.loads(line['query']['extend'])
             except:
                 logging.exception('')
-                raise
+                raise Exception("extend should be a json")
             for key in line['query']['extend']:
                 if key.endswith('_num'):
                     try:

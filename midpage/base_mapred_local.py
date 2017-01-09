@@ -168,6 +168,10 @@ def test():
 
 
 def test_filter():
+    """
+    测试过滤器
+    :return:
+    """
     line = '117.136.81.248 - - [03/Jan/2017:12:59:59 +0800] ' \
            '"GET /static/asset/dep/asset/img/play-icon-m.png HTTP/1.0" 200 4148 ' \
            '"http://tiyu.baidu.com/detail?name=TkJBIzIwMTctMDEtMDMj5o6Y6YeRdnPli4flo6s%3D" ' \
