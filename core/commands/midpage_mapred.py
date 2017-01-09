@@ -23,6 +23,9 @@ from midpage import base_mapred_local
 
 
 class Command(BaseCommand):
+    """
+    该命令用于以mapred方式执行中间页指标计算任务。
+    """
 
     def assert_argv(self, *args):
         """
