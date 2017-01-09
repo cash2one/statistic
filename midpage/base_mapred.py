@@ -401,11 +401,11 @@ class BaseMapred(object):
         if len(request) == 3:
             request = request[1]
         else:
-            raise
+            raise Exception("request error")
         request = urlparse.urlparse(request)
         line['url'] = request.path
         if len(line['url']) > 1024:
-            raise
+            raise Exception("url too long")
         line['query'] = self.parse_query(request.query)
 
         for field in line['query']:
@@ -413,7 +413,7 @@ class BaseMapred(object):
                 try:
                     line['query'][field] = int(line['query'][field])
                 except:
-                    raise
+                    raise Exception("end with _num should be num")
         if 'duration' in line['query']:
             try:
                 line['query']['duration'] = float(line['query']['duration'])
@@ -430,7 +430,7 @@ class BaseMapred(object):
                     try:
                         line['query']['extend'][key] = float(line['query']['extend'][key])
                     except:
-                        raise
+                        raise Exception("query extend error")
 
     def parse_query(self, query):
         """
@@ -448,7 +448,7 @@ class BaseMapred(object):
                 query = {k.decode('cp936'): v[0].decode('cp936')
                          for k, v in query.items() if "." not in k}
             except:
-                raise
+                raise Exception("query format error")
         return query
 
     def parse_user_agent(self, line):
@@ -813,6 +813,10 @@ class BaseMapred(object):
         fp.close()
 
     def test(self):
+        """
+        本地测试方法
+        :return:
+        """
         if not self.TEST:
             print "not test mode"
             return
@@ -932,6 +936,10 @@ class BaseMapred(object):
 
 
 def test():
+    """
+    本地测试
+    :return:
+    """
     a = BaseMapred()
     a.test_merge()
     # a.test()

@@ -50,6 +50,9 @@ def test(product):
     module = importlib.import_module("midpage.products_mapred.%s" % product)
 
     class TestProduct(module.Mapred):
+        """
+        内部测试继承
+        """
         TEST = True
         SOURCE = "/home/work/temp/nj02.short"
         OUTPUT_FILE = "/home/work/temp/nj02.output"

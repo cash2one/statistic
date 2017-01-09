@@ -23,8 +23,6 @@ from midpage import base_mapred_local
 
 
 class Command(BaseCommand):
-    """
-    """
 
     def assert_argv(self, *args):
         """

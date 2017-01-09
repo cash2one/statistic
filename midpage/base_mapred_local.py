@@ -32,7 +32,9 @@ except:
 
 
 class BaseMapredLocal(base_mapred.BaseMapred):
-
+    """
+    从BaseMapred继承而来。分成2个class的目的只是为了本地运算代码与hadoop集群运算代码隔离
+    """
     def __init__(self, date, product):
         super(BaseMapredLocal, self).__init__()
         self.date = date
@@ -64,6 +66,10 @@ class BaseMapredLocal(base_mapred.BaseMapred):
             return os.system(cmd)
 
     def mapred(self):
+        """
+        启动计算指标hadoop任务
+        :return:
+        """
         current_dir = os.path.split(os.path.abspath(__file__))[0]
         cmd = "cd %s; sh ./mapred_local.sh %s %s %s %s %s" % (
             current_dir,
@@ -76,9 +82,17 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         return os.system(cmd)
 
     def clear_down(self):
+        """
+        生成指标文件，环境清理过程
+        :return:
+        """
         return 0
 
     def run(self):
+        """
+        主入口
+        :return:
+        """
         ret = self.set_up()
         if ret:
             logging.error("error occured in set_up(): %s" % ret)
@@ -154,15 +168,20 @@ def test():
 
 
 def test_filter():
-    line = '117.136.81.248 - - [03/Jan/2017:12:59:59 +0800] "GET /static/asset/dep/asset/img/play-icon-m.png HTTP/1.0" 200 '\
-           '4148 "http://tiyu.baidu.com/detail?name=TkJBIzIwMTctMDEtMDMj5o6Y6YeRdnPli4flo6s%3D" "Hm_lpvt_dfcd11bffa2fa6ca44'\
-           'ab9ae5fe0b4a7f=1483419596; Hm_lvt_dfcd11bffa2fa6ca44ab9ae5fe0b4a7f=1483419201,1483419429,1483419493,1483419596;'\
-           'BAIDUID=541937CDCDCC8D82C285CBA87473BB6A:FG=1; BIDUPSID=779B3663B5E318A39F0924166778C64F; H_WISE_SIDS=109815_1'\
-           '02570_100614_100042_114039_102432_110567_100100_113960_107799_113932_107316_111551_114207_112106_114000_111462_'\
-           '113568_111928_111366_114197_113566_112135_110031_114132_114095_110086; PSINO=1" "Mozilla/5.0 (iPhone; CPU iPhon'\
-           'e OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Mobile/11D257 baiduboxapp/0_0.6.0.6_enohpi_0'\
-           '69_046/2.1.7_1C2%254enohPi/1099a/2C920D743047AF5F06E6A5AF65467F563B65083BDFROACMILLB/1" rt=0.003 11398553596525'\
-           '209892 10.46.142.64 10.44.9.43 tiyu.baidu.com "117.136.81.248" ps appEngine - 1483419599.844'
+    line = '117.136.81.248 - - [03/Jan/2017:12:59:59 +0800] ' \
+           '"GET /static/asset/dep/asset/img/play-icon-m.png HTTP/1.0" 200 4148 ' \
+           '"http://tiyu.baidu.com/detail?name=TkJBIzIwMTctMDEtMDMj5o6Y6YeRdnPli4flo6s%3D" ' \
+           '"Hm_lpvt_dfcd11bffa2fa6ca44ab9ae5fe0b4a7f=1483419596; ' \
+           'Hm_lvt_dfcd11bffa2fa6ca44ab9ae5fe0b4a7f=1483419201,1483419429,1483419493,1483419596;'\
+           'BAIDUID=541937CDCDCC8D82C285CBA87473BB6A:FG=1; ' \
+           'BIDUPSID=779B3663B5E318A39F0924166778C64F; H_WISE_SIDS=109815_102570_100614_100042_' \
+           '114039_102432_110567_100100_113960_107799_113932_107316_111551_114207_112106_114000_' \
+           '111462_113568_111928_111366_114197_113566_112135_110031_114132_114095_110086; PSINO=1" ' \
+           '"Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 ' \
+           '(KHTML, like Gecko) Mobile/11D257 baiduboxapp/0_0.6.0.6_enohpi_069_046/' \
+           '2.1.7_1C2%254enohPi/1099a/2C920D743047AF5F06E6A5AF65467F563B65083BDFROACMILLB/1" ' \
+           'rt=0.003 11398553596525209892 10.46.142.64 10.44.9.43 tiyu.baidu.com ' \
+           '"117.136.81.248" ps appEngine - 1483419599.844'
     date = "20170103"
     a = BaseMapredLocal(date)
     match = a.FILTER.match(line)

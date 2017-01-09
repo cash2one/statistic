@@ -25,5 +25,8 @@ except:
 
 
 class Mapred(base_mapred_local.BaseMapredLocal):
+    """
+    百度体育直播统计配置
+    """
     pass
 
