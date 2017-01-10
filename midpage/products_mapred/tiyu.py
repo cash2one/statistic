@@ -31,7 +31,7 @@ class Mapred(base_mapred_local.BaseMapredLocal):
     ###################################
     # 指定日志来源。可以nanlin本地集群，可以为其他集群。其他集群会先执行distcp
     SOURCE = "hdfs://szwg-ston-hdfs.dmop.baidu.com:54310" \
-             "/app/dt/minos/3/textlog/www/wise_tiyu_access/70025011/%s/1200/"
+             "/app/dt/minos/3/textlog/www/wise_tiyu_access/70025011/%s/"
     ###################################
     # 过滤配置，符合该正则的认为是合法的日志
     FILTER = re.compile(r"^(?P<client_ip>[0-9\.]+) (.*) (.*) (?P<time>\[.+\]) "
@@ -55,6 +55,22 @@ class Mapred(base_mapred_local.BaseMapredLocal):
             # local是mapred任务完成后，在本地执行的操作
             "local": "write_file",
             "config": {
+                "local": "%s.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "default_groups"
+        },
+        u"uv": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "distinct_count",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "mapper": "BAIDUID",
                 "local": "%s.txt"
             },
             # 该指标对应的维度信息，在下面定义

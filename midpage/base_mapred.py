@@ -653,6 +653,60 @@ class BaseMapred(object):
         if key:
             index_item["@value"].add(key)
 
+    def _distinct_count(self, line, index_item, key=None):
+        """
+        用于mapper过程
+        简单统计
+        "uv": {
+            "query": {},
+            "type": "count",
+            "group_key": ["os", "client", "type"]
+            "group": yield对象
+        }
+        yield对象的一个元素举例
+        {'keys': {'type': 'total', 'client': 'total', 'os': 'total'}, 'query': {}}
+        :param line: 要分析的行， 已经是json格式
+        :param index_item: self.index_map 中某个指标的全部配置
+        :param key: 用于distinct的key
+        :return:
+        """
+        if not key:
+            return
+        # 用来去重用的标记
+        distinct_value = line.get(key)
+        if not distinct_value:
+            return
+        for group in index_item["group"]:
+            # 先检查是否匹配
+            if common.json_equal(line, group["query"]):
+                # 符合就逐级检查，最后一级增加计数
+                if len(index_item["group_key"]) == 0:
+                    index_item.setdefault("@value", 0)
+                    index_item.setdefault("distinct", set())
+                    # 检查是否统计过， 使用set来去重。
+                    if distinct_value not in index_item["distinct"]:
+                        index_item["distinct"].add(distinct_value)
+                        index_item["@value"] += 1
+                else:
+                    # 如果带维度，先循环至最内层。使用"distinct"来保存去重的列表
+                    index_item.setdefault("@value", dict())
+                    index_item.setdefault("distinct", dict())
+                    temp_dict = index_item["@value"]
+                    temp_distinct = index_item["distinct"]
+                    for key in index_item["group_key"][:-1]:
+                        temp_dict.setdefault(group["keys"][key], dict())
+                        temp_distinct.setdefault(group["keys"][key], dict())
+                        temp_dict = temp_dict[group["keys"][key]]
+                        temp_distinct = temp_distinct[group["keys"][key]]
+                    # 获取到最内层
+                    temp_dict.setdefault(group["keys"][index_item["group_key"][-1]], 0)
+                    temp_distinct.setdefault(group["keys"][index_item["group_key"][-1]], set())
+                    temp_distinct = temp_distinct[group["keys"][index_item["group_key"][-1]]]
+                    # 检查是否统计过
+                    if distinct_value not in temp_distinct:
+                        temp_distinct.add(distinct_value)
+                        temp_dict[group["keys"][index_item["group_key"][-1]]] += 1
+
     def get_function(self, name):
         """
         根据配置获取处理函数
@@ -729,7 +783,7 @@ class BaseMapred(object):
         # 对所有分组配置进行拆分
         for item in self.groups:
             group = getattr(self, item)
-            self.groups_expand[item] = self._get_query_and_keys(group)
+            self.groups_expand[item] = list(self._get_query_and_keys(group))
         for index in self.index_map:
             group_name = self.index_map[index].get("group_name")
             self.index_map[index]["group"] = []
@@ -793,6 +847,7 @@ class BaseMapred(object):
             try:
                 del item["group"]
                 del item["@value"]
+                del item["distinct"]
             except:
                 pass
 
