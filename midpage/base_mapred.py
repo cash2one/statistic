@@ -74,10 +74,29 @@ class BaseMapred(object):
             "mapper": "count",
             "reducer": "merge_index",
             # local是mapred任务完成后，在本地执行的操作
-            "local": "kgdc_file",
-            "config": {},
+            "local": "write_file",
+            "config": {
+                "local": "%s.txt"
+            },
             # 该指标对应的维度信息，在下面定义
             "group_name": "default_groups"
+        },
+        u"uid_list": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "distinct",
+            "reducer": "distinct",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "mapper": "BAIDUID",
+                "reducer": "",
+                "local": "%s_uid.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": ""
         },
         # u"图片点击数": {
         #     "query": {
@@ -483,9 +502,7 @@ class BaseMapred(object):
         cookie = line["cookie"]
         bdid = self.BAIDUID_REG.search(cookie)
         if bdid:
-            line["baiduid"] = bdid.group("id")
-        else:
-            line["baiduid"] = ""
+            line["BAIDUID"] = bdid.group("id")
 
     def pars_referr(self, line):
         """
@@ -536,6 +553,7 @@ class BaseMapred(object):
 
     def _count(self, line, index_item):
         """
+        用于mapper过程
         简单统计
         "uv": {
             "query": {},
@@ -545,7 +563,7 @@ class BaseMapred(object):
         }
         yield对象的一个元素举例
         {'keys': {'type': 'total', 'client': 'total', 'os': 'total'}, 'query': {}}
-        :param line: 要分析的行数
+        :param line: 要分析的行， 已经是json格式
         :param index_item: self.index_map 中某个指标的全部配置
         :return:
         """
@@ -583,8 +601,9 @@ class BaseMapred(object):
                 target.setdefault(key, 0)
                 target[key] += value
 
-    def _merge_index(self, line, index_item):
+    def _merge_index(self, line, index_item, config=None):
         """
+        用于reduce过程
         "uv": {
             "query": {},
             "type": "count",
@@ -593,6 +612,7 @@ class BaseMapred(object):
         }
         :param line: 字符串输入
         :param index_item:
+        :param config: 可为空。保证接口统一
         :return:
         """
         try:
@@ -616,6 +636,23 @@ class BaseMapred(object):
                 logging.exception("calculate error")
                 logging.error("value=%s\nline=%s" % (index_item["@value"], line))
 
+    def _distinct(self, line, index_item, config=None):
+        """
+        按照配置给定的字段
+        mapper和reducer过程都可能调用
+        :param line:
+        :param index_item:
+        :param config: 用以去重的key
+        :return:
+        """
+        if config:
+            key = line.get(config)
+        else:
+            key = line
+        index_item.setdefault("@value", set())
+        if key:
+            index_item["@value"].add(key)
+
     def get_function(self, name):
         """
         根据配置获取处理函数
@@ -638,7 +675,11 @@ class BaseMapred(object):
         for index, item in self.index_map.items():
             if item["mapper"]:
                 func = self.get_function(item["mapper"])
-                func(line, item)
+                if "mapper" in item["config"]:
+                    config = item["config"]["mapper"]
+                    func(line, item, config)
+                else:
+                    func(line, item)
 
     def calculate_index_reducer(self, line):
         """
@@ -651,7 +692,11 @@ class BaseMapred(object):
         value = kv[1]
         if index in self.index_map:
             func = self.get_function(self.index_map[index]["reducer"])
-            func(value, self.index_map[index])
+            if "reducer" in self.index_map[index]["config"]:
+                config = self.index_map[index]["config"]["reducer"]
+                func(value, self.index_map[index], config)
+            else:
+                func(value, self.index_map[index])
 
     def get_group_key(self):
         """
@@ -672,8 +717,11 @@ class BaseMapred(object):
         :return:
         """
         for index, item in self.index_map.items():
-            group = getattr(self, item["group_name"])
-            item["group_key"] = [level["key"] for level in group]
+            group_name = item.get("group_name")
+            if group_name:
+                group = getattr(self, item["group_name"])
+                if group:
+                    item["group_key"] = [level["key"] for level in group]
 
     def _mapper_set_up(self):
         # 记录维度的顺序。方便后面统计
@@ -683,13 +731,14 @@ class BaseMapred(object):
             group = getattr(self, item)
             self.groups_expand[item] = self._get_query_and_keys(group)
         for index in self.index_map:
-            group_name = self.index_map[index]["group_name"]
+            group_name = self.index_map[index].get("group_name")
             self.index_map[index]["group"] = []
-            for one_group in self.groups_expand[group_name]:
-                one_group["query"].update(self.index_map[index]["query"])
-                one_group["query"] = self.expand_query(one_group["query"])
-                one_group["keys"]["@index"] = index
-                self.index_map[index][u"group"].append(one_group)
+            if group_name:
+                for one_group in self.groups_expand[group_name]:
+                    one_group["query"].update(self.index_map[index]["query"])
+                    one_group["query"] = self.expand_query(one_group["query"])
+                    one_group["keys"]["@index"] = index
+                    self.index_map[index][u"group"].append(one_group)
 
     def _mapper(self):
         """
@@ -711,7 +760,10 @@ class BaseMapred(object):
             # 不一定每一个mapper任务都能跑出每个指标的结果
             if "@value" not in item:
                 continue
+            if type(item["@value"]) == set:
+                item["@value"] = list(item["@value"])
             if type(item["@value"]) == list:
+                item["@value"].sort()
                 for line in item["@value"]:
                     self.emit_lines += 1
                     if type(line) == dict:
@@ -781,11 +833,26 @@ class BaseMapred(object):
             # 不一定每个指标在每个mapper过程都能计算出结果
             if "@value" not in item:
                 continue
-            logging.error("@value=%s" % item["@value"])
-            for record in self.expand_index(index, item["@value"], item["group_key"]):
+
+            if type(item["@value"]) == set:
+                item["@value"] = list(item["@value"])
+            if type(item["@value"]) == list:
+                item["@value"].sort()
+                for line in item["@value"]:
+                    self.emit_lines += 1
+                    if type(line) == dict:
+                        self._emit(index.encode("utf-8"),
+                                   json.dumps(line, ensure_ascii=False).encode("utf-8"))
+                    else:
+                        self._emit(index.encode("utf-8"), line)
+            elif type(item["@value"]) == dict:
+                for record in self.expand_index(index, item["@value"], item["group_key"]):
+                    self.emit_lines += 1
+                    self._emit(index.encode("utf-8"),
+                               json.dumps(record, ensure_ascii=False).encode("utf-8"))
+            else:
                 self.emit_lines += 1
-                self._emit(index.encode("utf-8"),
-                           json.dumps(record, ensure_ascii=False).encode("utf-8"))
+                self._emit(index.encode("utf-8"), item["@value"])
 
     def reducer(self):
         """

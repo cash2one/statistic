@@ -56,7 +56,7 @@ class BaseMapredLocal(base_mapred.BaseMapred):
             # kgdc需要的指标文件夹位置. kgdc-statist/output/kgdc_hadoop/hanyu/
             self.kgdc_file_dir = os.path.join(conf.OUTPUT_DIR, "kgdc_hadoop", self.product)
             tools.check_dir_exist(self.kgdc_file_dir)
-        self.fp_kgdc = None
+        self.fp_dict = dict()
 
     def calculate_index_local(self, line):
         """
@@ -70,20 +70,27 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         value = kv[1]
         if index in self.index_map:
             func = self.get_function(self.index_map[index]["local"])
-            func(value, self.index_map[index])
+            if "local" in self.index_map[index]["config"]:
+                config = self.index_map[index]["config"]["local"]
+                func(value, self.index_map[index], config)
+            else:
+                func(value, self.index_map[index])
 
-    def _kgdc_file(self, line, index_item):
+    def _write_file(self, line, index_item, config="%s.txt"):
         """
         生成kgdc需要的指标文件格式
         :param line:
         :param index_item:
+        :param config: 默认为 "%s.txt"，文件名
         :return:
         """
-        if not self.fp_kgdc:
-            file_name = os.path.join(self.kgdc_file_dir, "%s.txt" % self.date)
+        if not config:
+            return
+        if config not in self.fp_dict:
+            file_name = os.path.join(self.kgdc_file_dir, config % self.date)
             logging.info("create file: %s" % file_name)
-            self.fp_kgdc = open(file_name, "w+")
-        self.fp_kgdc.write(line + "\n")
+            self.fp_dict[config] = open(file_name, "w+")
+        self.fp_dict[config].write(line + "\n")
 
     def set_up(self):
         """

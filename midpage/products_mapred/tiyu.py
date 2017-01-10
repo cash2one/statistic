@@ -53,11 +53,30 @@ class Mapred(base_mapred_local.BaseMapredLocal):
             "mapper": "count",
             "reducer": "merge_index",
             # local是mapred任务完成后，在本地执行的操作
-            "local": "kgdc_file",
-            "config": {},
+            "local": "write_file",
+            "config": {
+                "local": "%s.txt"
+            },
             # 该指标对应的维度信息，在下面定义
             "group_name": "default_groups"
-        }
+        },
+        u"uid_list": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "distinct",
+            "reducer": "distinct",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "mapper": "BAIDUID",
+                "reducer": "",
+                "local": "%s_uid.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": ""
+        },
     }
     ###################################
     # 用户画像配置
