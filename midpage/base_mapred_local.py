@@ -136,9 +136,11 @@ class BaseMapredLocal(base_mapred.BaseMapred):
 
     def get_path_recursion(self, target_list, destination, index_item, spotted_target_set):
         """
+
         递归获取用户路径分析。
-        :param query:
         :param target_list:
+        :param destination:
+        :param index_item:
         :param spotted_target_set: 曾经找过的target集合
         :return:
         """
