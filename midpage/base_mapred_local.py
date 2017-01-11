@@ -130,29 +130,32 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         :return:
         """
         for target in config["target"]:
-            self.get_one_path()
+            spotted_target_set = set()
+            self.get_one_path([target], target, index_item, spotted_target_set)
+            break
 
-    def get_path_recursion(self, loops, query, target_list):
+    def get_path_recursion(self, target_list, destination, index_item, spotted_target_set):
         """
         递归获取用户路径分析。
-        :param loops:
         :param query:
         :param target_list:
+        :param spotted_target_set: 曾经找过的target集合
         :return:
         """
-        if self.loops >= loops or not target_list:
+        # if self.loops >= loops or not target_list:
+        #     return
+        # self.loops += 1
+        if not target_list:
             return
-        self.loops += 1
 
         spotted_source_set = set()
         for one_target in target_list:
-            if one_target in self.target_source:
+            if one_target in spotted_target_set:
                 continue
-            self.target_source[one_target] = target_list
-            source_set = self.get_one_path(query, one_target)
-            local_source.update(source_set)
+            spotted_target_set.add(one_target)
+            next_target_list = self.get_one_path(destination, one_target, index_item, spotted_source_set)
         # local_source -= self.source_set
-        self.get_path_recursion(loops, query, local_source)
+        self.get_path_recursion(next_target_list, destination, index_item, spotted_target_set)
 
     def get_one_path(self, destination, target, index_item, spotted_source_set):
         """
@@ -164,9 +167,10 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         :return:
         """
         tmp_q = {"url": target}
-        ret = common.find(index_item["user_path"], tmp_q, all=True)
+        ret_sources = []
+        items = common.find(index_item["user_path"], tmp_q, all=True)
         index_item.setdefault("@value", list)
-        for item in ret:
+        for item in items:
             # 直接访问
             source = item["referr"]
             count = item["@value"]
@@ -178,6 +182,7 @@ class BaseMapredLocal(base_mapred.BaseMapred):
                 continue
             else:
                 # 记录计算过的节点对应图。 { target:[source1, source2]}
+                ret_sources.append(source)
                 index_item["@value"].append(
                     {
                         "@index": destination,
@@ -187,6 +192,7 @@ class BaseMapredLocal(base_mapred.BaseMapred):
                     })
                 # 防止重复计算某一节点的。记录计算过的节点
                 spotted_source_set.add(source)
+        return ret_sources
 
     def set_up(self):
         """
@@ -209,7 +215,7 @@ class BaseMapredLocal(base_mapred.BaseMapred):
             ret = os.system(cmd)
         else:
             self.input_dir = self.SOURCE
-        self.input_dir += "*/"
+        self.input_dir = os.path.join(self.input_dir, "*")
         return ret
 
     def mapred(self):
