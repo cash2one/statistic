@@ -193,6 +193,7 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         环境准备，包括拷贝数据到本集群
         :return:
         """
+        ret = 0
         # 是否包含日期信息
         if "%s" in self.SOURCE:
             self.SOURCE = self.SOURCE % self.date
@@ -205,10 +206,11 @@ class BaseMapredLocal(base_mapred.BaseMapred):
                 self.SOURCE,
                 self.input_dir)
             logging.info(cmd)
-            return os.system(cmd)
+            ret = os.system(cmd)
         else:
-            self.input_dir = self.SOURCE + "*/"
-            return 0
+            self.input_dir = self.SOURCE
+        self.input_dir += "*/"
+        return ret
 
     def mapred(self):
         """
