@@ -15,6 +15,7 @@ Comment:
 """
 # 系统库
 import os
+import json
 import logging
 import importlib
 from multiprocessing import Process
@@ -22,6 +23,7 @@ from multiprocessing import Process
 
 # 自有库
 import base_mapred
+import common
 try:
     # 由于本地和hadoop运行的目录不同。
     import conf.conf as conf
@@ -76,6 +78,21 @@ class BaseMapredLocal(base_mapred.BaseMapred):
             else:
                 func(value, self.index_map[index])
 
+    def calculate_index_gather(self):
+        """
+        收集完所有指标信息，计算一些后验指标。比如指标之间的运算，用户路径，用户画像分析
+        :return:
+        """
+        for index, index_item in self.index_map.items():
+            func_name = index_item.get("gather")
+            if func_name:
+                func = self.get_function(func_name)
+                if "gather" in index_item["config"]:
+                    config = index_item["config"]["gather"]
+                    func(index, index_item, config)
+                else:
+                    func(index, index_item)
+
     def _write_file(self, line, index_item, config="%s.txt"):
         """
         生成kgdc需要的指标文件格式
@@ -91,6 +108,84 @@ class BaseMapredLocal(base_mapred.BaseMapred):
             logging.info("create file: %s" % file_name)
             self.fp_dict[config] = open(file_name, "w+")
         self.fp_dict[config].write(line + "\n")
+
+    def _user_path_local(self, line, index_item, config=None):
+        """
+        用户路径处理
+        :param line:
+        :param index_item:
+        :param config:
+        :return:
+        """
+        line = json.loads(line)
+        index_item.setdefault("user_path", list())
+        index_item["user_path"].append(line)
+
+    def _user_path_gather(self, index, index_item, config=None):
+        """
+
+        :param index:
+        :param index_item:
+        :param config:
+        :return:
+        """
+        for target in config["target"]:
+            self.get_one_path()
+
+    def get_path_recursion(self, loops, query, target_list):
+        """
+        递归获取用户路径分析。
+        :param loops:
+        :param query:
+        :param target_list:
+        :return:
+        """
+        if self.loops >= loops or not target_list:
+            return
+        self.loops += 1
+
+        spotted_source_set = set()
+        for one_target in target_list:
+            if one_target in self.target_source:
+                continue
+            self.target_source[one_target] = target_list
+            source_set = self.get_one_path(query, one_target)
+            local_source.update(source_set)
+        # local_source -= self.source_set
+        self.get_path_recursion(loops, query, local_source)
+    def get_one_path(self, destination, target, index_item, spotted_source_set=set()):
+        """
+        获取一个目标的路径
+        :param destination: 最终转换页面
+        :param target:
+        :param index_item: index_item["user_path"]中存储所有路径的list
+        :param spotted_source_set: 已经计算过流向该目的地的源
+        :return:
+        """
+        tmp_q = {"url": target}
+        ret = common.find(index_item["user_path"], tmp_q, all=True)
+        index_item.setdefault("@value", list)
+        for item in ret:
+            # 直接访问
+            source = item["referr"]
+            count = item["@value"]
+            # 访问量小或者其他分辨不出的来源
+            # elif count < 100:
+            #     other += count
+            # 死循环去除。防止 A流向b，b又流向a这种图
+            if source in spotted_source_set:
+                continue
+            else:
+                # 记录计算过的节点对应图。 { target:[source1, source2]}
+                index_item["@value"].append(
+                    {
+                        "@index": destination,
+                        "source": source,
+                        "target": target,
+                        "value": count
+                    })
+                # 防止重复计算某一节点的。记录计算过的节点
+                spotted_source_set.add(source)
 
     def set_up(self):
         """
@@ -110,6 +205,9 @@ class BaseMapredLocal(base_mapred.BaseMapred):
                 self.input_dir)
             logging.info(cmd)
             return os.system(cmd)
+        else:
+            self.input_dir = self.SOURCE + "*/"
+            return 0
 
     def mapred(self):
         """
@@ -156,10 +254,13 @@ class BaseMapredLocal(base_mapred.BaseMapred):
                     self.calculate_index_local(line)
                     valid_lines += 1
                 except:
+                    logging.exception("error")
+                    logging.error(line)
                     error_lines += 1
         logging.error("all_lines: %s" % all_lines)
         logging.error("valid_lines: %s" % valid_lines)
         logging.error("error_lines: %s" % error_lines)
+
         return 0
 
     def run(self):

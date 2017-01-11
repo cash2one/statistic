@@ -29,7 +29,7 @@ def is_basic_types(value):
     :param value:
     :return:
     """
-    if (isinstance(value, types.StringType) or
+    if (isinstance(value, types.StringTypes) or
             isinstance(value, types.IntType) or
             isinstance(value, types.LongType) or
             isinstance(value, types.FloatType) or
@@ -39,19 +39,21 @@ def is_basic_types(value):
         return False
 
 
-def basic_equal(return_unicode_string, expect_string):
+def basic_equal(return_unicode_string, expect_unicode_string):
     """
     基本检查单元
-    :param return_unicode_string: 被检查字符串，为unicode或者UTF-8
-    :param expect_string: 期望值，必须为UTF-8
+    :param return_unicode_string: 被检查字符串，为unicode
+    :param expect_unicode_string:
     :return: 成功返回True，失败返回False
     """
-    # 返回值为unicode则转码为utf-8
-    if isinstance(return_unicode_string, types.UnicodeType):
-        return_unicode_string = return_unicode_string.encode("utf-8")
+    # 返回值为utf-8则转码为unicode
+    if isinstance(return_unicode_string, types.StringType):
+        return_unicode_string = return_unicode_string.decode("utf-8")
+    if isinstance(expect_unicode_string, types.StringType):
+        expect_unicode_string = expect_unicode_string.decode("utf-8")
     # 不符则提示信息
-    if is_basic_types(expect_string):
-        if return_unicode_string == expect_string:
+    if is_basic_types(expect_unicode_string):
+        if return_unicode_string == expect_unicode_string:
             return True
     # return_unicode_string的类型不符也走默认分支
     return False
@@ -164,14 +166,47 @@ def json_equal(return_json, expect_json, not_exist_flag=False):
     return True
 
 
-def find(collection, query):
+def find(collection, query, all=False):
     """
     类似前端lodish的find函数
     :param collection:
     :param query:
+    :param all:
     :return: 返回值是index
     """
-    for index, item in enumerate(collection):
+    ret = []
+    for item in collection:
         if json_equal(item, query):
-            return index, item
-    return -1, None
+            ret.append(item)
+            if not all:
+                break
+    return ret
+
+
+def test_find():
+    """
+
+    :return:
+    """
+    colloction = [
+        {"os": "other", "@index": "pv", "client": "total", "type": "category", "@value": 16},
+        {"os": "other", "@index": "pv", "client": "total", "type": "news", "@value": 237},
+        {"os": "other", "@index": "pv", "client": "total", "type": "total", "@value": 11130},
+        {"os": "other", "@index": "pv", "client": "total", "type": "detail", "@value": 476},
+        {"os": "other", "@index": "pv", "client": "total", "type": "videodetail", "@value": 44},
+        {"os": "other", "@index": "pv", "client": "other", "type": "category", "@value": 16},
+        {"os": "other", "@index": "pv", "client": "other", "type": "news", "@value": 237},
+        {"os": "other", "@index": "pv", "client": "other", "type": "total", "@value": 11130},
+        {"os": "other", "@index": "pv", "client": "other", "type": "detail", "@value": 476},
+        {"os": "other", "@index": "pv", "client": "other", "type": "videodetail", "@value": 44},
+        {"os": "other", "@index": "pv", "client": "MB", "type": "total", "@value": 29},
+        {"os": "other", "@index": "pv", "client": "MB", "type": "detail", "@value": 6},
+        {"os": "other", "@index": "pv", "client": "MB", "type": "videodetail", "@value": 1},
+    ]
+    ret = find(colloction, {"os": "other", "type": "videodetail"})
+    for item in ret:
+        print item
+    print "with all"
+    ret = find(colloction, {"os": "other", "type": "videodetail"}, True)
+    for item in ret:
+        print item

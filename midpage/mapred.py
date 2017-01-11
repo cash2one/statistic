@@ -46,7 +46,7 @@ def test(product):
     :param product:
     :return:
     """
-    date = "20170103"
+    date = "20170110"
     module = importlib.import_module("midpage.products_mapred.%s" % product)
 
     class TestProduct(module.Mapred):
@@ -54,7 +54,7 @@ def test(product):
         内部测试继承
         """
         TEST = True
-        SOURCE = "/home/work/temp/nj02.short"
+        SOURCE = "/home/work/temp/st01-ps-ae-app9.st01.baidu.com-frontend_access.log.2017011012.417"
         OUTPUT_FILE = "/home/work/temp/nj02.output"
     a = TestProduct(date, product)
     a.test()

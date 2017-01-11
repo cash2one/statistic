@@ -26,7 +26,7 @@ except:
 
 class Mapred(base_mapred_local.BaseMapredLocal):
     """
-    百度体育直播统计配置
+    百度汉语统计配置
     """
     ###################################
     # 指定日志来源。可以nanlin本地集群，可以为其他集群。其他集群会先执行distcp

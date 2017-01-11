@@ -81,6 +81,22 @@ class BaseMapred(object):
             # 该指标对应的维度信息，在下面定义
             "group_name": "default_groups"
         },
+        u"uv": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "distinct_count",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "mapper": "BAIDUID",
+                "local": "%s.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "default_groups"
+        },
         u"uid_list": {
             # query为计算指标需要用的参数或者字段
             "query": {
@@ -168,7 +184,7 @@ class BaseMapred(object):
     # {os: android, client: MB, 指标：指标值}
 
     # 在指标配置中需要使用到的group配置，都必须写在这个list中，程序需要进行展开处理
-    groups = ["default_groups"]
+    groups = ["default_groups", "pv_groups"]
     # groups中的2个字段含义：
     # attribute: 该字段的详细配置，也就是下面紧跟着的dict名
     # key：表示在数据中，该维度对应的key名字。
@@ -183,6 +199,19 @@ class BaseMapred(object):
         "attribute": "type_group",
         "key": "type",
     }]
+    pv_groups = [{
+        "key": "page",
+        "attribute": "page_group"
+    }, {
+        "key": "tab",
+        "attribute": "tab_group"
+    }]
+    user_path_groups = [{
+        "key": "url",
+    }, {
+        "key": "referr",
+    }]
+
     ###################################
     # 具体每个维度配置
     # 规定了该维度下，value的取值有哪些选项，名称自定义，上面的维度汇总配置引用
@@ -229,6 +258,28 @@ class BaseMapred(object):
         "name": "videodetail",
         "query": {"url": "/videodetail"},
     }]
+
+    page_group = [{
+        "name": "total",
+        "query": {}
+    }, {
+        "name": "live",
+        "query": {"page": "live"}
+    }, {
+        "name": "category",
+        "query": {"page": "category"}
+    }, {
+        "name": "detail",
+        "query": {"page": "detail"}
+    }, {
+        "name": "player",
+        "query": {"page": "player"}
+    }]
+
+    tab_group = [{
+        "name": "total",
+        "query": {},
+    }]
     ###################################
     # 结果处理配置
 
@@ -271,12 +322,15 @@ class BaseMapred(object):
         """
         total_layer = len(groups) - 1
         group_info = groups[layer]
+        if "attribute" not in group_info:
+            return
         group_queries = getattr(self, group_info["attribute"])
         if len(group_queries) == 0:
             raise Exception("[ERROR]group can't be empty:%s" % group_info["attribute"])
         for g in group_queries:
             ret = [copy.deepcopy(g)]
             # added by xulei12@baidu.com 2016.6.20 增加一个key字段，推送到mongo用
+
             for item in ret:
                 item["key"] = group_info["key"]
             # add ended
@@ -357,6 +411,39 @@ class BaseMapred(object):
                 for one_record in self.expand_index(index, item, temp_key):
                     one_record[group_name] = key
                     yield one_record
+
+    def contract_index(self, ret, values, group_key):
+        """
+        与expand操作相反
+        将
+        {"os": "android", "agent": "na", "@index": "pv", "@value": 1}
+        压缩为
+        {
+            "android":
+                {"na": 1}
+        }
+        如果values本身已经有一些值，则与之合并，并相加。
+        :param ret: 带深度的指标值。
+        :param values: 需要转换的指标。
+        :param group_key: 指标维度各级别名称。如：["os", "agent"]
+        :return:
+        """
+        # 符合就逐级检查，最后一级增加计数
+        if len(group_key) == 0:
+            if ret:
+                ret += values["@value"]
+            else:
+                ret = values["@value"]
+        else:
+            if not ret:
+                ret = dict()
+            temp_dict = ret
+            for key in group_key[:-1]:
+                temp_dict.setdefault(values[key], dict())
+                temp_dict = temp_dict[values[key]]
+            temp_dict.setdefault(values[group_key[-1]], 0)
+            temp_dict[values[group_key[-1]]] += values["@value"]
+        return ret
 
     def _mapper_in(self):
         """
@@ -569,18 +656,24 @@ class BaseMapred(object):
         """
         for group in index_item["group"]:
             if common.json_equal(line, group["query"]):
+                temp_value = copy.deepcopy(group["keys"])
+                temp_value["@value"] = 1
+                index_item.setdefault("@value", None)
+                index_item["@value"] = self.contract_index(index_item["@value"],
+                                                           temp_value,
+                                                           index_item["group_key"])
                 # 符合就逐级检查，最后一级增加计数
-                if len(index_item["group_key"]) == 0:
-                    index_item.setdefault("@value", 0)
-                    index_item["@value"] += 1
-                else:
-                    index_item.setdefault("@value", dict())
-                    temp_dict = index_item["@value"]
-                    for key in index_item["group_key"][:-1]:
-                        temp_dict.setdefault(group["keys"][key], dict())
-                        temp_dict = temp_dict[group["keys"][key]]
-                    temp_dict.setdefault(group["keys"][index_item["group_key"][-1]], 0)
-                    temp_dict[group["keys"][index_item["group_key"][-1]]] += 1
+                # if len(index_item["group_key"]) == 0:
+                #     index_item.setdefault("@value", 0)
+                #     index_item["@value"] += 1
+                # else:
+                #     index_item.setdefault("@value", dict())
+                #     temp_dict = index_item["@value"]
+                #     for key in index_item["group_key"][:-1]:
+                #         temp_dict.setdefault(group["keys"][key], dict())
+                #         temp_dict = temp_dict[group["keys"][key]]
+                #     temp_dict.setdefault(group["keys"][index_item["group_key"][-1]], 0)
+                #     temp_dict[group["keys"][index_item["group_key"][-1]]] += 1
 
     def recurse_merge(self, target, source):
         """
@@ -707,6 +800,25 @@ class BaseMapred(object):
                         temp_distinct.add(distinct_value)
                         temp_dict[group["keys"][index_item["group_key"][-1]]] += 1
 
+    def _user_path_mapper(self, line, index_item):
+        """
+        用户路径分析
+        :param line:
+        :param index_item:
+        :return:
+        """
+        referr = line["referr"]
+        url = line["url"]
+        if "." in referr or "." in url:
+            return
+        if not referr:
+            referr = "-"
+        temp_value = {"referr": referr, "url": url, "@value": 1}
+        index_item.setdefault("@value", dict())
+        index_item["@value"] = self.contract_index(index_item["@value"],
+                                                   temp_value,
+                                                   index_item["group_key"])
+
     def get_function(self, name):
         """
         根据配置获取处理函数
@@ -793,6 +905,7 @@ class BaseMapred(object):
                     one_group["query"] = self.expand_query(one_group["query"])
                     one_group["keys"]["@index"] = index
                     self.index_map[index][u"group"].append(one_group)
+                    print one_group
 
     def _mapper(self):
         """
@@ -967,7 +1080,7 @@ class BaseMapred(object):
 
         :return:
         """
-        for group in self._get_query_and_keys(self.default_groups):
+        for group in self._get_query_and_keys(self.pv_groups):
             print group
 
     def test_get_function(self):
@@ -1066,5 +1179,5 @@ def test():
     :return:
     """
     a = BaseMapred()
-    a.test_merge()
+    a.test_iter_group()
     # a.test()
