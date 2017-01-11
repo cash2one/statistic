@@ -153,7 +153,8 @@ class BaseMapredLocal(base_mapred.BaseMapred):
             local_source.update(source_set)
         # local_source -= self.source_set
         self.get_path_recursion(loops, query, local_source)
-    def get_one_path(self, destination, target, index_item, spotted_source_set=set()):
+
+    def get_one_path(self, destination, target, index_item, spotted_source_set):
         """
         获取一个目标的路径
         :param destination: 最终转换页面
