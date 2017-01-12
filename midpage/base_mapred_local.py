@@ -130,18 +130,25 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         :return:
         """
         for target in config["target"]:
-            spotted_target_set = set()
-            self.get_one_path([target], target, index_item, spotted_target_set)
-            break
+            target_source = dict()
+            self.get_path_recursion([target], target, index_item, target_source)
 
-    def get_path_recursion(self, target_list, destination, index_item, spotted_target_set):
+        file_name = os.path.join(self.kgdc_file_dir, config["file"] % self.date)
+        logging.info("create file: %s" % file_name)
+        fp = open(file_name, "w+")
+        for line in index_item["@value"]:
+            line = json.dumps(line, ensure_ascii=False).encode("utf-8")
+            fp.write(line + "\n")
+        fp.close()
+
+    def get_path_recursion(self, target_list, destination, index_item, target_source):
         """
 
         递归获取用户路径分析。
         :param target_list:
         :param destination:
         :param index_item:
-        :param spotted_target_set: 曾经找过的target集合
+        :param target_source: index_item["user_path"]中存储所有路径的list
         :return:
         """
         # if self.loops >= loops or not target_list:
@@ -150,28 +157,39 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         if not target_list:
             return
 
-        spotted_source_set = set()
+        local_source = set()
         for one_target in target_list:
-            if one_target in spotted_target_set:
+            if one_target in target_source:
                 continue
-            spotted_target_set.add(one_target)
-            next_target_list = self.get_one_path(destination, one_target, index_item, spotted_source_set)
-        # local_source -= self.source_set
-        self.get_path_recursion(next_target_list, destination, index_item, spotted_target_set)
+            target_source[one_target] = target_list
+            source_set = self.get_one_path(destination, one_target, index_item, target_source)
+            local_source.update(source_set)
+        self.get_path_recursion(local_source, destination, index_item, target_source)
 
-    def get_one_path(self, destination, target, index_item, spotted_source_set):
+        # spotted_source_set = set()
+        # for one_target in target_list:
+        #     if one_target in spotted_target_set:
+        #         continue
+        #     spotted_target_set.add(one_target)
+        #     target_source[one_target] = target_list
+        #     next_target_list = self.get_one_path(destination, one_target, index_item, spotted_source_set)
+        #     local_source.update(source_set)
+        # # local_source -= self.source_set
+        # self.get_path_recursion(next_target_list, destination, index_item, spotted_target_set)
+
+    def get_one_path(self, destination, target, index_item, target_source):
         """
         获取一个目标的路径
         :param destination: 最终转换页面
         :param target:
         :param index_item: index_item["user_path"]中存储所有路径的list
-        :param spotted_source_set: 已经计算过流向该目的地的源
+        :param target_source: { target:[source1, source2]}
         :return:
         """
         tmp_q = {"url": target}
-        ret_sources = []
+        source_set = set()
         items = common.find(index_item["user_path"], tmp_q, all=True)
-        index_item.setdefault("@value", list)
+        index_item.setdefault("@value", list())
         for item in items:
             # 直接访问
             source = item["referr"]
@@ -180,11 +198,13 @@ class BaseMapredLocal(base_mapred.BaseMapred):
             # elif count < 100:
             #     other += count
             # 死循环去除。防止 A流向b，b又流向a这种图
-            if source in spotted_source_set:
+            if source in target_source[target]:
                 continue
             else:
                 # 记录计算过的节点对应图。 { target:[source1, source2]}
-                ret_sources.append(source)
+                target_source[target].append(source)
+                # 防止重复计算某一节点的。记录计算过的节点
+                source_set.add(source)
                 index_item["@value"].append(
                     {
                         "@index": destination,
@@ -192,9 +212,7 @@ class BaseMapredLocal(base_mapred.BaseMapred):
                         "target": target,
                         "value": count
                     })
-                # 防止重复计算某一节点的。记录计算过的节点
-                spotted_source_set.add(source)
-        return ret_sources
+        return source_set
 
     def set_up(self):
         """
@@ -241,19 +259,19 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         生成指标文件，环境清理过程
         :return:
         """
-        data_file_name = os.path.join(self.local_data_dir, self.product + ".data")
-        if os.path.exists(data_file_name):
-            os.remove(data_file_name)
-        cmd = "%s fs -getmerge %s %s" % (
-            conf.HADOOP_BIN,
-            self.output_dir,
-            data_file_name)
-        logging.info(cmd)
-        ret = os.system(cmd)
-        if ret:
-            logging.error(ret)
-            return ret
-
+        # data_file_name = os.path.join(self.local_data_dir, self.product + ".data")
+        # if os.path.exists(data_file_name):
+        #     os.remove(data_file_name)
+        # cmd = "%s fs -getmerge %s %s" % (
+        #     conf.HADOOP_BIN,
+        #     self.output_dir,
+        #     data_file_name)
+        # logging.info(cmd)
+        # ret = os.system(cmd)
+        # if ret:
+        #     logging.error(ret)
+        #     return ret
+        data_file_name = "/home/work/temp/nj02.output"
         all_lines = 0
         valid_lines = 0
         error_lines = 0
@@ -271,6 +289,7 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         logging.error("all_lines: %s" % all_lines)
         logging.error("valid_lines: %s" % valid_lines)
         logging.error("error_lines: %s" % error_lines)
+        self.calculate_index_gather()
 
         return 0
 
@@ -279,14 +298,14 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         主入口
         :return:
         """
-        ret = self.set_up()
-        if ret:
-            logging.error("error occured in set_up(): %s" % ret)
-            return
-        ret = self.mapred()
-        if ret:
-            logging.error("error occured in mapred(): %s" % ret)
-            return
+        # ret = self.set_up()
+        # if ret:
+        #     logging.error("error occured in set_up(): %s" % ret)
+        #     return
+        # ret = self.mapred()
+        # if ret:
+        #     logging.error("error occured in mapred(): %s" % ret)
+        #     return
         ret = self.clear_down()
         if ret:
             logging.error("error occured in clear_down(): %s" % ret)
@@ -348,8 +367,8 @@ def test():
     :param product:
     :return:
     """
-    date = "20170103"
-    a = BaseMapredLocal(date)
+    date = "20170110"
+    a = BaseMapredLocal(date, "tiyu")
     a.run()
 
 
@@ -379,3 +398,7 @@ def test_filter():
         print match.groupdict()
     else:
         print "not match"
+
+
+if __name__ == '__main__':
+    test()
