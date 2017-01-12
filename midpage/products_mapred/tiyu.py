@@ -183,6 +183,66 @@ class Mapred(base_mapred_local.BaseMapredLocal):
     tab_group = [{
         "name": "total",
         "query": {},
+    }, {
+         "name": "jinrituijian",
+         "query": {"query.tab": u"今日推荐"}
+    }, {
+         "name": "zhibo",
+         "query": {"query.tab": u"直播"}
+    }, {
+         "name": "nba",
+         "query": {"query.tab": u"NBA"}
+    }, {
+         "name": "cba",
+         "query": {"query.tab": u"CBA"}
+    }, {
+         "name": "yingchao",
+         "query": {"query.tab": u"英超"}
+    }, {
+         "name": "xijia",
+         "query": {"query.tab": u"西甲"}
+    }, {
+         "name": "dejia",
+         "query": {"query.tab": u"德甲"}
+    }, {
+         "name": "wwe",
+         "query": {"query.tab": u"WWE"}
+    }, {
+         "name": "yijia",
+         "query": {"query.tab": u"意甲"}
+    }, {
+         "name": "yaguan",
+         "query": {"query.tab": u"亚冠"}
+    }, {
+         "name": "fajia",
+         "query": {"query.tab": u"法甲"}
+    }, {
+         "name": "ouguan",
+         "query": {"query.tab": u"欧冠"}
+    }, {
+         "name": "oulianbei",
+         "query": {"query.tab": u"欧联杯"}
+    }, {
+         "name": "nfl",
+         "query": {"query.tab": u"NFL"}
+    }, {
+         "name": "shiyusai",
+         "query": {"query.tab": u"世预赛"}
+    }, {
+         "name": "wangqiu",
+         "query": {"query.tab": u"网球"}
+    }, {
+         "name": "gaoerfu",
+         "query": {"query.tab": u"高尔夫"}
+    }, {
+         "name": "yumaoqiu",
+         "query": {"query.tab": u"羽毛球"}
+    }, {
+         "name": "zhongchao",
+         "query": {"query.tab": u"中超"}
+    }, {
+         "name": "shijubei",
+         "query": {"query.tab": u"世俱杯"}
     # }, {
     #     "name": "jinrituijian",
     #     "query": {"query.tab": u"今日推荐"},
