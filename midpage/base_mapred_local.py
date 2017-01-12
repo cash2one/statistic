@@ -47,7 +47,8 @@ class BaseMapredLocal(base_mapred.BaseMapred):
             self.default_dir = "/app/ps/spider/wdmqa/kgdc/"
         self.product = product
         self.input_dir = os.path.join(self.default_dir, self.date, self.product, "input")
-        self.output_dir = os.path.join(self.default_dir, self.date, self.product, "output")
+        self.output_dir_1 = os.path.join(self.default_dir, self.date, self.product, "output1")
+        self.output_dir_2 = os.path.join(self.default_dir, self.date, self.product, "output2")
 
         if LOCAL_RUN:
             root_path = os.path.join(conf.DATA_DIR, "midpage_hadoop")
@@ -129,9 +130,11 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         :param config:
         :return:
         """
+        logging.root.setLevel(logging.ERROR)
         for target in config["target"]:
             target_source = dict()
             self.get_path_recursion([target], target, index_item, target_source)
+        logging.root.setLevel(logging.INFO)
 
         file_name = os.path.join(self.kgdc_file_dir, config["file"] % self.date)
         logging.info("create file: %s" % file_name)
@@ -177,18 +180,19 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         """
         tmp_q = {"url": target}
         source_set = set()
+        other = 0
         items = common.find(index_item["user_path"], tmp_q, all=True)
         index_item.setdefault("@value", list())
         for item in items:
             # 直接访问
             source = item["referr"]
             count = item["@value"]
-            # 访问量小或者其他分辨不出的来源
-            # elif count < 100:
-            #     other += count
             # 死循环去除。防止 A流向b，b又流向a这种图
             if source in target_source[target]:
                 continue
+            # 访问量小或者其他分辨不出的来源
+            elif count < 100:
+                other += count
             else:
                 # 记录计算过的节点对应图。 { target:[source1, source2]}
                 target_source[target].append(source)
@@ -227,19 +231,35 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         self.input_dir = os.path.join(self.input_dir, "*")
         return ret
 
-    def mapred(self):
+    def mapred_first(self):
         """
-        启动计算指标hadoop任务
+        mapred第一个任务， 主要逻辑是解析日志，并按照baiduid分发
         :return:
         """
         current_dir = os.path.split(os.path.abspath(__file__))[0]
-        cmd = "cd %s; sh ./mapred_local.sh %s %s %s %s %s" % (
+        cmd = "cd %s; sh ./mapred_local_first.sh %s %s %s %s %s" % (
             current_dir,
             conf.HADOOP_BIN,
             self.product,
             self.date,
             self.input_dir,
-            self.output_dir)
+            self.output_dir_1)
+        logging.info(cmd)
+        return os.system(cmd)
+
+    def mapred_second(self):
+        """
+        启动计算指标hadoop任务,第二个任务。主要计算过程
+        :return:
+        """
+        current_dir = os.path.split(os.path.abspath(__file__))[0]
+        cmd = "cd %s; sh ./mapred_local_second.sh %s %s %s %s %s" % (
+            current_dir,
+            conf.HADOOP_BIN,
+            self.product,
+            self.date,
+            self.output_dir_1,
+            self.output_dir_2)
         logging.info(cmd)
         return os.system(cmd)
 
@@ -253,7 +273,7 @@ class BaseMapredLocal(base_mapred.BaseMapred):
             os.remove(data_file_name)
         cmd = "%s fs -getmerge %s %s" % (
             conf.HADOOP_BIN,
-            self.output_dir,
+            self.output_dir_2,
             data_file_name)
         logging.info(cmd)
         ret = os.system(cmd)
@@ -278,6 +298,7 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         logging.error("all_lines: %s" % all_lines)
         logging.error("valid_lines: %s" % valid_lines)
         logging.error("error_lines: %s" % error_lines)
+
         self.calculate_index_gather()
 
         return 0
@@ -291,9 +312,13 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         if ret:
             logging.error("error occured in set_up(): %s" % ret)
             return
-        ret = self.mapred()
+        ret = self.mapred_first()
         if ret:
-            logging.error("error occured in mapred(): %s" % ret)
+            logging.error("error occured in mappred_first(): %s" % ret)
+            return
+        ret = self.mapred_second()
+        if ret:
+            logging.error("error occured in mapred_second(): %s" % ret)
             return
         ret = self.clear_down()
         if ret:

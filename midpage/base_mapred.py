@@ -47,7 +47,7 @@ class BaseMapred(object):
     ###################################
     # 过滤配置，符合该正则的认为是合法的日志
     FILTER = re.compile(r"^(?P<client_ip>[0-9\.]+) (.*) (.*) (?P<time>\[.+\]) "
-                        r"\"(?P<request>.*)\" (?P<status>[0-9]+) ([0-9]+) "
+                        r"\"(?P<request>.*)\" (?P<status>[0-3][0-9]+) ([0-9]+) "
                         r"\"(?P<referr>.*)\" \"(?P<cookie>.*)\" "
                         r"\"(?P<user_agent>.*)\" rt=(?P<cost_time>[0-9\.]+) [0-9]* "
                         r"([0-9\.]+) ([0-9\.]+) (.*) "
@@ -552,7 +552,7 @@ class BaseMapred(object):
             try:
                 line['query']['extend'] = json.loads(line['query']['extend'])
             except:
-                logging.exception('')
+                logging.exception(line['query']['extend'])
                 raise Exception("extend should be a json")
             for key in line['query']['extend']:
                 if key.endswith('_num'):
@@ -627,6 +627,15 @@ class BaseMapred(object):
             line["referr"] = referr.path
         line["referr_query"] = self.parse_query(referr.query)
 
+    def format_line(self, line):
+        """
+        对部分字段进行数据类型转换
+        :param line:
+        :return:
+        """
+        if "status" in line:
+            line["status"] = int(line["status"])
+
     def analysis_json(self, line):
         """
         对解析成json的字段进行进一步分析
@@ -637,6 +646,7 @@ class BaseMapred(object):
         self.parse_user_agent(line)
         self.parse_cookie(line)
         self.pars_referr(line)
+        self.format_line(line)
 
     def analysis_line(self, line):
         """
@@ -910,6 +920,32 @@ class BaseMapred(object):
                 if group:
                     item["group_key"] = [level["key"] for level in group]
 
+    def analysis(self):
+        """
+        用于第一步的mapreduce任务的map。用于分析，并按照BAIDUID进行分发，便于统计uv
+        :return:
+        """
+        for line in self._mapper_in():
+            try:
+                line = line.strip()
+                line = self.analysis_line(line)
+                if line:
+                    if "BAIDUID" in line:
+                        key = line["BAIDUID"]
+                    else:
+                        key = "0"*32
+                    self._emit(key,
+                               json.dumps(line, ensure_ascii=False).encode("utf-8"))
+            except Exception as e:
+                logging.error(e)
+                logging.error(line)
+                continue
+
+        logging.error("valid_lines: %s" % self.valid_lines)
+        logging.error("not_match_lines: %s" % self.not_match_lines)
+        logging.error("error_lines: %s" % self.error_lines)
+        logging.error("emit_lines: %s" % self.emit_lines)
+
     def _mapper_set_up(self):
         # 记录维度的顺序。方便后面统计
         self.get_group_key()
@@ -932,17 +968,28 @@ class BaseMapred(object):
         方法可能需要在继承类上重写
         :return:
         """
+        # for line in self._mapper_in():
+        #     try:
+        #         line = line.strip()
+        #         line = self.analysis_line(line)
+        #         if line:
+        #             self.calculate_index_mapper(line)
+        #     except Exception as e:
+        #         logging.error(e)
+        #         logging.error(line)
+        #         continue
         for line in self._mapper_in():
             try:
                 line = line.strip()
-                line = self.analysis_line(line)
-                if line:
-                    self.calculate_index_mapper(line)
+                kv = line.split("\t")
+                line = json.loads(kv[1])
+                self.valid_lines += 1
+                self.calculate_index_mapper(line)
             except Exception as e:
+                self.error_lines += 1
                 logging.error(e)
                 logging.error(line)
                 continue
-
         for index, item in self.index_map.items():
             # 不一定每一个mapper任务都能跑出每个指标的结果
             if "@value" not in item:
@@ -1079,6 +1126,25 @@ class BaseMapred(object):
             print "not test mode"
             return
 
+        print "********first job********"
+        print "begin to mapper"
+        self.analysis()
+        output_file = self.OUTPUT_FILE
+        self.OUTPUT_FILE = output_file + ".temp"
+        print "begin to reducer"
+        self.collection.sort()
+        self.out_put()
+        print "first over, result is in: %s" % self.OUTPUT_FILE
+        print "valid_lines: %s" % self.valid_lines
+        print "not_match_lines: %s" % self.not_match_lines
+        print "error_lines: %s" % self.error_lines
+        self.valid_lines = 0
+        self.not_match_lines = 0
+        self.error_lines = 0
+        self.collection = []
+        self.SOURCE = self.OUTPUT_FILE
+        self.OUTPUT_FILE = output_file
+        print "*********second job*******"
         print "begin to mapper"
         self.mapper()
         print "shuffle and sort"

@@ -158,7 +158,8 @@ def json_equal(return_json, expect_json, not_exist_flag=False):
         else:
             if not basic_equal(return_json[key], value):
                 logging.info(
-                    "the returned value \"%s\" of key \"%s\" is not same as expected value \"%s\"" %
+                    "the returned value \"%s\" of key \"%s\" is"
+                    " not the same as expected value \"%s\"" %
                     (return_json[key], key, value))
                 return False
     # 所有都通过给提示信息

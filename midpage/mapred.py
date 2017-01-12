@@ -32,6 +32,8 @@ def main(date, product, mapred):
     """
     module = importlib.import_module("products_mapred.%s" % product)
     a = module.Mapred(date, product)
+    if mapred == "analysis":
+        a.analysis()
     if mapred == "mapper":
         a.mapper()
     elif mapred == "reducer":
