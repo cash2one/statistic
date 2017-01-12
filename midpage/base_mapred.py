@@ -933,7 +933,7 @@ class BaseMapred(object):
                     if "BAIDUID" in line:
                         key = line["BAIDUID"]
                     else:
-                        key = "0"*32
+                        key = "0" * 32
                     self._emit(key,
                                json.dumps(line, ensure_ascii=False).encode("utf-8"))
             except Exception as e:
