@@ -60,13 +60,34 @@ class Mapred(base_mapred_local.BaseMapredLocal):
             # 该指标对应的维度信息，在下面定义
             "group_name": ""
         },
+        u"user_path": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "user_path_mapper",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "user_path_local",
+            # 以上三个过程都是针对mapred操作特点，对每一行进行处理。
+            # gather是搜集所有信息后，对汇总信息进行处理。诸如指标之间的运算，汇总后处理等。
+            "gather": "user_path_gather",
+            "config": {
+                "gather": {
+                    "target": ["/s", "/zici/s", "/shici/s", "/shici/detail"],
+                    "file": "%s_user_path.txt"
+                }
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "user_path_groups"
+        },
     }
     ###################################
     # 用户画像配置
     ###################################
     # 用户路径分析配置
     ###################################
-    groups = []
+    groups = ["user_path_groups"]
     # groups中的2个字段含义：
     # attribute: 该字段的详细配置，也就是下面紧跟着的dict名
     # key：表示在数据中，该维度对应的key名字。
@@ -77,3 +98,8 @@ class Mapred(base_mapred_local.BaseMapredLocal):
     # 规定了该维度下，value的取值有哪些选项，名称自定义，上面的维度汇总配置引用
     # name：value取值项
     # query：匹配中该维度的查询条件
+    user_path_groups = [{
+        "key": "url",
+    }, {
+        "key": "referr",
+    }]

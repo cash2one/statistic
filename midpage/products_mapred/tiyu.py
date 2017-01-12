@@ -110,7 +110,7 @@ class Mapred(base_mapred_local.BaseMapredLocal):
             "gather": "user_path_gather",
             "config": {
                 "gather": {
-                    "target": ["/live", "/category", "/detail", "/player"],
+                    "target": ["/live", "/category", "/detail", "/player", "/news", "/videodetail"],
                     "file": "%s_user_path.txt"
                 }
             },
