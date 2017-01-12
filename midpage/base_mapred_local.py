@@ -166,17 +166,6 @@ class BaseMapredLocal(base_mapred.BaseMapred):
             local_source.update(source_set)
         self.get_path_recursion(local_source, destination, index_item, target_source)
 
-        # spotted_source_set = set()
-        # for one_target in target_list:
-        #     if one_target in spotted_target_set:
-        #         continue
-        #     spotted_target_set.add(one_target)
-        #     target_source[one_target] = target_list
-        #     next_target_list = self.get_one_path(destination, one_target, index_item, spotted_source_set)
-        #     local_source.update(source_set)
-        # # local_source -= self.source_set
-        # self.get_path_recursion(next_target_list, destination, index_item, spotted_target_set)
-
     def get_one_path(self, destination, target, index_item, target_source):
         """
         获取一个目标的路径
@@ -259,19 +248,19 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         生成指标文件，环境清理过程
         :return:
         """
-        # data_file_name = os.path.join(self.local_data_dir, self.product + ".data")
-        # if os.path.exists(data_file_name):
-        #     os.remove(data_file_name)
-        # cmd = "%s fs -getmerge %s %s" % (
-        #     conf.HADOOP_BIN,
-        #     self.output_dir,
-        #     data_file_name)
-        # logging.info(cmd)
-        # ret = os.system(cmd)
-        # if ret:
-        #     logging.error(ret)
-        #     return ret
-        data_file_name = "/home/work/temp/nj02.output"
+        data_file_name = os.path.join(self.local_data_dir, self.product + ".data")
+        if os.path.exists(data_file_name):
+            os.remove(data_file_name)
+        cmd = "%s fs -getmerge %s %s" % (
+            conf.HADOOP_BIN,
+            self.output_dir,
+            data_file_name)
+        logging.info(cmd)
+        ret = os.system(cmd)
+        if ret:
+            logging.error(ret)
+            return ret
+        # data_file_name = "/home/work/temp/nj02.output"
         all_lines = 0
         valid_lines = 0
         error_lines = 0
@@ -298,14 +287,14 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         主入口
         :return:
         """
-        # ret = self.set_up()
-        # if ret:
-        #     logging.error("error occured in set_up(): %s" % ret)
-        #     return
-        # ret = self.mapred()
-        # if ret:
-        #     logging.error("error occured in mapred(): %s" % ret)
-        #     return
+        ret = self.set_up()
+        if ret:
+            logging.error("error occured in set_up(): %s" % ret)
+            return
+        ret = self.mapred()
+        if ret:
+            logging.error("error occured in mapred(): %s" % ret)
+            return
         ret = self.clear_down()
         if ret:
             logging.error("error occured in clear_down(): %s" % ret)
