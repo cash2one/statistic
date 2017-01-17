@@ -17,7 +17,6 @@ Comment:
 """
 # 系统库
 import re
-import sys
 import copy
 import json
 import urlparse
@@ -26,24 +25,19 @@ import logging
 
 # 自有库
 import common
+import hadoop
 
 
-class BaseMapred(object):
+class BaseMapred(hadoop.Hadoop):
     """
     执行hadoop任务的基类
     类里所有接口都是用于集群上执行。
     同时有构造测试流程
     """
     ###################################
-    # 本地测试开关， 测试方法，在基类上继承一个新类，定义Test为True即可
-    TEST = False
-    ###################################
     # 指定日志来源。可以nanlin本地集群，可以为其他集群。其他集群会先执行distcp
     SOURCE = "hdfs://szwg-ston-hdfs.dmop.baidu.com:54310" \
              "/app/dt/minos/3/textlog/www/wise_tiyu_access/70025011/%s/1200/"
-    ###################################
-    # 本地测试时，存储结果的位置
-    OUTPUT_FILE = ""
     ###################################
     # 过滤配置，符合该正则的认为是合法的日志
     FILTER = re.compile(r"^(?P<client_ip>[0-9\.]+) (.*) (.*) (?P<time>\[.+\]) "
@@ -304,26 +298,20 @@ class BaseMapred(object):
     ###################################
     # 结果处理配置
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """
         初始化
         :param mapred:
         :param source:
         :return:
         """
+        super(BaseMapred, self).__init__(**kwargs)
         # 所有group配置的展开合集
         self.groups_expand = dict()
         self.valid_lines = 0
         self.not_match_lines = 0
         self.error_lines = 0
         self.emit_lines = 0
-
-        if self.TEST:
-            self.collection = []
-            self.mapper_out = None
-            self._mapper_in = self._mapper_in_test
-            self._reducer_in = self._reduce_in_test
-            self._emit = self._emit_test
 
     def _iter_groups(self, groups, layer=0):
         """
@@ -465,59 +453,6 @@ class BaseMapred(object):
             temp_dict.setdefault(values[group_key[-1]], 0)
             temp_dict[values[group_key[-1]]] += values["@value"]
         return ret
-
-    def _mapper_in(self):
-        """
-
-        :return:
-        """
-        return sys.stdin
-
-    def _reducer_in(self):
-        """
-
-        :return:
-        """
-        return sys.stdin
-
-    def _emit(self, key, value=None):
-        """
-
-        :param key:
-        :param value:
-        :return:
-        """
-        if value:
-            print "%s\t%s" % (key, value)
-        else:
-            print key
-
-    def _mapper_in_test(self):
-        """
-        本地测试用
-        :return:
-        """
-        with open(self.SOURCE) as fp:
-            for line in fp:
-                line = line.rstrip()
-                yield line
-
-    def _reduce_in_test(self):
-        """
-        本地测试用
-        :return:
-        """
-        return self.mapper_out
-
-    def _emit_test(self, key, value=None):
-        """
-        本地测试用
-        :return:
-        """
-        if value:
-            self.collection.append("%s\t%s" % (key, value))
-        else:
-            self.collection.append(key)
 
     def parse_request(self, line):
         """
@@ -693,18 +628,6 @@ class BaseMapred(object):
                 index_item["@value"] = self.contract_index(index_item["@value"],
                                                            temp_value,
                                                            index_item["group_key"])
-                # 符合就逐级检查，最后一级增加计数
-                # if len(index_item["group_key"]) == 0:
-                #     index_item.setdefault("@value", 0)
-                #     index_item["@value"] += 1
-                # else:
-                #     index_item.setdefault("@value", dict())
-                #     temp_dict = index_item["@value"]
-                #     for key in index_item["group_key"][:-1]:
-                #         temp_dict.setdefault(group["keys"][key], dict())
-                #         temp_dict = temp_dict[group["keys"][key]]
-                #     temp_dict.setdefault(group["keys"][index_item["group_key"][-1]], 0)
-                #     temp_dict[group["keys"][index_item["group_key"][-1]]] += 1
 
     def recurse_merge(self, target, source):
         """
@@ -968,16 +891,6 @@ class BaseMapred(object):
         方法可能需要在继承类上重写
         :return:
         """
-        # for line in self._mapper_in():
-        #     try:
-        #         line = line.strip()
-        #         line = self.analysis_line(line)
-        #         if line:
-        #             self.calculate_index_mapper(line)
-        #     except Exception as e:
-        #         logging.error(e)
-        #         logging.error(line)
-        #         continue
         for line in self._mapper_in():
             try:
                 line = line.strip()
@@ -1035,7 +948,6 @@ class BaseMapred(object):
         """
         :return:
         """
-        logging.error("self.Test = %s" % self.TEST)
         self._mapper_set_up()
         self._mapper()
         logging.error("valid_lines: %s" % self.valid_lines)
@@ -1094,7 +1006,6 @@ class BaseMapred(object):
 
         :return:
         """
-        logging.error("self.Test = %s" % self.TEST)
         self._reducer_set_up()
         self._reducer()
         logging.error("valid_lines: %s" % self.valid_lines)
@@ -1102,39 +1013,30 @@ class BaseMapred(object):
         logging.error("error_lines: %s" % self.error_lines)
         logging.error("emit_lines: %s" % self.emit_lines)
 
-    def out_put(self):
-        """
-        本地测试时使用
-        :return:
-        """
-        fp = open(self.OUTPUT_FILE, "w+")
-        # fp.write("\n".join(self.collection))
-        for line in self.collection:
-            try:
-                fp.write(line)
-                fp.write("\n")
-            except Exception as e:
-                logging.error(e)
-        fp.close()
-
     def test(self):
         """
         本地测试方法
         :return:
         """
-        if not self.TEST:
+        if not self.test_mode:
             print "not test mode"
+            return
+        if not self.in_fine:
+            logging.error("please set parameter: in_file")
+            return
+        if not self.out_file:
+            logging.error("please set parameter: out_file")
             return
 
         print "********first job********"
         print "begin to mapper"
         self.analysis()
-        output_file = self.OUTPUT_FILE
-        self.OUTPUT_FILE = output_file + ".temp"
+        output_file = self.out_file
+        self.out_file = output_file + ".temp"
         print "begin to reducer"
         self.collection.sort()
-        self.out_put()
-        print "first over, result is in: %s" % self.OUTPUT_FILE
+        self._out_put()
+        print "first over, result is in: %s" % self.out_file
         print "valid_lines: %s" % self.valid_lines
         print "not_match_lines: %s" % self.not_match_lines
         print "error_lines: %s" % self.error_lines
@@ -1142,8 +1044,8 @@ class BaseMapred(object):
         self.not_match_lines = 0
         self.error_lines = 0
         self.collection = []
-        self.SOURCE = self.OUTPUT_FILE
-        self.OUTPUT_FILE = output_file
+        self.in_fine = self.out_file
+        self.out_file = output_file
         print "*********second job*******"
         print "begin to mapper"
         self.mapper()
@@ -1155,8 +1057,8 @@ class BaseMapred(object):
         print "begin to reduce"
         self.reducer()
         print "output data"
-        self.out_put()
-        print "all over, result is in: %s" % self.OUTPUT_FILE
+        self._out_put()
+        print "all over, result is in: %s" % self.out_file
         print "valid_lines: %s" % self.valid_lines
         print "not_match_lines: %s" % self.not_match_lines
         print "error_lines: %s" % self.error_lines

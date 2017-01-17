@@ -38,8 +38,8 @@ class BaseMapredLocal(base_mapred.BaseMapred):
     """
     从BaseMapred继承而来。分成2个class的目的只是为了本地运算代码与hadoop集群运算代码隔离
     """
-    def __init__(self, date, product):
-        super(BaseMapredLocal, self).__init__()
+    def __init__(self, date, product, **kwargs):
+        super(BaseMapredLocal, self).__init__(**kwargs)
         self.date = date
         if LOCAL_RUN and conf.DEVELOPING:
             self.default_dir = "/app/ps/spider/wdmqa/kgdc/test/"

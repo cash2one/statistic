@@ -43,7 +43,6 @@ ${HADOOP} streaming \
  -D mapred.map.tasks=100 \
  -D mapred.reduce.tasks=10 \
  -D mapred.job.priority=VERY_HIGH \
- -D mapreduce.input.fileinputformat.input.dir.recursive=true \
  -cacheArchive /app/ps/spider/wdmqa/kgdc/tool/python2.7.6.tar.gz#python2.7 \
  -cacheArchive ${REMOTE_TAR}#code \
  -file ./mapred.sh \

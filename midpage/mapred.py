@@ -42,23 +42,17 @@ def main(date, product, mapred):
         logging.error("param error: product=%s, date=%s, mapred=%s" % (product, date, mapred))
 
 
-def test(product):
+def test(date="20170110", product="tiyu"):
     """
     在本地测试程序远程部分
+    :param date:
     :param product:
     :return:
     """
-    date = "20170110"
     module = importlib.import_module("midpage.products_mapred.%s" % product)
-
-    class TestProduct(module.Mapred):
-        """
-        内部测试继承
-        """
-        TEST = True
-        SOURCE = "/home/work/temp/st01-ps-ae-app9.st01.baidu.com-frontend_access.log.2017011012.417"
-        OUTPUT_FILE = "/home/work/temp/nj02.output"
-    a = TestProduct(date, product)
+    in_file = "/home/work/temp/st01-ps-ae-app9.st01.baidu.com-frontend_access.log.2017011012.417"
+    out_file = "/home/work/temp/nj02.output"
+    a = module.Mapred(date, product, test_mode=True, in_file=in_file, out_file=out_file)
     a.test()
 
 
