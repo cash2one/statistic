@@ -191,10 +191,10 @@ class Mapred(base_mapred_local.BaseMapredLocal):
          "query": {"query.tab": u"直播"}
     }, {
          "name": "nba",
-         "query": {"query.tab": u"NBA"}
+         "query": {"query.tab": "NBA"}
     }, {
          "name": "cba",
-         "query": {"query.tab": u"CBA"}
+         "query": {"query.tab": "CBA"}
     }, {
          "name": "yingchao",
          "query": {"query.tab": u"英超"}
@@ -206,7 +206,7 @@ class Mapred(base_mapred_local.BaseMapredLocal):
          "query": {"query.tab": u"德甲"}
     }, {
          "name": "wwe",
-         "query": {"query.tab": u"WWE"}
+         "query": {"query.tab": "WWE"}
     }, {
          "name": "yijia",
          "query": {"query.tab": u"意甲"}
@@ -224,7 +224,7 @@ class Mapred(base_mapred_local.BaseMapredLocal):
          "query": {"query.tab": u"欧联杯"}
     }, {
          "name": "nfl",
-         "query": {"query.tab": u"NFL"}
+         "query": {"query.tab": "NFL"}
     }, {
          "name": "shiyusai",
          "query": {"query.tab": u"世预赛"}
@@ -243,4 +243,52 @@ class Mapred(base_mapred_local.BaseMapredLocal):
     }, {
          "name": "shijubei",
          "query": {"query.tab": u"世俱杯"}
+    }, {
+        "name": "schedule",
+        "query": {"query.tab": "schedule"}
+    }, {
+        "name": "video",
+        "query": {"query.tab": "video"}
+    }, {
+        "name": "news",
+        "query": {"query.tab": "news"}
+    }, {
+        "name": "battle",
+        "query": {"query.tab": "battle"}
+    }, {
+        "name": "sort",
+        "query": {"query.tab": "sort"}
+    }, {
+        "name": "qianzhan",
+        "query": {"query.tab": "qianzhan"}
+    }, {
+        "name": "xinwen",
+        "query": {"query.tab": "xinwen"}
+    }, {
+        "name": "zhenrong",
+        "query": {"query.tab": "zhenrong"}
+    }, {
+        "name": "nba",
+        "query": {"query.tab": "nba"}
+    }, {
+        "name": "saikuang",
+        "query": {"query.tab": "saikuang"}
+    }, {
+        "name": "graphicLive",
+        "query": {"query.tab": "graphicLive"}
+    }, {
+        "name": "jijin",
+        "query": {"query.tab": "jijin"}
+    }, {
+        "name": "news",
+        "query": {"query.tab": "news"}
+    }, {
+        "name": "data",
+        "query": {"query.tab": "data"}
+    }, {
+        "name": "info",
+        "query": {"query.tab": "info"}
+    }, {
+        "name": "video",
+        "query": {"query.tab": "video"}
     }]
