@@ -263,6 +263,14 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         logging.info(cmd)
         return os.system(cmd)
 
+    def close_files(self):
+        """
+        关闭文件指针
+        :return:
+        """
+        for file_name in self.fp_dict:
+            self.fp_dict[file_name].close()
+
     def clear_down(self):
         """
         生成指标文件，环境清理过程
@@ -300,6 +308,8 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         logging.error("error_lines: %s" % error_lines)
 
         self.calculate_index_gather()
+
+        self.close_files()
 
         return 0
 
