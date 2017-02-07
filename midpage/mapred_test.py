@@ -11,7 +11,11 @@ File   : mapred_test.py
 
 Authors: xulei12@baidu.com
 Date   : 2016/12/15
-Comment: 
+Comment:
+
+Authors: xulei12@baidu.com
+Date   : 2016/02/03
+Comment: 已废弃
 """
 # 系统库
 import sys

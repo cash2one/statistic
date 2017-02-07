@@ -117,13 +117,140 @@ class Mapred(base_mapred_local.BaseMapredLocal):
             # 该指标对应的维度信息，在下面定义
             "group_name": "user_path_groups"
         },
+        u"click": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "count",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "local": "%s.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "click_groups"
+        },
+        u"ended": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+                "query.extend.tab": u"已结束"
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "count",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "local": "%s.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "ended_groups"
+        },
+        u"not-ended": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+                "query.extend.tab": u"未结束"
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "count",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "local": "%s.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "ended_groups"
+        },
+        u"rank0": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+                "query.extend.rank": "0"
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "count",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "local": "%s.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "rank_groups"
+        },
+        u"rank1": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+                "query.extend.rank": "1"
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "count",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "local": "%s.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "rank_groups"
+        },
+        u"rank2": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+                "query.extend.rank": "2"
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "count",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "local": "%s.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "rank_groups"
+        },
+        u"rank3": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+                "query.extend.rank": "3"
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "count",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "local": "%s.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "rank_groups"
+        },
+        u"rank4": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+                "query.extend.rank": "4"
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "count",
+            "reducer": "merge_index",
+            # local是mapred任务完成后，在本地执行的操作
+            "local": "write_file",
+            "config": {
+                "local": "%s.txt"
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": "rank_groups"
+        },
     }
     ###################################
     # 用户画像配置
     ###################################
     # 用户路径分析配置
     ###################################
-    groups = ["pv_groups", "user_path_groups"]
+    groups = ["pv_groups", "user_path_groups", "click_groups", "ended_groups", "rank_groups"]
     # groups中的2个字段含义：
     # attribute: 该字段的详细配置，也就是下面紧跟着的dict名
     # key：表示在数据中，该维度对应的key名字。
@@ -139,6 +266,33 @@ class Mapred(base_mapred_local.BaseMapredLocal):
         "key": "url",
     }, {
         "key": "referr",
+    }]
+    click_groups = [{
+        "key": "page",
+        "attribute": "extend_page_group"
+    }, {
+        "key": "tab",
+        "attribute": "extend_tab_group"
+    }, {
+        "key": "type",
+        "attribute": "extend_type_group"
+    }]
+    ended_groups = [{
+        "key": "page",
+        "attribute": "extend_page_ended_group"
+    }, {
+        "key": "type",
+        "attribute": "extend_type_ended_group"
+    }]
+    rank_groups = [{
+        "key": "page",
+        "attribute": "extend_page_group"
+    }, {
+        "key": "tab",
+        "attribute": "extend_tab_rank_group"
+    }, {
+        "key": "type",
+        "attribute": "extend_type_rank_group"
     }]
     ###################################
     # 具体每个维度配置
@@ -291,4 +445,147 @@ class Mapred(base_mapred_local.BaseMapredLocal):
     }, {
         "name": "video",
         "query": {"query.tab": "video"}
+    }]
+
+    extend_page_group = [{
+        "name": "total",
+        "query": {}
+    }, {
+        "name": "live",
+        "query": {"query.extend.page": "live"}
+    }, {
+        "name": "category",
+        "query": {"query.extend.page": "category"}
+    }, {
+        "name": "detail",
+        "query": {"query.extend.page": "detail"}
+    }, {
+        "name": "news",
+        "query": {"query.extend.page": "news"}
+    }, {
+        "name": "videodetail",
+        "query": {"query.extend.page": "videodetail"}
+    }]
+
+    extend_tab_group = [{
+        "name": "total",
+        "query": {},
+    }, {
+         "name": "jinrituijian",
+         "query": {"query.extend.tab": u"今日推荐"}
+    }, {
+        "name": "xinwen",
+        "query": {"query.extend.tab": u"新闻"}
+    }, {
+        "name": "saicheng",
+        "query": {"query.extend.tab": u"赛程"}
+    }, {
+        "name": "shipin",
+        "query": {"query.extend.tab": u"视频"}
+    }, {
+        "name": "jifenbang",
+        "query": {"query.extend.tab": u"积分榜"}
+    }, {
+        "name": "zhenrong",
+        "query": {"query.extend.tab": u"阵容"}
+    }, {
+        "name": "jijin",
+        "query": {"query.extend.tab": u"集锦"}
+    }, {
+        "name": "qianzhan",
+        "query": {"query.extend.tab": u"前瞻"}
+    }, {
+        "name": "tongji",
+        "query": {"query.extend.tab": u"统计"}
+    }, {
+        "name": "saikuang",
+        "query": {"query.extend.tab": u"赛况"}
+    }]
+
+    extend_type_group = [{
+        "name": "total",
+        "query": {},
+    }, {
+        "name": "tab",
+        "query": {"query.extend.type": "tab"}
+    }, {
+        "name": "show-all",
+        "query": {"query.extend.type": "show-all"}
+    }, {
+        "name": "record-schedule",
+        "query": {"query.extend.type": "record-schedule"}
+    }, {
+        "name": "record-news",
+        "query": {"query.extend.type": "record-news"}
+    }, {
+        "name": "record-video",
+        "query": {"query.extend.type": "record-video"}
+    }, {
+        "name": "record-date",
+        "query": {"query.extend.type": "record-date"}
+    }, {
+        "name": "share",
+        "query": {"query.extend.type": "share"}
+    }, {
+        "name": "back",
+        "query": {"query.extend.type": "back"}
+    }, {
+        "name": "refresh",
+        "query": {"query.extend.type": "refresh"}
+    }, {
+        "name": "go2top",
+        "query": {"query.extend.type": "go2top"}
+    }, {
+        "name": "go2home",
+        "query": {"query.extend.type": "go2home"}
+    }, {
+        "name": "show-more",
+        "query": {"query.extend.type": "show-more"}
+    }]
+
+    extend_page_ended_group = [{
+        "name": "live",
+        "query": {"query.extend.page": "live"}
+    }]
+
+    extend_type_ended_group = [{
+        "name": "tab",
+        "query": {"query.extend.type": "tab"}
+    }]
+
+    extend_tab_rank_group = [{
+        "name": "total",
+        "query": {},
+    }, {
+         "name": "jinrituijian",
+         "query": {"query.extend.tab": u"今日推荐"}
+    }]
+
+    extend_type_rank_group = [{
+        "name": "total",
+        "query": {},
+    }, {
+         "name": "slide",
+         "query": {"query.extend.type": "slide"}
+    }, {
+        "name": "schedule-title",
+        "query": {"query.extend.type": "schedule-title"}
+    }, {
+        "name": "schedule-content",
+        "query": {"query.extend.type": "schedule-content"}
+    }, {
+        "name": "feed-video",
+        "query": {"query.extend.type": "feed-video"}
+    }, {
+        "name": "feed-news",
+        "query": {"query.extend.type": "feed-news"}
+    }, {
+        "name": "recommend",
+        "query": {"query.extend.type": "recommend"}
+    }, {
+        "name": "player",
+        "query": {"query.extend.type": "player"}
+    }, {
+        "name": "sort",
+        "query": {"query.extend.type": "sort"}
     }]
