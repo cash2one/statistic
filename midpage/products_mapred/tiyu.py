@@ -244,6 +244,126 @@ class Mapred(base_mapred_local.BaseMapredLocal):
             # 该指标对应的维度信息，在下面定义
             "group_name": "rank_groups"
         },
+        u"rank0_ratio": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "",
+            "reducer": "",
+            # local是mapred任务完成后，在本地执行的操作
+            "gather": "among_indexes",
+            "config": {
+                "gather": {
+                    # 后验计算需要的指标
+                    "index": ["rank0", "pv"],
+                    # 计算方法
+                    "method": "divide",
+                    # 通过第一个指标查找第二个指标时候，需要剔除的维度
+                    "reject_dimension": ["type"],
+                    # 最终需要输出的位置
+                    "file": "%s.txt"
+                }
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": ""
+        },
+        u"rank1_ratio": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "",
+            "reducer": "",
+            # local是mapred任务完成后，在本地执行的操作
+            "gather": "among_indexes",
+            "config": {
+                "gather": {
+                    # 后验计算需要的指标
+                    "index": ["rank1", "pv"],
+                    # 计算方法
+                    "method": "divide",
+                    # 通过第一个指标查找第二个指标时候，需要剔除的维度
+                    "reject_dimension": ["type"],
+                    # 最终需要输出的位置
+                    "file": "%s.txt"
+                }
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": ""
+        },
+        u"rank2_ratio": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "",
+            "reducer": "",
+            # local是mapred任务完成后，在本地执行的操作
+            "gather": "among_indexes",
+            "config": {
+                "gather": {
+                    # 后验计算需要的指标
+                    "index": ["rank2", "pv"],
+                    # 计算方法
+                    "method": "divide",
+                    # 通过第一个指标查找第二个指标时候，需要剔除的维度
+                    "reject_dimension": ["type"],
+                    # 最终需要输出的位置
+                    "file": "%s.txt"
+                }
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": ""
+        },
+        u"rank3_ratio": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "",
+            "reducer": "",
+            # local是mapred任务完成后，在本地执行的操作
+            "gather": "among_indexes",
+            "config": {
+                "gather": {
+                    # 后验计算需要的指标
+                    "index": ["rank3", "pv"],
+                    # 计算方法
+                    "method": "divide",
+                    # 通过第一个指标查找第二个指标时候，需要剔除的维度
+                    "reject_dimension": ["type"],
+                    # 最终需要输出的位置
+                    "file": "%s.txt"
+                }
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": ""
+        },
+        u"rank4_ratio": {
+            # query为计算指标需要用的参数或者字段
+            "query": {
+            },
+            # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
+            "mapper": "",
+            "reducer": "",
+            # local是mapred任务完成后，在本地执行的操作
+            "gather": "among_indexes",
+            "config": {
+                "gather": {
+                    # 后验计算需要的指标
+                    "index": ["rank4", "pv"],
+                    # 计算方法
+                    "method": "divide",
+                    # 通过第一个指标查找第二个指标时候，需要剔除的维度
+                    "reject_dimension": ["type"],
+                    # 最终需要输出的位置
+                    "file": "%s.txt"
+                }
+            },
+            # 该指标对应的维度信息，在下面定义
+            "group_name": ""
+        },
     }
     ###################################
     # 用户画像配置

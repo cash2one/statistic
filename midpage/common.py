@@ -20,7 +20,6 @@ import logging
 # 第三方库
 
 # 自有库
-logging.root.setLevel(logging.ERROR)
 
 
 def is_basic_types(value):
@@ -74,7 +73,7 @@ def json_equal(return_json, expect_json, not_exist_flag=False):
     完全一致 True
     有一条不一样都返回 False
     """
-    # logging.basicConfig(level=logging.ERROR)
+    logging.root.setLevel(logging.ERROR)
     if not expect_json:
         expect_json = {}
 

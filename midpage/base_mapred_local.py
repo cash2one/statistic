@@ -15,6 +15,7 @@ Comment:
 """
 # 系统库
 import os
+import copy
 import json
 import logging
 import importlib
@@ -49,6 +50,8 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         self.input_dir = os.path.join(self.default_dir, self.date, self.product, "input")
         self.output_dir_1 = os.path.join(self.default_dir, self.date, self.product, "output1")
         self.output_dir_2 = os.path.join(self.default_dir, self.date, self.product, "output2")
+        # 用于记录需要进行交叉计算所需要的指标
+        self.among_index_list = set()
 
         if LOCAL_RUN:
             root_path = os.path.join(conf.DATA_DIR, "midpage_hadoop")
@@ -78,6 +81,11 @@ class BaseMapredLocal(base_mapred.BaseMapred):
                 func(value, self.index_map[index], config)
             else:
                 func(value, self.index_map[index])
+        if index in self.among_index_list:
+            value = json.loads(value)
+            index_item = self.index_map[index]
+            index_item.setdefault("@value", list())
+            index_item["@value"].append(value)
 
     def calculate_index_gather(self):
         """
@@ -93,6 +101,52 @@ class BaseMapredLocal(base_mapred.BaseMapred):
                     func(index, index_item, config)
                 else:
                     func(index, index_item)
+
+    def _among_indexes(self, index, index_item, config=None):
+        """
+        需要后验计算的指标。一个典型的配置如下
+        暂时只实现了除法，其他方法下面加一两行代码即可
+
+        "gather": "among_indexes",
+        "config": {
+            "gather": {
+                # 后验计算需要的指标
+                "index": ["rank0", "pv"],
+                # 计算方法
+                "method": "divide",
+                # 通过第一个指标查找第二个指标时候，需要剔除的维度
+                "reject_dimension": ["type"],
+                # 最终需要输出的位置
+                "file": "%s.txt"
+            }
+        },
+        :param index:
+        :param index_item:
+        :param config:
+        :return:
+        """
+        first_index = config["index"][0]
+        second_index = config["index"][1]
+        method = config["method"]
+        for first_value in self.index_map[first_index]["@value"]:
+            query = copy.deepcopy(first_value)
+            del query["@index"]
+            del query["@value"]
+            if "reject_dimension" in config:
+                for dimension in config["reject_dimension"]:
+                    del query[dimension]
+            second_value = common.find(self.index_map[second_index]["@value"], query)
+            if second_value:
+                second_value = second_value[0]
+                if method == "divide":
+                    if second_value["@value"]:
+                        first_value["@value"] /= second_value["@value"]*1.0
+                # todo:其他方法待补充
+                else:
+                    pass
+                first_value["@index"] = index
+                line = json.dumps(first_value, ensure_ascii=False).encode("utf-8")
+                self._write_file(line, index_item, config["file"])
 
     def _write_file(self, line, index_item, config="%s.txt"):
         """
@@ -288,10 +342,20 @@ class BaseMapredLocal(base_mapred.BaseMapred):
         if ret:
             logging.error(ret)
             return ret
-        # data_file_name = "/home/work/temp/nj02.output"
+        # 下面这行是测试代码
+        # data_file_name = "/home/work/kgdc-statist/kgdc-statist/data/midpage_hadoop/20170206/tiyu.data"
         all_lines = 0
         valid_lines = 0
         error_lines = 0
+        # 先标记出，需要交叉计算的指标
+        for index in self.index_map:
+            if "gather" in self.index_map[index]:
+                if self.index_map[index]["gather"] == "among_indexes":
+                    among_index_list = set(self.index_map[index]["config"]["gather"]["index"])
+                    self.among_index_list.update(among_index_list)
+        # 记录维度的顺序。方便后面统计
+        self.get_group_key()
+        # 处理每一行
         with open(data_file_name) as fp:
             for line in fp:
                 all_lines += 1
@@ -391,8 +455,10 @@ def test():
     :param product:
     :return:
     """
-    date = "20170110"
-    a = BaseMapredLocal(date, "tiyu")
+    date = "20170206"
+    product = "tiyu"
+    module = importlib.import_module("midpage.products_mapred.%s" % product)
+    a = module.Mapred(date, product, test_mode=True, in_file="", out_file="")
     a.run()
 
 
