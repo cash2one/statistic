@@ -42,7 +42,7 @@ def main(date, product, mapred):
         logging.error("param error: product=%s, date=%s, mapred=%s" % (product, date, mapred))
 
 
-def test(date="20170110", product="tiyu"):
+def test(date="20170110", product="test"):
     """
     在本地测试程序远程部分
     :param date:
@@ -50,7 +50,7 @@ def test(date="20170110", product="tiyu"):
     :return:
     """
     module = importlib.import_module("midpage.products_mapred.%s" % product)
-    in_file = "/home/work/temp/st01-ps-ae-app4.st01.baidu.com-frontend_access.log.2017020612.363"
+    in_file = "/home/work/temp/input.data"
     out_file = "/home/work/temp/nj02.output"
     a = module.Mapred(date, product, test_mode=True, in_file=in_file, out_file=out_file)
     a.test()

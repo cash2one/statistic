@@ -881,10 +881,12 @@ class BaseMapred(hadoop.Hadoop):
             self.index_map[index]["group"] = []
             if group_name:
                 for one_group in self.groups_expand[group_name]:
-                    one_group["query"].update(self.index_map[index]["query"])
-                    one_group["query"] = self.expand_query(one_group["query"])
-                    one_group["keys"]["@index"] = index
-                    self.index_map[index][u"group"].append(one_group)
+                    # 没有复制，此处有坑
+                    temp_one_group = copy.deepcopy(one_group)
+                    temp_one_group["query"].update(self.index_map[index]["query"])
+                    temp_one_group["query"] = self.expand_query(temp_one_group["query"])
+                    temp_one_group["keys"]["@index"] = index
+                    self.index_map[index]["group"].append(temp_one_group)
 
     def _mapper(self):
         """
