@@ -46,9 +46,12 @@ class BaseMapred(hadoop.Hadoop):
                         r"\"(?P<user_agent>.*)\" rt=(?P<cost_time>[0-9\.]+) [0-9]* "
                         r"([0-9\.]+) ([0-9\.]+) (.*) "
                         r"\".*\" ps appEngine - (?P<msec>[0-9\.]+)$")
+    SORT_KEY = "BAIDUID"
+    DROP_NO_KEY = False
     ###################################
     # cookie中搜索百度uid匹配规则
     BAIDUID_REG = re.compile(r"BAIDUID=(?P<id>.+?):(.*=\d*)(;|$)")
+    BDUSS_REG = re.compile(r"BDUSS=(?P<id>.+?)(;|$)")
     ###################################
     # 设备匹配规则
     IOS_REG = re.compile(r"(?i)Mac OS X")
@@ -546,6 +549,9 @@ class BaseMapred(hadoop.Hadoop):
         bdid = self.BAIDUID_REG.search(cookie)
         if bdid:
             line["BAIDUID"] = bdid.group("id")
+        bduss = self.BDUSS_REG.search(cookie)
+        if bdid:
+            line["BDUSS"] = bduss.group("id")
 
     def pars_referr(self, line):
         """
@@ -853,8 +859,10 @@ class BaseMapred(hadoop.Hadoop):
                 line = line.strip()
                 line = self.analysis_line(line)
                 if line:
-                    if "BAIDUID" in line:
-                        key = line["BAIDUID"]
+                    if self.SORT_KEY in line:
+                        key = line[self.SORT_KEY]
+                    elif self.DROP_NO_KEY:
+                        continue
                     else:
                         key = "0" * 32
                     self._emit(key,

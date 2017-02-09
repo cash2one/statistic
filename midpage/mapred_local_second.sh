@@ -39,6 +39,9 @@ echo "=======start hadoop job====="
 set -x
 ${HADOOP} streaming \
  -D mapred.job.name="kgdc-${PRODUCT}-2" \
+ -D abaci.split.optimize.enable=false \
+ -D mapred.min.split.size=33554432 \
+ -D mapred.max.split.size=67108864 \
  -D mapred.job.map.capacity=2000 \
  -D mapred.map.tasks=2000 \
  -D mapred.reduce.tasks=10 \
