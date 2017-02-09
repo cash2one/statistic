@@ -401,6 +401,9 @@ class Mapred(base_mapred_local.BaseMapredLocal):
         "key": "page",
         "attribute": "extend_page_ended_group"
     }, {
+        "key": "tab",
+        "attribute": "extend_tab_ended_group"
+    }, {
         "key": "type",
         "attribute": "extend_type_ended_group"
     }]
@@ -667,9 +670,12 @@ class Mapred(base_mapred_local.BaseMapredLocal):
         "name": "live",
         "query": {"query.extend.page": "live"}
     }]
-
+    extend_tab_ended_group = [{
+        "name": "total",
+        "query": {}
+    }]
     extend_type_ended_group = [{
-        "name": "tab",
+        "name": "button",
         "query": {"query.extend.type": "tab"}
     }]
 

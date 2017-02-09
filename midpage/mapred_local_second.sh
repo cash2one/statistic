@@ -38,7 +38,7 @@ echo "=======start hadoop job====="
 
 set -x
 ${HADOOP} streaming \
- -D mapred.job.name="kgdc-hadoop-2" \
+ -D mapred.job.name="kgdc-${PRODUCT}-2" \
  -D mapred.job.map.capacity=2000 \
  -D mapred.map.tasks=2000 \
  -D mapred.reduce.tasks=10 \
