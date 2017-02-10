@@ -42,7 +42,7 @@ ${HADOOP} streaming \
  -D mapred.job.map.capacity=2000 \
  -D mapred.job.reduce.capacity=2000 \
  -D mapred.map.tasks=2000 \
- -D mapred.reduce.tasks=1000 \
+ -D mapred.reduce.tasks=2000 \
  -D mapred.job.priority=VERY_HIGH \
  -cacheArchive /app/ps/spider/wdmqa/kgdc/tool/python2.7.6.tar.gz#python2.7 \
  -cacheArchive ${REMOTE_TAR}#code \

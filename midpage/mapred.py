@@ -50,7 +50,7 @@ def test(date="20170110", product="test"):
     :return:
     """
     module = importlib.import_module("midpage.products_mapred.%s" % product)
-    in_file = "/home/work/temp/input.data"
+    in_file = "/home/work/temp/st01-ps-ae-app4.st01.baidu.com-frontend_access.log.2017020612.363"
     out_file = "/home/work/temp/nj02.output"
     a = module.Mapred(date, product, test_mode=True, in_file=in_file, out_file=out_file)
     a.test()
