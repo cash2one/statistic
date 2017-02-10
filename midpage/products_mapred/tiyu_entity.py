@@ -31,9 +31,6 @@ class Mapred(tiyu.Mapred):
     """
     为了计算各个实体的访问量
     """
-    # map任务中分发key的配置
-    SORT_KEY = "BDUSS"
-    DROP_NO_KEY = True
     # 指标配置
     index_map = {
         # 每一项即为一个指标，KEY就是指标名，中文务必加 u
@@ -43,7 +40,7 @@ class Mapred(tiyu.Mapred):
             },
             # mapper 与 reducer 阶段执行的处理过程， 比如count 找 _count
             "mapper": "group_by",
-            "reducer": "",
+            "reducer": "merge_index",
             # local是mapred任务完成后，在本地执行的操作
             "local": "write_file",
             "config": {
@@ -51,6 +48,7 @@ class Mapred(tiyu.Mapred):
                     "key": "id",
                     "num": 10,
                 },
+                "reducer": 10,
                 "local": "%s.txt"
             },
             # 该指标对应的维度信息，在下面定义
@@ -162,6 +160,7 @@ class Mapred(tiyu.Mapred):
             num = item["config"]["mapper"]["num"]
             group_key.append(key)
             all_entities = dict()
+            emit_dict = None
             for record in self.expand_index(index, item["@value"], group_key):
                 all_entities.setdefault(record["page"], list())
                 all_entities[record["page"]].append(record)
@@ -169,33 +168,65 @@ class Mapred(tiyu.Mapred):
                 emit_entities = sorted(entities,
                                        key=lambda entity: entity["@value"])
                 for entity in emit_entities[-num:]:
-                    self.emit_lines += 1
-                    self._emit(entity["page"].encode("utf-8"),
-                               json.dumps(entity, ensure_ascii=False).encode("utf-8"))
+                    emit_dict = self.contract_index(emit_dict, entity, group_key)
+            self.emit_lines += 1
+            self._emit(index.encode("utf-8"),
+                       json.dumps(emit_dict, ensure_ascii=False).encode("utf-8"))
 
     def _reducer(self):
         """
-        方法改写。做特殊处理
+        方法需要在继承类上重写
         :return:
         """
-        all_entities = dict()
         for line in self._reducer_in():
             try:
                 line = line.strip()
                 self.valid_lines += 1
-                kv = line.split("\t")
-                page = kv[0].decode("utf-8")
-                value = kv[1]
-                value = json.loads(value)
-                all_entities.setdefault(page, list())
-                all_entities[page].append(value)
+                self.calculate_index_reducer(line)
             except Exception as e:
                 self.error_lines += 1
                 continue
-        for page, entities in all_entities.items():
-            emit_entities = sorted(entities,
-                                   key=lambda entity: entity["@value"])
-            for entity in emit_entities[-10:]:
-                self.emit_lines += 1
-                self._emit(entity["@index"].encode("utf-8"),
-                           json.dumps(entity, ensure_ascii=False).encode("utf-8"))
+        for index, item in self.index_map.items():
+            # 不一定每个指标在每个mapper过程都能计算出结果
+            if "@value" not in item:
+                continue
+            num = item["config"]["reducer"]
+            group_key = copy.deepcopy(item["group_key"])
+            group_key.append("id")
+            all_entities = dict()
+            for record in self.expand_index(index, item["@value"], group_key):
+                all_entities.setdefault(record["page"], list())
+                all_entities[record["page"]].append(record)
+            for page, entities in all_entities.items():
+                emit_entities = sorted(entities,
+                                       key=lambda entity: entity["@value"])
+                for record in emit_entities[-num:]:
+                    self.emit_lines += 1
+                    self._emit(index.encode("utf-8"),
+                               json.dumps(record, ensure_ascii=False).encode("utf-8"))
+    # def _reducer(self):
+    #     """
+    #     方法改写。做特殊处理
+    #     :return:
+    #     """
+    #     all_entities = dict()
+    #     for line in self._reducer_in():
+    #         try:
+    #             line = line.strip()
+    #             self.valid_lines += 1
+    #             kv = line.split("\t")
+    #             page = kv[0].decode("utf-8")
+    #             value = kv[1]
+    #             value = json.loads(value)
+    #             all_entities.setdefault(page, list())
+    #             all_entities[page].append(value)
+    #         except Exception as e:
+    #             self.error_lines += 1
+    #             continue
+    #     for page, entities in all_entities.items():
+    #         emit_entities = sorted(entities,
+    #                                key=lambda entity: entity["@value"])
+    #         for entity in emit_entities[-10:]:
+    #             self.emit_lines += 1
+    #             self._emit(entity["@index"].encode("utf-8"),
+    #                        json.dumps(entity, ensure_ascii=False).encode("utf-8"))
