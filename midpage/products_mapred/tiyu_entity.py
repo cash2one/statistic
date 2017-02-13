@@ -46,9 +46,9 @@ class Mapred(tiyu.Mapred):
             "config": {
                 "mapper": {
                     "key": "id",
-                    "num": 10,
+                    "num": 100,
                 },
-                "reducer": 10,
+                "reducer": 100,
                 "local": "%s.txt"
             },
             # 该指标对应的维度信息，在下面定义
@@ -103,7 +103,16 @@ class Mapred(tiyu.Mapred):
                     if line["url"] in key_map:
                         key = key_map[line["url"]]
                         if key in line["query"]:
-                            value = line["query"][key]
+                            # 视频的ID不合规矩，做特殊处理
+                            if line["url"] == "/videodetail":
+                                if "type" in line["query"] and "pos" in line["query"]:
+                                    value = "%s&type=%s&pos=%s" % (line["query"][key],
+                                                                   line["query"]["type"],
+                                                                   line["query"]["pos"])
+                                else:
+                                    continue
+                            else:
+                                value = line["query"][key]
                             line["id"] = value
                             self._emit(key.encode("utf-8"),
                                        json.dumps(line, ensure_ascii=False).encode("utf-8"))

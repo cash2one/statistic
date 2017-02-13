@@ -32,7 +32,7 @@ class Mapred(base_mapred_local.BaseMapredLocal):
     # 指定日志来源。可以nanlin本地集群，可以为其他集群。其他集群会先执行distcp
     SOURCE = "hdfs://szwg-ston-hdfs.dmop.baidu.com:54310" \
              "/app/dt/minos/3/textlog/www/wise_tiyu_access/70025011/%s"
-    # SOURCE = "/app/ps/spider/wdmqa/kgdc/20170209/tiyu/input/1200"
+    # SOURCE = "/app/ps/spider/wdmqa/kgdc/20170207/tiyu/input"
     ###################################
     # 过滤配置，符合该正则的认为是合法的日志
     FILTER = re.compile(r"^(?P<client_ip>[0-9\.]+) (.*) (.*) (?P<time>\[.+\]) "
